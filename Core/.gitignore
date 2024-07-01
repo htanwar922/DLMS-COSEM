@@ -1,0 +1,9 @@
+# *Client*
+# *Database*
+# *Apps*
+# *CMakeLists.txt
+# *stm32*
+# *.cc
+# !Src/config.cc
+
+# *tnt*

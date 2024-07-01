@@ -1,0 +1,52 @@
+# stuff "git status" should ignore
+
+# build output
+.libs
+.deps
+.dirstamp
+*.o
+*.obj
+*.pp
+*.o.??????
+*.a
+*.lo
+*.la
+*.in
+*.iso
+bin
+build
+Debug
+Release
+*.opensdf
+*.sdf
+*.suo
+*.old
+*.run
+VisualGDBCache
+CodeDB
+
+# editor files
+*.swp
+
+# coexist with quilt
+patches
+*.patch
+
+# ctags tag files
+tags
+
+# folders # Himanshu
+.vscode/*
+!.vscode/c_cpp_properties.json
+!.vscode/launch.json
+bin
+build/
+data/
+*/.run
+
+!.vs/
+.vs/*
+!.vs/ProjectSettings.json
+!.vs/VSWorkspaceState.json
+
+vcpkg_installed/

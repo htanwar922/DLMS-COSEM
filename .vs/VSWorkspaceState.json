@@ -1,0 +1,21 @@
+{
+  "OutputFoldersPerTargetSystem": {
+    "Local Machine": [
+      "out\\build\\x64-Debug",
+      "out\\install\\x64-Debug"
+    ]
+  },
+  "ExpandedNodes": [
+    "",
+    "\\config",
+    "\\Core",
+    "\\Core\\Inc",
+    "\\Core\\Inc\\lib",
+    "\\Core\\Inc\\lib\\DLMS-COSEM",
+    "\\Core\\Src",
+    "\\Core\\Src\\lib",
+    "\\Core\\Src\\lib\\DLMS-COSEM"
+  ],
+  "SelectedNode": "\\CMakeLists.txt",
+  "PreviewInSolutionExplorer": false
+}
