@@ -114,3 +114,9 @@ extern const std::string packet_types[2];
 #define configM_LOG_LVL								LOG_LVL_DEBUG		// Change log level here
 
 #include "log.h"
+
+#ifdef _MSC_VER
+#include "msvc-config.h"
+#else
+#include "gcc-config.h"
+#endif // _MSC_VER

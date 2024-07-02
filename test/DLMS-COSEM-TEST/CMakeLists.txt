@@ -35,7 +35,7 @@ add_executable(DLMS-COSEM-TEST
 )
 
 if(NOT "${PLATFORM_ID}" STREQUAL "Raspbian\n")
-	target_link_libraries(DLMS-COSEM-TEST DLMS-COSEM-Client gtest "${CMAKE_THREAD_LIBS_INIT}")
+	target_link_libraries(DLMS-COSEM-TEST DLMS-COSEM-Client ${GTEST_LIBRARIES} "${CMAKE_THREAD_LIBS_INIT}")
 else()
-	target_link_libraries(DLMS-COSEM-TEST DLMS-COSEM-Server gtest "${CMAKE_THREAD_LIBS_INIT}")
+	target_link_libraries(DLMS-COSEM-TEST DLMS-COSEM-Server ${GTEST_LIBRARIES} "${CMAKE_THREAD_LIBS_INIT}")
 endif()

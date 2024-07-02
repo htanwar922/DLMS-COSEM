@@ -74,7 +74,9 @@
 
 #include <deque>
 #include <vector>
+#ifndef _MSC_VER
 #include <execinfo.h>
+#endif
 
 #include "ERROR_TYPE.h"
 #include "ITemplates/ISerial.h"
@@ -202,6 +204,7 @@ public:
 protected:
     int WhoCalled()
     {
+#ifndef _MSC_VER
         void * AddressList[64];
         int    AddressLength = backtrace(AddressList, sizeof(AddressList) / sizeof(void*));
         if (AddressLength)
@@ -216,6 +219,7 @@ protected:
                     return 1;
             }
         }
+#endif
         return 0;
     }
     

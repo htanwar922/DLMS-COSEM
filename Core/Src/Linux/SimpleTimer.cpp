@@ -73,6 +73,7 @@
 #include <memory>
 #include <time.h>
 
+#include "config.h"
 #include "SimpleTimer.h"
 
 namespace EPRI

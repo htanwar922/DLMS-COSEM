@@ -70,7 +70,7 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 
-#include <unistd.h>
+#include <config.h>
 
 #include "Scheduler.h"
 

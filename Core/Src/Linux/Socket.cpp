@@ -70,12 +70,12 @@
 // DEALINGS IN THE SOFTWARE.
 // 
 
-#include <termios.h>
 #include <chrono>
 #include <iostream>
 #include <iomanip>
 #include <string>
 
+#include "config.h"
 #include "optional.h"
 #include "Socket.h"
 #include "ITemplates/IBaseLibrary.h"

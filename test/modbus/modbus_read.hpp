@@ -22,7 +22,7 @@ class dlms_modbus
     modbus_t *ctx;
     uint16_t *dest;
     struct timeval response_timeout;
-    
+
 public:
     dlms_modbus()
     {

@@ -72,7 +72,9 @@
 
 #pragma once 
 
-#include <stddef.h>
+#include <cstddef>
+
+#include "config.h"
 #include "ERROR_TYPE.h"
 #include "ITemplates/ISocket.h"
 

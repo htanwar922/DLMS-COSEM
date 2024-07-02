@@ -16,6 +16,12 @@ project(DLMS-COSEM VERSION 1.0.0)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
+if(MSVC)
+    set(CMAKE_CXX_STANDARD 11)
+	find_package(asio REQUIRED)
+	find_package(GTest REQUIRED)
+endif()
+
 set(CMAKE_COLOR_DIAGNOSTICS ON)
 
 function(set_with_path_prefix VAR)
@@ -27,6 +33,7 @@ function(set_with_path_prefix VAR)
 endfunction()
 
 include_directories(
+  ${ASIO_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/config
   ${CMAKE_SOURCE_DIR}/hdlc/include
   ${CMAKE_SOURCE_DIR}/Core/Inc/Linux
@@ -45,6 +52,8 @@ if(NOT "${PLATFORM_ID}" STREQUAL "Raspbian\n")
 	target_compile_definitions(LinuxClient PRIVATE
 		ROOT_DIR="${CMAKE_SOURCE_DIR}"
 		MODE=CLIENT
+		WIN32_LEAN_AND_MEAN
+		ASIO_STANDALONE
 		NO_DATABASE		# default - off (use database in client mode)
 	)
 
@@ -79,6 +88,8 @@ if(TRUE)
 	target_compile_definitions(LinuxServer PRIVATE
 		ROOT_DIR="${CMAKE_SOURCE_DIR}"
 		MODE=SERVER
+		WIN32_LEAN_AND_MEAN
+		ASIO_STANDALONE
 		NO_DATABASE
 		# MODBUS			# default - on (use modbus in server mode)
 	)

@@ -70,11 +70,11 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include <termios.h>
 #include <chrono>
 #include <iostream>
 #include <iomanip>
 
+#include "config.h"
 #include "optional.h"
 #include "Serial.h"
 #include "BaseLibrary.h"
@@ -290,7 +290,11 @@ namespace EPRI
         {
             size_t                         ActualBytes = 0;
             DLMSOptional<asio::error_code> TimerResult;
+#ifdef _MSC_VER
+            asio::steady_timer             SynchronousTimer(m_Port.get_executor());
+#else
             asio::steady_timer             SynchronousTimer(m_Port.get_io_service());
+#endif // _MSC_VER
             SynchronousTimer.expires_from_now(std::chrono::milliseconds(TimeOutInMS));
 
             ActualBytes = asio::read(m_Port,

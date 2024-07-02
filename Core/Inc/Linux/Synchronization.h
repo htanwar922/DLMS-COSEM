@@ -72,7 +72,7 @@
 
 #pragma once
 
-#include <semaphore.h>
+#include <config.h>
 
 #include "ITemplates/ISynchronization.h"
 

@@ -2,13 +2,13 @@
 #include <cstdio>
 #include <time.h>
 #include <ctype.h>
-#include <unistd.h>
 #include <iomanip>
 #include <asio.hpp>
 #include <algorithm>
 #include <string>
-#include <pthread.h>                    //sudeshna
 #include <fstream>                      //sudeshna
+
+#include "config.h"
 
 #include "BaseLibrary.h"
 #include "Apps.h"
