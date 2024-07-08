@@ -92,8 +92,25 @@ namespace EPRI
     // Association
     //
     Association::Association(std::vector<ICOSEMObject *> * pObjects) :
-        IAssociationLNObject({0, 0, 40, 0, {0, 1}, 255}),
+        IAssociationLNObject({0, 0, 40, 0, 0, 255}),
         m_pObjects(pObjects)
+    {
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_OBJ_LIST, read_access);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_PARTNERS_ID, read_access);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_APP_CTX_NAME, read_access);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_XDLMS_CTX_INFO, read_access);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_AUTH_MECH_NAME, read_access);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_SECRET, access_denied);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_STATUS, read_access);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_SECURITY_SETUP_REF, read_access);
+
+    }
+
+    Association::Association(std::vector<ICOSEMObject*>* pObjects
+            , const COSEMObjectInstanceID& OID
+            , uint16_t ShortNameBase /*= std::numeric_limits<uint16_t>::max()*/)
+    : IAssociationLNObject(OID, ShortNameBase)
+    , m_pObjects(pObjects)
     {
     }
 
@@ -190,12 +207,14 @@ namespace EPRI
                 {
                     const ICOSEMObject * pObject = *it;
                     const ICOSEMInterface * pInterface = dynamic_cast<const ICOSEMInterface *>(pObject);
-                    array.push_back(DLMSStructure({
-                        pInterface->GetClassID(),
-                        pInterface->GetVersion(),
-                        pObject->GetObjectInstanceID(),
-                        pInterface->GetAccessRights()
-                    }));
+                    for (const COSEMObjectInstanceID& Entry : pInterface->GetObjectInstanceIDList()) {
+                        array.push_back(DLMSStructure({
+                            pInterface->GetClassID(),
+                            pInterface->GetVersion(),
+                            Entry,
+                            pInterface->GetAccessRights(Entry)
+                        }));
+                    }
                 }
                 pAttribute->SelectChoice(COSEMDataType::NULL_DATA);
                 AppendResult = pAttribute->Append(array);

@@ -97,65 +97,6 @@ namespace EPRI
 
         COSEMAttribute<ATTR_SIMPLE, OctetStringSchema, 0x08>     simple;
         COSEMAttribute<ATTR_SIMPLE_TWO, OctetStringSchema, 0x10> simple2;
-
-        // Himanshu
-        virtual uint8_t GetAttributeAccessRights(ObjectAttributeIdType AttributeId) const
-        {
-            int8_t access = IAssociationLN::access_denied;
-            switch (AttributeId)
-            {
-            case LOGICAL_NAME:
-                access |= IAssociationLN::read_access;
-                break;
-            case ATTR_SIMPLE:
-                access |= IAssociationLN::read_access;
-                break;
-            case ATTR_SIMPLE_TWO:
-                access |= IAssociationLN::read_access;
-                break;
-            }
-            return access;
-        }
-
-        // Himanshu
-        virtual uint8_t GetMethodAccessRights(ObjectAttributeIdType MethodId) const
-        {
-            int8_t access = IAssociationLN::access_denied;
-            switch (MethodId)
-            {
-            default:
-                break;
-            }
-            return access;
-        }
-
-        // Himanshu
-        virtual DLMSStructure GetAccessRights() const
-        {
-            DLMSStructure data;
-            DLMSArray array;
-            for(COSEMAttributeMap::value_type attribute : m_Attributes)
-            {
-                array.push_back(DLMSStructure({
-                    (int8_t)attribute.first,
-                    (uint8_t)GetAttributeAccessRights(attribute.first),
-                    DLMSBlank
-                }));
-            }
-            data.push_back(array);
-
-            array.clear();
-            for (COSEMMethodMap::value_type method : m_Methods)
-            {
-                array.push_back(DLMSStructure({
-                    (int8_t)method.first,
-                    (uint8_t)GetMethodAccessRights(method.first)
-                }));
-            }
-            data.push_back(array);
-
-            return data;
-        }
     };
 
     class ISimpleObject : public ISimpleClass, public ICOSEMObject

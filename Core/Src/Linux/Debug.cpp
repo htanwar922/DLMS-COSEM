@@ -81,7 +81,7 @@ namespace EPRI
     char DebugBuffer[256];
 
     LinuxDebug::LinuxDebug(asio::io_service& IO) :
-        m_Output(IO, ::dup(STDOUT_FILENO)), m_IO(IO)
+        m_IO(IO), m_Output(IO, dup(STDOUT_FILENO))
     {
     }
 

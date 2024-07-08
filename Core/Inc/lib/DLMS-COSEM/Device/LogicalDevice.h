@@ -89,20 +89,25 @@ namespace EPRI
 #define LOGICAL_DEVICE_OBJECT(OBJ)\
         RegisterObject(&OBJ);
 
+#define LOGICAL_DEVICE_OBJECTS_LIST(OBJListP)\
+        for (auto pObj : OBJListP)\
+        {\
+            RegisterObject(pObj);\
+        }
+
 #define LOGICAL_DEVICE_END_OBJECTS
 
     class COSEMServer;
-    class APPBaseCallbackParameter;
-    class APPOpenRequestOrIndication;
-    class APPOpenConfirmOrResponse;
-    class APPGetRequestOrIndication;
-    class APPSetRequestOrIndication;
-    class APPActionRequestOrIndication;
-    class APPReleaseRequestOrIndication;
-    class APPReleaseConfirmOrResponse;
-    class SelectiveAccess;          // Himanshu
-    class APPAccessRequestOrIndication; // Himanshu
-    class APPAccessConfirmOrResponse; // Himanshu
+    struct APPBaseCallbackParameter;
+    struct APPOpenRequestOrIndication;
+    struct APPOpenConfirmOrResponse;
+    struct APPGetRequestOrIndication;
+    struct APPSetRequestOrIndication;
+    struct APPActionRequestOrIndication;
+    struct APPReleaseRequestOrIndication;
+    struct APPReleaseConfirmOrResponse;
+    struct APPAccessRequestOrIndication;    // Himanshu
+    struct APPAccessConfirmOrResponse;      // Himanshu
 
     struct AssociationContext
     {
@@ -132,7 +137,11 @@ namespace EPRI
     class Association : public IAssociationLNObject
     {
     public:
+        Association() = delete;
         Association(std::vector<ICOSEMObject *> * pObjects);
+        Association(std::vector<ICOSEMObject *> * pObjects
+            , const COSEMObjectInstanceID& OID
+            , uint16_t ShortNameBase = std::numeric_limits<uint16_t>::max());
         virtual ~Association();
 
         virtual size_t AvailableAssociations() const;
@@ -158,7 +167,6 @@ namespace EPRI
 
     class LogicalDevice
     {
-        friend class SelectiveAccess;
     public:
         LogicalDevice() = delete;
         LogicalDevice(COSEMServer * pServer);

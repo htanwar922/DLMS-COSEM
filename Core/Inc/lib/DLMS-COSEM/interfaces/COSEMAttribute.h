@@ -68,7 +68,7 @@
 // FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
+//
 
 #pragma once
 
@@ -79,22 +79,21 @@
 namespace EPRI
 {
 #define COSEM_BEGIN_ATTRIBUTES
-        
+
 #define COSEM_ATTRIBUTE(ATTR)\
         RegisterAttribute(&ATTR);
-        
+
 #define COSEM_END_ATTRIBUTES
 
-    class SelectiveAccess;
     class ICOSEMInterface;
-    
+
     class ICOSEMAttribute : public COSEMType
     {
         friend class ICOSEMInterface;
-        
+
     public:
         ICOSEMAttribute() = delete;
-        ICOSEMAttribute(ObjectAttributeIdType Attr, 
+        ICOSEMAttribute(ObjectAttributeIdType Attr,
                         ShortNameOffsetType ShortName,
                         SchemaType DT) :
            COSEMType(DT),
@@ -105,23 +104,23 @@ namespace EPRI
         virtual ~ICOSEMAttribute()
         {
         }
-            
+
         const ObjectAttributeIdType AttributeID;
         const ShortNameOffsetType   ShortNameOffset;
-        
+
         inline ICOSEMInterface * GetInterface() const
         {
             return m_pInterface;
         }
-        
+
     protected:
         ICOSEMInterface * m_pInterface = nullptr;
-        
+
     };
-    
+
     template <ObjectAttributeIdType Attr, SchemaType DT, ShortNameOffsetType SNO>
         class COSEMAttribute : public ICOSEMAttribute
-        { 
+        {
         public:
             COSEMAttribute() :
                 ICOSEMAttribute(Attr, SNO, DT)
@@ -130,7 +129,7 @@ namespace EPRI
             virtual ~COSEMAttribute()
             {
             }
-            
+
             ICOSEMAttribute& operator=(const DLMSVector& rhs)
             {
                 *dynamic_cast<COSEMType *>(this) = rhs;

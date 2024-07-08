@@ -68,7 +68,7 @@
 // FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
+//
 
 #pragma once
 
@@ -79,49 +79,48 @@
 namespace EPRI
 {
 #define COSEM_BEGIN_METHODS
-        
+
 #define COSEM_METHOD(METH)\
         RegisterMethod(&METH);
-        
+
 #define COSEM_END_METHODS
 
-    class SelectiveAccess;
     class ICOSEMInterface;
-    
+
     class ICOSEMMethod : public COSEMType
     {
         friend class ICOSEMInterface;
-        
+
     public:
         ICOSEMMethod() = delete;
-        ICOSEMMethod(ObjectAttributeIdType Method, 
+        ICOSEMMethod(ObjectAttributeIdType Method,
             ShortNameOffsetType ShortName,
-            SchemaType ParameterDT) : 
+            SchemaType ParameterDT) :
             COSEMType(ParameterDT),
-            MethodID(Method), 
+            MethodID(Method),
             ShortNameOffset(ShortName)
         {
         }
         virtual ~ICOSEMMethod()
         {
         }
-            
+
         const ObjectAttributeIdType MethodID;
         const ShortNameOffsetType   ShortNameOffset;
-        
+
         inline ICOSEMInterface * GetInterface() const
         {
             return m_pInterface;
         }
-        
+
     protected:
         ICOSEMInterface * m_pInterface = nullptr;
-        
+
     };
-    
+
     template <ObjectAttributeIdType Method, SchemaType ParameterDT, ShortNameOffsetType SNO>
         class COSEMMethod : public ICOSEMMethod
-        { 
+        {
         public:
             COSEMMethod()
                 : ICOSEMMethod(Method, SNO, ParameterDT)
@@ -130,7 +129,7 @@ namespace EPRI
             virtual ~COSEMMethod()
             {
             }
-            
+
             ICOSEMMethod& operator=(const DLMSVector& rhs)
             {
                 *dynamic_cast<COSEMType *>(this) = rhs;

@@ -32,10 +32,20 @@ set_with_path_prefix(LinuxServer_SOURCES
 	Scheduler.cpp main.cpp BaseLibrary.cpp Core.cpp COSEMServer.cpp
 	Debug.cpp Memory.cpp Serial.cpp SimpleTimer.cpp Socket.cpp
 	Synchronization.cpp Apps.cpp COSEMClient.cpp
+	Objects/Clock.cpp
+	Objects/Data.cpp
+	Objects/Register.cpp
+	Objects/ProfileNameplate.cpp
+	Objects/SecuritySetup.cpp
 )
 
 set_with_path_prefix(LinuxClient_SOURCES
 	Scheduler.cpp main.cpp BaseLibrary.cpp Core.cpp COSEMServer.cpp
 	Debug.cpp Memory.cpp Serial.cpp SimpleTimer.cpp Socket.cpp
 	Synchronization.cpp Apps.cpp COSEMClient.cpp
+	Objects/Clock.cpp
+	Objects/Data.cpp
+	Objects/Register.cpp
+	Objects/ProfileNameplate.cpp
+	Objects/SecuritySetup.cpp
 )

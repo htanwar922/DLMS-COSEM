@@ -75,6 +75,7 @@
 #include <limits>
 #include <memory>
 #include <map>
+#include <set>
 
 #include "interfaces/COSEMData.h"
 #include "interfaces/COSEMAttribute.h"
@@ -88,13 +89,59 @@ namespace EPRI
     class ICOSEMObject;
     class Association;
     class AssociationContext;
-    class SelectiveAccess;
+    class SelectiveAccess : public COSEMType {
+    public:
+        SelectiveAccess(SchemaType DT) : COSEMType(DT) {}
+        virtual ~SelectiveAccess() = default;   // Himanshu
+    };
 
-    class ICOSEMInterface
-    {
+    // Himanshu
+    class ICOSEM {
     protected:
-        using COSEMAttributeMap = std::map<ObjectAttributeIdType, ICOSEMAttribute *>;
-        using COSEMMethodMap = std::map<ObjectAttributeIdType, ICOSEMMethod *>;
+        // Himanshu - for ProfileGeneric
+        using AttributeAccessRightsMap = std::map<ObjectAttributeIdType, uint8_t>;
+        using MethodAccessRightsMap = std::map<ObjectMethodIdType, uint8_t>;
+
+        struct COSEMObjectValueType {
+            DLMSValue capture_value;
+            AttributeAccessRightsMap attribute_access;
+            MethodAccessRightsMap method_access;
+        };
+
+        using COSEMObjectInstanceIDList = std::set<COSEMObjectInstanceID>;
+        using COSEMObjectValueMap = std::map<COSEMObjectInstanceID, COSEMObjectValueType>;
+        using COSEMAttributeMap = std::map<ObjectAttributeIdType, ICOSEMAttribute*>;
+        using COSEMMethodMap = std::map<ObjectAttributeIdType, ICOSEMMethod*>;
+
+    public:
+        virtual ~ICOSEM() = default;
+
+        virtual bool RegisterObjectInstanceID(const COSEMObjectInstanceID& ObjectInstanceID);
+        virtual COSEMObjectInstanceIDList GetObjectInstanceIDList() const;
+
+        virtual void SetCaptureValue(const COSEMObjectInstanceID& ObjectId, const DLMSValue& Value);
+        virtual DLMSValue GetCaptureValue(const COSEMObjectInstanceID& ObjectId) const;
+
+        virtual void SetAttributeAccessRights(COSEMObjectInstanceID ObjectId, ObjectAttributeIdType AttributeId, uint8_t AccessRights);
+        virtual void SetMethodAccessRights(COSEMObjectInstanceID ObjectId, ObjectAttributeIdType MethodId, uint8_t AccessRights);
+        virtual uint8_t GetAttributeAccessRights(COSEMObjectInstanceID ObjectId, ObjectAttributeIdType AttributeId) const;
+        virtual uint8_t GetMethodAccessRights(COSEMObjectInstanceID ObjectId, ObjectAttributeIdType MethodId) const;
+        virtual DLMSStructure GetAccessRights(COSEMObjectInstanceID ObjectId) const;
+
+        virtual uint16_t GetClassID() const = 0;
+        virtual uint8_t GetVersion() const = 0;
+
+    protected:
+        virtual void CheckExists(const COSEMObjectInstanceID& ObjectId) const;
+
+        COSEMObjectValueMap m_ObjectValueMap;
+        COSEMAttributeMap m_Attributes;
+        COSEMMethodMap    m_Methods;
+
+    };
+
+    class ICOSEMInterface : virtual public ICOSEM
+    {
         friend class ICOSEMObject;
         friend class SelectiveAccess;
 
@@ -127,9 +174,6 @@ namespace EPRI
         // Himanshu
         virtual uint16_t GetClassID() const;
         virtual uint8_t GetVersion() const;
-        virtual uint8_t GetAttributeAccessRights(ObjectAttributeIdType AttributeId) const = 0;
-        virtual uint8_t GetMethodAccessRights(ObjectAttributeIdType MethodId) const = 0;
-        virtual DLMSStructure GetAccessRights() const = 0;
 
     protected:
         virtual void RegisterAttribute(ICOSEMAttribute * pAttribute);
@@ -150,11 +194,9 @@ namespace EPRI
         const uint16_t    m_CardinalityMin;
         const uint16_t    m_CardinalityMax;
         static uint16_t   m_CardinalityCounter;
-        COSEMAttributeMap m_Attributes;
-        COSEMMethodMap    m_Methods;
     };
 
-    class ICOSEMObject
+    class ICOSEMObject : virtual public ICOSEM
     {
         friend class SelectiveAccess;
     public:
@@ -162,9 +204,6 @@ namespace EPRI
         ICOSEMObject(const COSEMObjectInstanceCriteria& Criteria,
             uint16_t ShortNameBase = std::numeric_limits<uint16_t>::max());
         virtual ~ICOSEMObject();
-
-        // Himanshu
-        virtual DLMSVector GetObjectInstanceID() const;
 
         virtual bool Supports(const Cosem_Attribute_Descriptor& Descriptor) const;
         virtual bool Supports(const Cosem_Method_Descriptor& Descriptor) const;

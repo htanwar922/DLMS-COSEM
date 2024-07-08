@@ -13,6 +13,9 @@ namespace EPRI
 		COSEM_DEFINE_SCHEMA(Sort_Method_Schema)
 		COSEM_DEFINE_SCHEMA(Sort_Object_Schema)
 
+		COSEM_DEFINE_SCHEMA(Range_Descriptor_Schema)
+		COSEM_DEFINE_SCHEMA(Entry_Descriptor_Schema)
+
     public:
 
         IProfileGeneric_1();
@@ -26,6 +29,20 @@ namespace EPRI
 			SORT_METHOD_SMALLEST = 4,
 			SORT_METHOD_NEAREST_TO_ZERO = 5,
 			SORT_METHOD_FAREST_FROM_ZERO = 6
+		};
+
+		struct CaptureObjectType
+		{
+			Cosem_Attribute_Descriptor object;
+			uint16_t data_index;
+			operator DLMSStructure() const {
+				return DLMSStructure{
+					object.class_id,
+					object.instance_id,
+					object.attribute_id,
+					data_index
+				};
+			}
 		};
 
 		enum Attributes : ObjectAttributeIdType
@@ -56,15 +73,43 @@ namespace EPRI
         COSEMMethod<METHOD_RESET, IntegerSchema, 0x58> reset_data;
 		COSEMMethod<METHOD_CAPTURE, IntegerSchema, 0x60> capture_data;
 
-        // Himanshu - Added to get access rights for each attribute and method
-        uint8_t GetAttributeAccessRights(ObjectAttributeIdType AttributeId) const;
-        uint8_t GetMethodAccessRights(ObjectAttributeIdType MethodId) const;
-        DLMSStructure GetAccessRights() const;
+		typedef std::vector<DLMSStructure> BufferType;
+		typedef std::vector<CaptureObjectType> CaptureObjectList;
+		typedef std::vector<CaptureObjectType>::iterator SortObjectIterator;
+
+		virtual void SetCaptureObjects(const CaptureObjectList& CaptureObjects);
+		virtual void SetCaptureObjects(CaptureObjectList&& CaptureObjects);
+		virtual void AddCaptureObject(const Cosem_Attribute_Descriptor& Object, uint16_t DataIndex);
+		virtual void RemoveCaptureObject(const Cosem_Attribute_Descriptor& Object);
+		virtual void ClearCaptureObjects();
+
+		virtual void SetSortMethod(SortMethodType Method);
+		virtual void SetSortObject(const Cosem_Attribute_Descriptor& Object);
+		virtual void SetCapturePeriod(uint32_t Period);
+		virtual void SetProfileEntries(uint32_t Entries);
+		virtual void SetEntriesInUse(uint32_t Entries);
+		virtual void SetBuffer(const BufferType& Buffer);
+		virtual void SetBuffer(BufferType&& Buffer);
+
+		virtual void CaptureData() = 0;
+		virtual void ResetData();
+
+	protected:
+		SelectiveAccess		m_SelectiveAccessRange;
+		SelectiveAccess		m_SelectiveAccessEntry;
+
+		BufferType			m_Buffer;
+        CaptureObjectList	m_CaptureObjects;
+		uint32_t			m_CapturePeriod;
+		SortMethodType		m_SortMethod;
+		SortObjectIterator	m_pSortObject;
+		uint32_t			m_EntriesInUse;
+		uint32_t			m_ProfileEntries;
     };
 
     typedef IProfileGeneric_1 IProfileGeneric;
 
-    class IProfileGenericObject : public IProfileGeneric_1, public ICOSEMObject
+    class IProfileGenericObject : public IProfileGeneric, public ICOSEMObject
     {
     public:
     	IProfileGenericObject() = delete;

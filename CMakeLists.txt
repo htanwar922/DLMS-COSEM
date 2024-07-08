@@ -19,8 +19,8 @@ find_package(Threads REQUIRED)
 if(MSVC)
     set(CMAKE_CXX_STANDARD 11)
 	find_package(asio REQUIRED)
-	find_package(GTest REQUIRED)
 endif()
+find_package(GTest REQUIRED)
 
 set(CMAKE_COLOR_DIAGNOSTICS ON)
 

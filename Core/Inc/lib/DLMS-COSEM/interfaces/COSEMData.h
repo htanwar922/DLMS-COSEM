@@ -108,7 +108,7 @@ namespace EPRI
         DATE_TIME            = 25,
         DATE                 = 26,
         TIME                 = 27,
-        // ANY_DATA             = 254,
+        ANY_TYPE             = 254,
         DONT_CARE            = 255
     };
 
@@ -138,6 +138,7 @@ namespace EPRI
         END_SPECIAL_ENTRY_T   = 0x40000000,
         BEGIN_CHOICE_T        = 0x50000000,
         END_CHOICE_T          = 0x60000000,
+        ANY_CHOICE_T          = 0x70000000,     // Himanshu
         END_SCHEMA_T          = 0xF0000000
     };
 
@@ -263,6 +264,8 @@ namespace EPRI
             { EPRI::COSEMDataType::DATE },
 #define COSEM_TIME_TYPE\
             { EPRI::COSEMDataType::TIME },
+#define COSEM_ANY_ELEMENT_TYPE\
+            { EPRI::COSEMDataType::ANY_TYPE },
 #define COSEM_END_SCHEMA\
         };
     //
@@ -348,6 +351,7 @@ namespace EPRI
         bool InternalAppend(const DLMSValue& Value);
         bool InternalAppend(COSEMType * pValue);
         bool InternalSimpleAppend(SchemaEntryPtr SchemaEntry, const DLMSValue& Value);
+        bool InternalAnyAppend(const DLMSValue& Value);     // Himanshu
         bool InternalAppend(const DLMSVector& Value);
 
         GetNextResult InternalSimpleGet(SchemaEntryPtr SchemaEntry, DLMSValue * pValue);

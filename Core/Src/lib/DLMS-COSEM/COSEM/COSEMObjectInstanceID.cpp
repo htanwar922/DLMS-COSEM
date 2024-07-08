@@ -68,7 +68,7 @@
 // FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
+//
 
 #include <cstring>
 #include <algorithm>
@@ -85,22 +85,36 @@ namespace EPRI
     COSEMObjectInstanceCriteria::COSEMObjectInstanceCriteria(const std::initializer_list<ValueGroupCriteria>& List)
     {
         assert(List.size() == COSEMValueGroupElements);
-        
+
         ValueGroupCriteria * pCriteria = &m_Criteria[0];
         std::for_each(List.begin(),
-            List.end(), 
+            List.end(),
             [&pCriteria](const ValueGroupCriteria& Value)
             {
                 *pCriteria++ = Value;
             });
     }
-    
+
+    COSEMObjectInstanceCriteria::COSEMObjectInstanceCriteria(const COSEMObjectInstanceID& OID)
+    {
+        for (uint8_t Group = COSEMObjectInstanceID::VALUE_GROUP_A;
+             Group <= COSEMObjectInstanceID::VALUE_GROUP_F; ++Group)
+        {
+            m_Criteria[Group].Type = ValueGroupCriteria::TYPE_PRECISE;
+            m_Criteria[Group].Value.ValueGroup = OID.GetValueGroup(COSEMObjectInstanceID::ValueGroup(Group));
+        }
+    }
+
     COSEMObjectInstanceCriteria::~COSEMObjectInstanceCriteria()
     {
     }
-    
+
     bool COSEMObjectInstanceCriteria::Match(const COSEMObjectInstanceID& InstanceID) const
     {
+        if (IsPrecise() and COSEMObjectInstanceID(*this).IsEmpty())
+        {
+            return true;
+        }
         uint8_t Matches = 0;
         for (uint8_t Group = COSEMObjectInstanceID::VALUE_GROUP_A;
              Group <= COSEMObjectInstanceID::VALUE_GROUP_F; ++Group)
@@ -133,25 +147,38 @@ namespace EPRI
     COSEMObjectInstanceID::COSEMObjectInstanceID()
     {
     }
-    
+
     COSEMObjectInstanceID::COSEMObjectInstanceID(const DLMSVector& Vector)
     {
         Vector.PeekBuffer(m_OBIS, sizeof(m_OBIS));
     }
-    
+
     COSEMObjectInstanceID::COSEMObjectInstanceID(InstanceIDList List)
     {
         assert(List.size() == COSEMValueGroupElements);
-        
+
         uint8_t * pOBIS = &m_OBIS[0];
         std::for_each(List.begin(),
-            List.end(), 
+            List.end(),
             [&pOBIS](InstanceIDList::value_type Value)
             {
                 *pOBIS++ = Value;
             });
     }
     
+    COSEMObjectInstanceID::COSEMObjectInstanceID(const COSEMObjectInstanceCriteria& Criteria)
+    {
+        if (not Criteria.IsPrecise())
+        {
+            throw std::invalid_argument("Criteria must be precise");
+        }
+        for (uint8_t Group = COSEMObjectInstanceID::VALUE_GROUP_A;
+             Group <= COSEMObjectInstanceID::VALUE_GROUP_F; ++Group)
+        {
+            m_OBIS[Group] = Criteria.m_Criteria[Group].Value.ValueGroup;
+        }
+    }
+
     COSEMObjectInstanceID::~COSEMObjectInstanceID()
     {
     }
@@ -175,7 +202,7 @@ namespace EPRI
 
     bool COSEMObjectInstanceID::Parse(const std::string& String)
     {
-        bool RetVal = 
+        bool RetVal =
             std::sscanf(String.c_str(),
                 "%hhu%*[.-, :*]%hhu%*[.-, :*]%hhu%*[.-, :*]%hhu%*[.-, :*]%hhu%*[.-, :*]%hhu%*[.-, :*]",
                 &m_OBIS[ValueGroup::VALUE_GROUP_A],
@@ -194,8 +221,8 @@ namespace EPRI
     std::string COSEMObjectInstanceID::ToString() const
     {
         char Buffer[30];
-        std::snprintf(Buffer, 
-                      sizeof(Buffer), 
+        std::snprintf(Buffer,
+                      sizeof(Buffer),
                       "%u-%u:%u.%u.%u*%u",
                       GetValueGroup(ValueGroup::VALUE_GROUP_A),
                       GetValueGroup(ValueGroup::VALUE_GROUP_B),
@@ -205,15 +232,32 @@ namespace EPRI
                       GetValueGroup(ValueGroup::VALUE_GROUP_F));
         return std::string(Buffer);
     }
-    
-    bool COSEMObjectInstanceID::operator==(const COSEMObjectInstanceID& LHS) const
+
+    bool COSEMObjectInstanceID::operator==(const COSEMObjectInstanceID& RHS) const
     {
-        return std::memcmp(m_OBIS, LHS.m_OBIS, sizeof(m_OBIS)) == 0;
+        return std::memcmp(m_OBIS, RHS.m_OBIS, sizeof(m_OBIS)) == 0;
     }
 
-    bool COSEMObjectInstanceID::operator!=(const COSEMObjectInstanceID& LHS) const
+    bool COSEMObjectInstanceID::operator!=(const COSEMObjectInstanceID& RHS) const
     {
-        return std::memcmp(m_OBIS, LHS.m_OBIS, sizeof(m_OBIS)) != 0;
+        return std::memcmp(m_OBIS, RHS.m_OBIS, sizeof(m_OBIS)) != 0;
+    }
+
+    bool COSEMObjectInstanceID::operator<(const COSEMObjectInstanceID& RHS) const
+    {
+        //return std::memcmp(m_OBIS, RHS.m_OBIS, sizeof(m_OBIS)) < 0;
+        for (size_t Index = 0; Index < sizeof(m_OBIS); ++Index)
+        {
+            if (m_OBIS[Index] < RHS.m_OBIS[Index])
+            {
+                return true;
+            }
+            else if (m_OBIS[Index] > RHS.m_OBIS[Index])
+            {
+                return false;
+            }
+        }
+        return false;
     }
 
     COSEMObjectInstanceID::operator DLMSVector() const

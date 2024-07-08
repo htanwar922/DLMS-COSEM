@@ -75,92 +75,13 @@
 #include "COSEM/COSEM.h"
 #include "COSEM/COSEMDevice.h"
 #include "COSEM/COSEMEngine.h"
-#include "interfaces/IData.h"
-#include "interfaces/IClock.h"
-#include "interfaces/IRegister.h"
-#include "interfaces/IProfileGeneric.h"
+#include "Objects/Clock.h"
+#include "Objects/Data.h"
+#include "Objects/Register.h"
+#include "Objects/ProfileNameplate.h"
 
 namespace EPRI
 {
-    class LinuxData : public IDataObject
-    {
-    public:
-        LinuxData();
-
-    protected:
-        virtual APDUConstants::Data_Access_Result InternalGet(const AssociationContext& Context,
-            ICOSEMAttribute * pAttribute,
-            const Cosem_Attribute_Descriptor& Descriptor,
-            SelectiveAccess * pSelectiveAccess) final;
-        virtual APDUConstants::Data_Access_Result InternalSet(const AssociationContext& Context,
-            ICOSEMAttribute * pAttribute,
-            const Cosem_Attribute_Descriptor& Descriptor,
-            const DLMSVector& Data,
-            SelectiveAccess * pSelectiveAccess) final;
-
-        std::string m_Values[10];
-
-    };
-
-    //
-    // LinuxRegister
-    //
-    class LinuxRegister : public IRegisterObject
-    {
-    public:
-        LinuxRegister();
-
-    protected:
-        virtual APDUConstants::Data_Access_Result InternalGet(const AssociationContext& Context,
-            ICOSEMAttribute * pAttribute,
-            const Cosem_Attribute_Descriptor& Descriptor,
-            SelectiveAccess * pSelectiveAccess) final;
-        virtual APDUConstants::Data_Access_Result InternalSet(const AssociationContext& Context,
-            ICOSEMAttribute * pAttribute,
-            const Cosem_Attribute_Descriptor& Descriptor,
-            const DLMSVector& Data,
-            SelectiveAccess * pSelectiveAccess) final;
-    };
-
-    //
-    // LinuxProfileNameplate
-    //
-    class LinuxProfileNameplate : public IProfileGenericObject
-    {
-    public:
-        LinuxProfileNameplate();
-
-    protected:
-        virtual APDUConstants::Data_Access_Result InternalGet(const AssociationContext& Context,
-            ICOSEMAttribute * pAttribute,
-            const Cosem_Attribute_Descriptor& Descriptor,
-            SelectiveAccess * pSelectiveAccess) final;
-        virtual APDUConstants::Data_Access_Result InternalSet(const AssociationContext& Context,
-            ICOSEMAttribute * pAttribute,
-            const Cosem_Attribute_Descriptor& Descriptor,
-            const DLMSVector& Data,
-            SelectiveAccess * pSelectiveAccess) final;
-    };
-
-    class LinuxClock : public IClockObject
-    {
-    public:
-        LinuxClock();
-
-    protected:
-        virtual APDUConstants::Data_Access_Result InternalGet(const AssociationContext& Context,
-            ICOSEMAttribute * pAttribute,
-            const Cosem_Attribute_Descriptor& Descriptor,
-            SelectiveAccess * pSelectiveAccess) final;
-        virtual APDUConstants::Action_Result InternalAction(const AssociationContext& Context,
-            ICOSEMMethod * pMethod,
-            const Cosem_Method_Descriptor& Descriptor,
-            const DLMSOptional<DLMSVector>& Parameters,
-            DLMSVector * pReturnValue = nullptr) final;
-
-
-    };
-
     class LinuxManagementDevice : public COSEMServer
     {
     public:
@@ -168,10 +89,10 @@ namespace EPRI
         virtual ~LinuxManagementDevice();
 
     protected:
-        LinuxClock                  m_Clock;
-        LinuxData                   m_Data;
-        LinuxRegister               m_Register;   // Himanshu-Sudeshna
-        LinuxProfileNameplate       m_ProfileNameplate;
+        LinuxClock                      m_Clock;
+        std::vector<LinuxData *>        m_DataListP;
+        std::vector<LinuxRegister *>    m_RegisterListP;
+        LinuxProfileNameplate           m_ProfileNameplate;
 
     };
 

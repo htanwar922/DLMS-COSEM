@@ -134,11 +134,6 @@ namespace EPRI
         COSEMMethod<METHOD_ADJUST_TO_PRESET_TIME, IntegerSchema, 0x78>         adjust_to_preset_time;
         COSEMMethod<METHOD_PRESET_ADJUSTING_TIME, Adjusting_Time_Schema, 0x80> preset_adjusting_time;
         COSEMMethod<METHOD_SHIFT_TIME, LongSchema, 0x88>                       shift_time;
-
-        // Himanshu - Added to get access rights for each attribute and method
-        uint8_t GetAttributeAccessRights(ObjectAttributeIdType AttributeId) const;
-        uint8_t GetMethodAccessRights(ObjectAttributeIdType MethodId) const;
-        DLMSStructure GetAccessRights() const;
     };
 
     typedef IClock_0 IClock;

@@ -1,5 +1,7 @@
 // Himanshu
 
+#ifdef _MSC_VER
+
 #include "msvc-config.h"
 
 LARGE_INTEGER getFILETIMEoffset()
@@ -114,3 +116,95 @@ int sem_post(sem_t* sem)
 {
     return ReleaseSemaphore(*sem, 1, NULL) == 0;
 }
+
+int GetHandle(int n)
+{
+    return n;
+}
+
+void asio::posix::tcp_echo::StreamHandleTCPEchoClient::connect(const std::string& host, const std::string& port) {
+    tcp::resolver resolver(get_executor());
+    auto endpoints = resolver.resolve(host, port);
+
+    asio::async_connect(*this, endpoints,
+        [this](asio::error_code ec, tcp::endpoint) {
+            if (!ec) {
+                std::cout << "Connected to server!" << std::endl;
+                read();
+            }
+            else {
+                std::cerr << "Connect failed: " << ec.message() << std::endl;
+            }
+        }
+    );
+}
+
+void asio::posix::tcp_echo::StreamHandleTCPEchoClient::read() {
+    asio::async_read_until(*this, buffer_, '\n',
+        [this](asio::error_code ec, std::size_t length) {
+            if (!ec) {
+                std::istream is(&buffer_);
+                std::string line;
+                std::getline(is, line);
+                std::cout << line << std::endl;
+
+                // Continue reading
+                read();
+            }
+            else {
+                std::cerr << "Read failed: " << ec.message() << std::endl;
+                close();
+            }
+        }
+    );
+}
+
+void asio::posix::tcp_echo::StreamHandleTCPEchoClient::write(const std::string& data) {
+    std::cout << data;
+    asio::async_write(*this, asio::buffer(data),
+        [this](asio::error_code ec, std::size_t length) {
+            if (!ec) {
+                std::cout << "Sent " << length << " bytes." << std::endl;
+            }
+            else {
+                std::cerr << "Write failed: " << ec.message() << std::endl;
+            }
+        }
+    );
+}
+
+void asio::posix::tcp_echo::StreamHandleTCPEchoClient::launch_detached_process(std::string cmd) {
+    STARTUPINFO si;
+
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    si.dwFlags |= STARTF_USESHOWWINDOW;  // Ensure the window is hidden
+    si.wShowWindow = SW_HIDE;  // Hide the window
+
+    ZeroMemory(&pi_, sizeof(pi_));
+
+    // Create the process
+    if (!CreateProcess(NULL,   // No module name (use command line)
+        (LPSTR)cmd.c_str(),    // Command line
+        NULL,                  // Process handle not inheritable
+        NULL,                  // Thread handle not inheritable
+        FALSE,                 // Set handle inheritance to FALSE
+        CREATE_NEW_CONSOLE,    // Create a new console window for the process
+        NULL,                  // Use parent's environment block
+        NULL,                  // Use parent's starting directory 
+        &si,                   // Pointer to STARTUPINFO structure
+        &pi_                   // Pointer to PROCESS_INFORMATION structure
+    ))
+    {
+        std::cerr << "CreateProcess failed" << std::endl;
+        return;
+    }
+}
+
+void asio::posix::tcp_echo::StreamHandleTCPEchoClient::close_detached_process() {
+    // Close process and thread handles (we don't need to wait for it)
+    CloseHandle(pi_.hProcess);
+    CloseHandle(pi_.hThread);
+}
+
+#endif // _MSC_VER

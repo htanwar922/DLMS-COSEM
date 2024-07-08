@@ -134,11 +134,6 @@ namespace EPRI
         //
         // All Methods Are Optional; Not Implementing at this Time
         //
-
-        // Himanshu - Added to get access rights for each attribute and method
-        uint8_t GetAttributeAccessRights(ObjectAttributeIdType AttributeId) const;
-        uint8_t GetMethodAccessRights(ObjectAttributeIdType MethodId) const;
-        DLMSStructure GetAccessRights() const;
     };
 
     typedef IAssociationLN_3 IAssociationLN;

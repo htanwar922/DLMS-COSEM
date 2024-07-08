@@ -68,7 +68,7 @@
 // FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
+//
 
 #pragma once
 
@@ -79,17 +79,17 @@
 namespace EPRI
 {
     class COSEMObjectInstanceID;
-    
+
     constexpr uint8_t COSEMValueGroupElements = 6;
-    
+
     class COSEMObjectInstanceCriteria
     {
         friend class COSEMObjectInstanceID;
-        
+
     public:
         static constexpr uint16_t ANY = 0x0100;
         static constexpr uint16_t MAX = 0xFFFF;
-        
+
         struct ValueGroupCriteria
         {
             ValueGroupCriteria()
@@ -113,7 +113,7 @@ namespace EPRI
                 TYPE_PRECISE,
                 TYPE_RANGE
             }                           Type;
-            union 
+            union
             {
                 uint16_t ValueGroup;
                 struct Range
@@ -122,35 +122,29 @@ namespace EPRI
                     uint16_t High;
                 }        ValueRange;
             }                           Value;
-            
+
         };
-        
+
         COSEMObjectInstanceCriteria() = delete;
+        COSEMObjectInstanceCriteria(const COSEMObjectInstanceID& OID);
         COSEMObjectInstanceCriteria(const std::initializer_list<ValueGroupCriteria>& List);
         virtual ~COSEMObjectInstanceCriteria();
-        
+
         virtual bool Match(const COSEMObjectInstanceID& InstanceID) const;
         
-        virtual DLMSVector GetOctetStringLow() const
+        virtual bool IsPrecise() const
         {
-            DLMSVector data;
-            for(int Group=0; Group<COSEMValueGroupElements; Group++)
-            {
-                if(m_Criteria[Group].Type == ValueGroupCriteria::TYPE_PRECISE)
-                    data.Append((uint8_t)m_Criteria[Group].Value.ValueGroup);
-                else if(m_Criteria[Group].Type == ValueGroupCriteria::TYPE_RANGE)
-                    data.Append((uint8_t)m_Criteria[Group].Value.ValueRange.Low);
-                else
-                    data.Append((uint8_t)69);
-            }
-            return data;
+            for (int i = 0; i < COSEMValueGroupElements; i++)
+                if (m_Criteria[i].Type != ValueGroupCriteria::TYPE_PRECISE)
+                    return false;
+            return true;
         }
-        
+
     protected:
         ValueGroupCriteria m_Criteria[COSEMValueGroupElements];
-        
+
     };
-    
+
     class COSEMObjectInstanceID
     {
         using InstanceIDList = std::initializer_list<uint8_t>;
@@ -159,8 +153,9 @@ namespace EPRI
         COSEMObjectInstanceID();
         COSEMObjectInstanceID(const DLMSVector& Vector);
         COSEMObjectInstanceID(InstanceIDList List);
+        COSEMObjectInstanceID(const COSEMObjectInstanceCriteria& Criteria);
         virtual ~COSEMObjectInstanceID();
-        
+
         enum ValueGroup : uint8_t
         {
             VALUE_GROUP_A = 0,
@@ -174,7 +169,7 @@ namespace EPRI
         {
             return m_OBIS[Grp];
         }
-        
+
         bool IsEmpty() const;
         bool Parse(DLMSVector * pVector);
         bool Parse(const std::string& String);
@@ -182,14 +177,15 @@ namespace EPRI
         //
         // Operators
         //
-        bool operator==(const COSEMObjectInstanceID& LHS) const;
-        bool operator!=(const COSEMObjectInstanceID& LHS) const;
+        bool operator==(const COSEMObjectInstanceID& RHS) const;
+        bool operator!=(const COSEMObjectInstanceID& RHS) const;
+        bool operator<(const COSEMObjectInstanceID& RHS) const;
         operator DLMSVector() const;
         operator DLMSValue() const;
-        
+
     protected:
         uint8_t m_OBIS[COSEMValueGroupElements] = { };
-        
+
     };
-   
+
 }

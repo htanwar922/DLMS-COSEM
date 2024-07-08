@@ -83,7 +83,8 @@
 #include "COSEM/COSEMAddress.h"
 
 #include <iostream>
-#include "chrono"
+#include <chrono>
+#include <string>
 
 #include "config.h"
 
@@ -94,291 +95,22 @@ extern EPRI::LinuxBaseLibrary g_BL;
 namespace EPRI
 {
     //
-    // Data
-    //
-    LinuxData::LinuxData()
-        : IDataObject({ 0, 0, 96, 1, {0, 9}, 255 })
-    {
-        for (int Index = 0; Index < 10; ++Index)
-        {
-            m_Values[Index] = "LINUXDATA" + std::to_string(Index);
-        }
-    }
-
-    APDUConstants::Data_Access_Result LinuxData::InternalGet(const AssociationContext& Context,
-        ICOSEMAttribute * pAttribute,
-        const Cosem_Attribute_Descriptor& Descriptor,
-        SelectiveAccess * pSelectiveAccess)
-    {
-        LOG_ALL("10: InternalXXX\r\n");		// ToDo - check breakpoint
-        pAttribute->SelectChoice(COSEMDataType::VISIBLE_STRING);
-        pAttribute->Append(m_Values[Descriptor.instance_id.GetValueGroup(EPRI::COSEMObjectInstanceID::VALUE_GROUP_E)]);
-        return APDUConstants::Data_Access_Result::success;
-    }
-
-    APDUConstants::Data_Access_Result LinuxData::InternalSet(const AssociationContext& Context,
-        ICOSEMAttribute * pAttribute,
-        const Cosem_Attribute_Descriptor& Descriptor,
-        const DLMSVector& Data,
-        SelectiveAccess * pSelectiveAccess)
-    {
-        APDUConstants::Data_Access_Result RetVal = APDUConstants::Data_Access_Result::temporary_failure;
-        try
-        {
-            DLMSValue Value;
-
-            RetVal = ICOSEMObject::InternalSet(Context, pAttribute, Descriptor, Data, pSelectiveAccess);
-            if (APDUConstants::Data_Access_Result::success == RetVal &&
-                pAttribute->GetNextValue(&Value) == COSEMType::GetNextResult::VALUE_RETRIEVED)
-            {
-                m_Values[Descriptor.instance_id.GetValueGroup(EPRI::COSEMObjectInstanceID::VALUE_GROUP_E)] =
-                    DLMSValueGet<std::string>(Value);
-                RetVal = APDUConstants::Data_Access_Result::success;
-            }
-            else
-            {
-                RetVal = APDUConstants::Data_Access_Result::type_unmatched;
-            }
-        }
-        catch (...)
-        {
-            RetVal = APDUConstants::Data_Access_Result::type_unmatched;
-        }
-        return RetVal;
-    }
-
-    //
-    // Register // Sudeshna //1-0:12.7.0*255
-    //
-    LinuxRegister::LinuxRegister()
-        : IRegisterObject({ 1, 0, {0, 255}, 7, 0, 255 })
-    {
-        // TODO try - comment out "protected" keyword in COSEMObjectInstanceID.h
-    }
-
-    APDUConstants::Data_Access_Result LinuxRegister::InternalGet(const AssociationContext& Context,
-        ICOSEMAttribute * pAttribute,
-        const Cosem_Attribute_Descriptor& Descriptor,
-        SelectiveAccess * pSelectiveAccess)
-    {
-        // Himanshu
-        uint8_t obis_vg_c = Descriptor.instance_id.GetValueGroup(EPRI::COSEMObjectInstanceID::VALUE_GROUP_C);
-        LOG_NOTICE("LinuxRegister::InternalGet : OBIS : %d\r\n", obis_vg_c);
-
-        switch (Descriptor.attribute_id)
-        {
-        case ATTR_VALUE: {
-            float value = 0.0;
-            pAttribute->SelectChoice(COSEMDataType::FLOAT32);
-            pAttribute->Append(value);
-            break;
-        }
-        case (ObjectAttributeIdType)ATTR_SCALAR_UNIT: {
-            pAttribute->Append(DLMSStructure{
-                (int8_t)0,
-                (uint8_t)0
-            });
-            break;
-        }
-        default:
-        	LOG_ERROR("Unknown attribute called\r\n");
-        	return APDUConstants::Data_Access_Result::object_unavailable;
-        }
-        LOG_DEBUG("At the end of LinuxRegister::InternalGet\r\n");
-
-        return APDUConstants::Data_Access_Result::success;
-    }
-
-    APDUConstants::Data_Access_Result LinuxRegister::InternalSet(const AssociationContext& Context,
-            ICOSEMAttribute * pAttribute,
-            const Cosem_Attribute_Descriptor& Descriptor,
-            const DLMSVector& Data,
-            SelectiveAccess * pSelectiveAccess)
-    {
-        APDUConstants::Data_Access_Result RetVal = APDUConstants::Data_Access_Result::temporary_failure;
-        try
-        {
-            DLMSValue Value;
-
-            if (not (GetAttributeAccessRights(Descriptor.attribute_id) & Association::write_access))
-            {
-                return APDUConstants::Data_Access_Result::scope_of_access_violated;
-            }
-
-            RetVal = ICOSEMObject::InternalSet(Context, pAttribute, Descriptor, Data, pSelectiveAccess);
-            if (APDUConstants::Data_Access_Result::success == RetVal &&
-                pAttribute->GetNextValue(&Value) == COSEMType::GetNextResult::VALUE_RETRIEVED)
-            {
-                switch (Descriptor.attribute_id)
-                {
-                default:
-                    break;
-                }
-                RetVal = APDUConstants::Data_Access_Result::success;
-            }
-            else
-            {
-                RetVal = APDUConstants::Data_Access_Result::type_unmatched;
-            }
-        }
-        catch (...)
-        {
-            RetVal = APDUConstants::Data_Access_Result::type_unmatched;
-        }
-        return RetVal;
-    }
-
-    //
-    // ProfileGeneric // 0-0:94.91.10*255
-    //
-    LinuxProfileNameplate::LinuxProfileNameplate()
-        : IProfileGenericObject({ 0, 0, 94, 91, 10, 255 })
-    {
-        // TODO try - comment out "protected" keyword in COSEMObjectInstanceID.h
-    }
-
-    APDUConstants::Data_Access_Result LinuxProfileNameplate::InternalGet(const AssociationContext& Context,
-        ICOSEMAttribute * pAttribute,
-        const Cosem_Attribute_Descriptor& Descriptor,
-        SelectiveAccess * pSelectiveAccess)
-    {
-        switch (Descriptor.attribute_id)
-        {
-        case ATTR_BUFFER: {
-            pAttribute->SelectChoice(COSEMDataType::ARRAY);
-            pAttribute->Append(DLMSArray());
-            break;
-        }
-        default:
-        	LOG_ERROR("Unknown attribute called\r\n");
-        	return APDUConstants::Data_Access_Result::object_unavailable;
-        }
-        LOG_DEBUG("At the end of LinuxProfileNameplate::InternalGet\r\n");
-
-        return APDUConstants::Data_Access_Result::success;
-    }
-
-    APDUConstants::Data_Access_Result LinuxProfileNameplate::InternalSet(const AssociationContext& Context,
-            ICOSEMAttribute * pAttribute,
-            const Cosem_Attribute_Descriptor& Descriptor,
-            const DLMSVector& Data,
-            SelectiveAccess * pSelectiveAccess)
-    {
-        APDUConstants::Data_Access_Result RetVal = APDUConstants::Data_Access_Result::temporary_failure;
-        try
-        {
-            DLMSValue Value;
-
-            if (not (GetAttributeAccessRights(Descriptor.attribute_id) & Association::write_access))
-            {
-                return APDUConstants::Data_Access_Result::scope_of_access_violated;
-            }
-
-            RetVal = ICOSEMObject::InternalSet(Context, pAttribute, Descriptor, Data, pSelectiveAccess);
-            if (APDUConstants::Data_Access_Result::success == RetVal &&
-                pAttribute->GetNextValue(&Value) == COSEMType::GetNextResult::VALUE_RETRIEVED)
-            {
-                switch (Descriptor.attribute_id)
-                {
-                default:
-                    break;
-                }
-                RetVal = APDUConstants::Data_Access_Result::success;
-            }
-            else
-            {
-                RetVal = APDUConstants::Data_Access_Result::type_unmatched;
-            }
-        }
-        catch (...)
-        {
-            RetVal = APDUConstants::Data_Access_Result::type_unmatched;
-        }
-        return RetVal;
-    }
-
-    //
-    // Clock
-    //
-    LinuxClock::LinuxClock()
-        : IClockObject({ 0, 0, 1, 0, 0, 255 })
-    {
-    }
-
-    APDUConstants::Data_Access_Result LinuxClock::InternalGet(const AssociationContext& Context,
-        ICOSEMAttribute * pAttribute,
-        const Cosem_Attribute_Descriptor& Descriptor,
-        SelectiveAccess * pSelectiveAccess)
-    {
-        COSEMDateTime Now(true);
-        switch (pAttribute->AttributeID)
-        {
-        case ATTR_TIME:
-            pAttribute->Append(Now);
-            break;
-        case ATTR_TIME_ZONE:
-            pAttribute->Append(Now.GetTimeZone());
-            break;
-        case ATTR_STATUS:
-            pAttribute->Append(Now.GetClockStatus());
-            break;
-        case ATTR_DST_BEGIN:
-            pAttribute->Append(Now.GetDaylightSavingsBegin());
-            break;
-        case ATTR_DST_END:
-            pAttribute->Append(Now.GetDaylightSavingsEnd());
-            break;
-        case ATTR_DST_DEVIATION:
-            pAttribute->Append(Now.GetDaylightSavingsDeviation());
-            break;
-        case ATTR_DST_ENABLED:
-            pAttribute->Append(false);
-            break;
-        case ATTR_CLOCK_BASE:
-            pAttribute->Append(Now.GetClockBase());
-            break;
-        }
-        //
-        // TODO
-        //
-        return APDUConstants::Data_Access_Result::success;
-    }
-
-    APDUConstants::Action_Result LinuxClock::InternalAction(const AssociationContext& Context,
-        ICOSEMMethod * pMethod,
-        const Cosem_Method_Descriptor& Descriptor,
-        const DLMSOptional<DLMSVector>& Parameters,
-        DLMSVector * pReturnValue /*= nullptr*/)
-    {
-        switch (pMethod->MethodID)
-        {
-        case METHOD_ADJUST_TO_QUARTER:
-        case METHOD_ADJUST_TO_MEAS_PERIOD:
-        case METHOD_ADJUST_TO_MINUTE:
-        case METHOD_ADJUST_TO_PRESET_TIME:
-        case METHOD_PRESET_ADJUSTING_TIME:
-        case METHOD_SHIFT_TIME:
-        default:
-            std::cout << "Clock ACTION Received" << std::endl;
-            break;
-        }
-        //
-        // TODO
-        //
-        return APDUConstants::Action_Result::object_unavailable;
-    }
-    //
     // Logical Device
     //
     LinuxManagementDevice::LinuxManagementDevice()
         : COSEMServer(ReservedAddresses::MANAGEMENT)
+        , m_ProfileNameplate(m_Objects)
     {
+        m_DataListP.push_back(new LinuxData());
+        m_RegisterListP.push_back(new LinuxRegister());
         LOGICAL_DEVICE_BEGIN_OBJECTS
             LOGICAL_DEVICE_OBJECT(m_Clock)
-            LOGICAL_DEVICE_OBJECT(m_Data)
-            LOGICAL_DEVICE_OBJECT(m_Register)
+            LOGICAL_DEVICE_OBJECTS_LIST(m_DataListP)
+            LOGICAL_DEVICE_OBJECTS_LIST(m_RegisterListP)
             LOGICAL_DEVICE_OBJECT(m_ProfileNameplate)
         LOGICAL_DEVICE_END_OBJECTS
+
+        m_ProfileNameplate.CaptureData();
     }
 
     LinuxManagementDevice::~LinuxManagementDevice()

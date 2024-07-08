@@ -619,6 +619,7 @@ ServerApp::ServerApp(LinuxBaseLibrary& BL) :
 	AppBase(BL)
 {
 	m_Base.get_io_service().post(std::bind(&ServerApp::ServerMenu, this));
+	// ToDo - _MSC_VER
 	ServerMenu_Handler("1");
 }
 

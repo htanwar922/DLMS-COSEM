@@ -92,11 +92,6 @@ namespace EPRI
         };
 
         COSEMAttribute<ATTR_VALUE, Data_Schema, 0x08> value;
-
-        // Himanshu - Added to get access rights for each attribute and method
-        uint8_t GetAttributeAccessRights(ObjectAttributeIdType AttributeId) const;
-        uint8_t GetMethodAccessRights(ObjectAttributeIdType MethodId) const;
-        DLMSStructure GetAccessRights() const;
     };
 
     typedef IData_0 IData;

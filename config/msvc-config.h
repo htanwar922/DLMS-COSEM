@@ -2,6 +2,8 @@
 
 #pragma once
 
+#define _WIN32_WINNT 0x0501
+
 #include <WinSock2.h>
 #include <Windows.h>
 #include <io.h>
@@ -9,22 +11,12 @@
 #include <ctime>
 #include <asio.hpp>
 
+#include <iostream>
+#include <string>
+
 #define __attribute__(x)
 
 typedef long long ssize_t;
-
-// Define asio::posix::stream_descriptor using windows::stream_handle
-
-#define STDIN_FILENO STD_INPUT_HANDLE
-#define STDOUT_FILENO STD_OUTPUT_HANDLE
-#define STDERR_FILENO STD_ERROR_HANDLE
-#define dup(x) GetStdHandle(x)
-
-namespace asio {
-    namespace posix {
-        typedef windows::stream_handle stream_descriptor;
-    }
-}
 
 // Define the functionality of clock_gettime using Windows API
 
@@ -53,6 +45,63 @@ int sem_init(sem_t* sem, int pshared, unsigned int value);
 int sem_destroy(sem_t* sem);
 int sem_wait(sem_t* sem);
 int sem_post(sem_t* sem);
+
+// Define asio::posix::stream_descriptor using asio::ip::tcp::socket
+
+#define STDIN_FILENO 8080
+#define STDOUT_FILENO 8081
+#define STDERR_FILENO 8082
+
+using namespace asio;
+using asio::ip::tcp;
+
+int GetHandle(int n);
+#define dup(x) GetHandle(x)
+//#define dup(x) *asio::ip::tcp::resolver(m_IO).resolve("localhost", std::to_string(x)).begin()
+
+namespace asio {
+    namespace posix {
+        namespace tcp_echo {
+            class StreamHandleTCPEchoClient : public asio::basic_stream_socket<tcp> {
+                // Members for io_context and TCP socket
+                asio::streambuf buffer_;
+                int port_;
+                PROCESS_INFORMATION pi_;
+
+            public:
+                // Constructor to initialize the io_context and socket
+                StreamHandleTCPEchoClient(asio::io_context& io_context, int port)
+                : asio::basic_stream_socket<tcp>(io_context)
+                , port_(port)
+                {
+                    launch_detached_process("python '" ROOT_DIR "/tcp_echo_server.py' " + std::to_string(port_));
+                    connect("localhost", std::to_string(port_));
+                }
+
+                ~StreamHandleTCPEchoClient() {
+                    close_detached_process();
+                }
+
+                // Resolve endpoint and connect to the server
+                void connect(const std::string& host, const std::string& port);
+
+                // Async write data to the socket
+                void write(const std::string& data);
+
+            private:
+
+                // Async read data from the socket
+                void read();
+
+                // Launch a detached process
+                void launch_detached_process(std::string cmd);
+                void close_detached_process();
+            };
+        }
+        typedef tcp_echo::StreamHandleTCPEchoClient stream_descriptor;
+        //typedef asio::basic_stream_socket<tcp> stream_descriptor;
+    }
+}
 
 // Undefine the conflicting macros defined in Windows.h
 

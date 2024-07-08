@@ -120,3 +120,5 @@ extern const std::string packet_types[2];
 #else
 #include "gcc-config.h"
 #endif // _MSC_VER
+
+#include "meter-config.h"

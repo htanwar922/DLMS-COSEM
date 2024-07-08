@@ -30,11 +30,6 @@ namespace EPRI
         };
 
         COSEMMethod<METHOD_RESET, IntegerSchema, 0x28> reset_data;  // Himanshu
-
-        // Himanshu - Added to get access rights for each attribute and method
-        uint8_t GetAttributeAccessRights(ObjectAttributeIdType AttributeId) const;
-        uint8_t GetMethodAccessRights(ObjectAttributeIdType MethodId) const;
-        DLMSStructure GetAccessRights() const;
     };
 
     typedef IRegister_0 IRegister;

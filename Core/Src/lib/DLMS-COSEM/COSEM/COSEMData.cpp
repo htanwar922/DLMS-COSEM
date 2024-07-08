@@ -848,6 +848,10 @@ namespace EPRI
 
     bool COSEMType::InternalSimpleAppend(SchemaEntryPtr SchemaEntry, const DLMSValue& Value)
     {
+        if (COSEMDataType::ANY_TYPE == COSEM_SCHEMA_DATA_TYPE(SchemaEntry))
+        {
+            return InternalAnyAppend(Value);
+        }
         m_Data.Append(uint8_t(COSEM_SCHEMA_DATA_TYPE(SchemaEntry)));
         try
         {
@@ -859,6 +863,110 @@ namespace EPRI
             return false;
         }
         return true;
+    }
+
+    bool COSEMType::InternalAnyAppend(const DLMSValue& Value)
+    {
+        switch (Value.which())
+        {
+        case DLMSValueIndex::VAR_BLANK:
+            m_Data.Append<uint8_t>(COSEMDataType::NULL_DATA);
+            break;
+        case DLMSValueIndex::VAR_BOOL:
+            m_Data.Append<uint8_t>(COSEMDataType::BOOLEAN);
+            m_Data.Append<bool>(DLMSValueGet<bool>(Value));
+            break;
+        case DLMSValueIndex::VAR_INT8:
+            m_Data.Append<uint8_t>(COSEMDataType::INTEGER);
+            m_Data.Append<int8_t>(DLMSValueGet<int8_t>(Value));
+            break;
+        case DLMSValueIndex::VAR_UINT8:
+            m_Data.Append<uint8_t>(COSEMDataType::UNSIGNED);
+            m_Data.Append<uint8_t>(DLMSValueGet<uint8_t>(Value));
+            break;
+        case DLMSValueIndex::VAR_INT16:
+            m_Data.Append<uint8_t>(COSEMDataType::LONG);
+            m_Data.Append<int16_t>(DLMSValueGet<int16_t>(Value));
+            break;
+        case DLMSValueIndex::VAR_UINT16:
+            m_Data.Append<uint8_t>(COSEMDataType::LONG_UNSIGNED);
+            m_Data.Append<uint16_t>(DLMSValueGet<uint16_t>(Value));
+            break;
+        case DLMSValueIndex::VAR_INT32:
+            m_Data.Append<uint8_t>(COSEMDataType::DOUBLE_LONG);
+            m_Data.Append<int32_t>(DLMSValueGet<int32_t>(Value));
+            break;
+        case DLMSValueIndex::VAR_UINT32:
+            m_Data.Append<uint8_t>(COSEMDataType::DOUBLE_LONG_UNSIGNED);
+            m_Data.Append<uint32_t>(DLMSValueGet<uint32_t>(Value));
+            break;
+        case DLMSValueIndex::VAR_INT64:
+            m_Data.Append<uint8_t>(COSEMDataType::LONG64);
+            m_Data.Append<int64_t>(DLMSValueGet<int64_t>(Value));
+            break;
+        case DLMSValueIndex::VAR_UINT64:
+            m_Data.Append<uint8_t>(COSEMDataType::LONG64_UNSIGNED);
+            m_Data.Append<uint64_t>(DLMSValueGet<uint64_t>(Value));
+            break;
+        case DLMSValueIndex::VAR_FLOAT:
+            m_Data.Append<uint8_t>(COSEMDataType::FLOAT32);
+            m_Data.AppendFloat(DLMSValueGet<float>(Value));
+            break;
+        case DLMSValueIndex::VAR_DOUBLE:
+            m_Data.Append<uint8_t>(COSEMDataType::FLOAT64);
+            m_Data.AppendDouble(DLMSValueGet<double>(Value));
+            break;
+        case DLMSValueIndex::VAR_BITSET:
+            {
+                throw std::logic_error("Not implemented");
+                //DLMSBitSet BitString = DLMSValueGet<DLMSBitSet>(Value);
+                //m_Data.Append<uint8_t>(COSEMDataType::BIT_STRING);
+                //ASNType::AppendLength(BitString.size(), &m_Data);
+                ////m_Data.Append(BitString);
+                //m_Data.Append(BitString.GetBytes());
+            }
+            break;
+        case DLMSValueIndex::VAR_STRING:
+            {
+                std::string String = DLMSValueGet<std::string>(Value);
+                m_Data.Append<uint8_t>(COSEMDataType::VISIBLE_STRING);
+                ASNType::AppendLength(String.length(), &m_Data);
+                m_Data.Append(String);
+            }
+            break;
+        case DLMSValueIndex::VAR_VECTOR:
+            {
+                DLMSVector Vector = DLMSValueGet<DLMSVector>(Value);
+                m_Data.Append<uint8_t>(COSEMDataType::OCTET_STRING);
+                ASNType::AppendLength(Vector.Size(), &m_Data);
+                m_Data.Append(Vector);
+            }
+            break;
+        case DLMSValueIndex::VAR_STRUCTURE:
+            {
+                DLMSStructure Structure = DLMSValueGet<DLMSStructure>(Value);
+                m_Data.Append<uint8_t>(COSEMDataType::STRUCTURE);
+                ASNType::AppendLength(Structure.size(), &m_Data);
+                for (auto& Element : Structure)
+                {
+                    InternalAnyAppend(Element);
+                }
+            }
+            break;
+        case DLMSValueIndex::VAR_ARRAY:
+            {
+                DLMSArray Array = DLMSValueGet<DLMSArray>(Value);
+                m_Data.Append<uint8_t>(COSEMDataType::ARRAY);
+                ASNType::AppendLength(Array.size(), &m_Data);
+                for (auto& Element : Array)
+                {
+                    InternalAnyAppend(Element);
+                }
+            }
+            break;
+        default:
+            return false;
+        }
     }
 
     // Himanshu
@@ -957,6 +1065,12 @@ namespace EPRI
                 //
                 // PRECONDITIONS
                 //
+                if (COSEMDataType::ANY_TYPE == COSEM_SCHEMA_DATA_TYPE(CURRENT_APPEND_STATE.m_SchemaEntry))
+                {
+                    InternalAnyAppend(Value);
+                    CURRENT_APPEND_STATE.m_SequenceIndex = DLMSValueGetStructureSize(Value);    // To nullify next if condition
+                    break;
+                }
                 if (-1 == CURRENT_APPEND_STATE.m_SequenceIndex)
                 {
                     const DLMSStructure& Structure = DLMSValueGetStructure(Value);
@@ -1009,6 +1123,12 @@ namespace EPRI
                 //
                 // PRECONDITIONS
                 //
+                if (COSEMDataType::ANY_TYPE == COSEM_SCHEMA_DATA_TYPE(CURRENT_APPEND_STATE.m_SchemaEntry))
+                {
+                    InternalAnyAppend(Value);
+                    CURRENT_APPEND_STATE.m_SequenceIndex = DLMSValueGetArraySize(Value);        // To nullify next if condition
+                    break;
+                }
                 if (-1 == CURRENT_APPEND_STATE.m_SequenceIndex)
                 {
                     const DLMSArray& Array = DLMSValueGetArray(Value);

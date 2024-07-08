@@ -107,64 +107,6 @@ namespace EPRI
     IData_0::~IData_0()
     {
     }
-
-    // Himanshu
-    uint8_t IData_0::GetAttributeAccessRights(ObjectAttributeIdType AttributeId) const
-    {
-        int8_t access = IAssociationLN::access_denied;
-        switch (AttributeId)
-        {
-        case LOGICAL_NAME:
-            access |= IAssociationLN::read_access;
-            break;
-        case ATTR_VALUE:
-            access |= IAssociationLN::read_access;
-            break;
-        default:
-            break;
-        }
-        return access;
-    }
-
-    // Himanshu
-    uint8_t IData_0::GetMethodAccessRights(ObjectAttributeIdType MethodId) const
-    {
-        int8_t access = IAssociationLN::access_denied;
-        switch (MethodId)
-        {
-        default:
-            break;
-        }
-        return access;
-    }
-
-    // Himanshu
-    DLMSStructure IData_0::GetAccessRights() const
-    {
-        DLMSStructure data;
-        DLMSArray array;
-        for(COSEMAttributeMap::value_type attribute : m_Attributes)
-        {
-            array.push_back(DLMSStructure({
-                (int8_t)attribute.first,
-                (uint8_t)GetAttributeAccessRights(attribute.first),
-                DLMSBlank
-            }));
-        }
-        data.push_back(array);
-
-        array.clear();
-        for (COSEMMethodMap::value_type method : m_Methods)
-        {
-            array.push_back(DLMSStructure({
-                (int8_t)method.first,
-                (uint8_t)GetMethodAccessRights(method.first)
-            }));
-        }
-        data.push_back(array);
-
-        return data;
-    }
     //
     // IDataObject
     //

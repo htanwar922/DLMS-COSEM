@@ -19,12 +19,14 @@ using namespace asio;
 
 class AppBase
 {
+    asio::io_service&                 m_IO;
 public:
     typedef std::function<void(const std::string&)> ReadLineFunction;
 
     AppBase(LinuxBaseLibrary& BL) :
-        m_Base(BL), m_Input(BL.get_io_service(), ::dup(STDIN_FILENO)),
-        m_Output(BL.get_io_service(), ::dup(STDOUT_FILENO))
+        m_Base(BL), m_IO(BL.get_io_service()),
+        m_Input(BL.get_io_service(), dup(STDIN_FILENO)),
+        m_Output(BL.get_io_service(), dup(STDOUT_FILENO))
     {
     }
 
@@ -35,7 +37,11 @@ public:
 
     virtual void PrintLine(const std::string& Line)
     {
+#ifndef _MSC_VER
         asio::write(m_Output, asio::buffer(Line));
+#else
+        printf("%s", Line.c_str());
+#endif // !_MSC_VER
     }
 
     virtual void ReadLine(ReadLineFunction Handler)

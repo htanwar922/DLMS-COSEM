@@ -7,15 +7,15 @@
   },
   "ExpandedNodes": [
     "",
-    "\\config",
     "\\Core",
     "\\Core\\Inc",
     "\\Core\\Inc\\lib",
     "\\Core\\Inc\\lib\\DLMS-COSEM",
+    "\\Core\\Inc\\lib\\DLMS-COSEM\\COSEM",
     "\\Core\\Src",
-    "\\Core\\Src\\lib",
-    "\\Core\\Src\\lib\\DLMS-COSEM"
+    "\\Core\\Src\\Linux",
+    "\\test",
+    "\\test\\DLMS-COSEM-TEST"
   ],
-  "SelectedNode": "\\CMakeLists.txt",
   "PreviewInSolutionExplorer": false
 }
