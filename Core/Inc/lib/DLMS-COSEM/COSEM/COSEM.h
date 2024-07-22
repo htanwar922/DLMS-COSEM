@@ -342,8 +342,10 @@ namespace EPRI
             , m_Type(Request.m_Type)
             , m_InvokeIDAndPriority(Request.m_InvokeIDAndPriority)
             , m_Parameter(Request.m_Parameter)
-            , m_pGloRequest(std::make_unique<GLO::Get_Request>(GLO::Get_Request(*Request.m_pGloRequest)))
+            //, m_pGloRequest(Request.m_pGloRequest ? std::make_unique<GLO::Get_Request>(Request.m_pGloRequest) : nullptr)
         {
+            if (Request.m_pGloRequest)
+                m_pGloRequest = std::make_unique<GLO::Get_Request>(*Request.m_pGloRequest);
         }
 
         GetRequestType                 m_Type;
@@ -367,9 +369,33 @@ namespace EPRI
             m_Result(Result)
         {
         }
+        // Himanshu - GLO
+        APPGetConfirmOrResponse(COSEMAddressType SourceAddress,
+            COSEMAddressType DestinationAddress,
+            InvokeIdAndPriorityType InvokeID,
+            GLO::Get_Response& Response) :
+            APPBaseCallbackParameter(SourceAddress, DestinationAddress),
+            m_Type((GetResponseType)0),
+            m_InvokeIDAndPriority(InvokeID),
+            m_pGloResponse(std::make_unique<GLO::Get_Response>(GLO::Get_Response(Response)))
+        {
+        }
+        // Himanshu - GLO - required by the unique_ptr
+        APPGetConfirmOrResponse(const APPGetConfirmOrResponse& Response)
+            : APPBaseCallbackParameter(Response.m_SourceAddress, Response.m_DestinationAddress)
+            , m_Type(Response.m_Type)
+            , m_InvokeIDAndPriority(Response.m_InvokeIDAndPriority)
+            , m_Result(Response.m_Result)
+            //, m_pGloResponse(Response.m_pGloResponse ? std::make_unique<GLO::Get_Response>(*Response.m_pGloResponse) : nullptr)
+        {
+            if (Response.m_pGloResponse)
+                m_pGloResponse = std::make_unique<GLO::Get_Response>(*Response.m_pGloResponse);
+        }
+
         GetResponseType         m_Type;
         InvokeIdAndPriorityType m_InvokeIDAndPriority;
         Get_Data_Result         m_Result;
+        std::unique_ptr<GLO::Get_Response> m_pGloResponse = nullptr;        // Himanshu - GLO
     };
 
     using GetRequestEventData = COSEMEventData<APPGetRequestOrIndication>;
@@ -409,11 +435,35 @@ namespace EPRI
         {
             m_Parameter = AttributeDescriptor;
         }
+        // Himanshu - GLO
+        APPSetRequestOrIndication(COSEMAddressType SourceAddress,
+            COSEMAddressType DestinationAddress,
+            GLO::Set_Request& Request)
+            : APPBaseCallbackParameter(SourceAddress, DestinationAddress)
+            , m_Type((SetRequestType)0)
+            , m_InvokeIDAndPriority(0)
+            , m_Value()
+            , m_pGloRequest(std::make_unique<GLO::Set_Request>(GLO::Set_Request(Request)))
+        {
+        }
+        // Himanshu - GLO - required by the unique_ptr
+        APPSetRequestOrIndication(const APPSetRequestOrIndication& Request)
+            : APPBaseCallbackParameter(Request.m_SourceAddress, Request.m_DestinationAddress)
+            , m_Type(Request.m_Type)
+            , m_InvokeIDAndPriority(Request.m_InvokeIDAndPriority)
+            , m_Parameter(Request.m_Parameter)
+            , m_Value(Request.m_Value)
+            //, m_pGloRequest(Request.m_pGloRequest ? std::make_unique<GLO::Set_Request>(Request.m_pGloRequest) : nullptr)
+        {
+            if (Request.m_pGloRequest)
+                m_pGloRequest = std::make_unique<GLO::Set_Request>(*Request.m_pGloRequest);
+        }
 
         SetRequestType                 m_Type;
         InvokeIdAndPriorityType        m_InvokeIDAndPriority;
         RequestParameter               m_Parameter;
         DLMSVector                     m_Value;
+        std::unique_ptr<GLO::Set_Request> m_pGloRequest = nullptr;        // Himanshu - GLO
     };
 
     struct APPSetConfirmOrResponse : public APPBaseCallbackParameter
@@ -430,9 +480,33 @@ namespace EPRI
             m_InvokeIDAndPriority(InvokeID), m_Result(Result)
         {
         }
+        // Himanshu - GLO
+        APPSetConfirmOrResponse(COSEMAddressType SourceAddress,
+            COSEMAddressType DestinationAddress,
+            InvokeIdAndPriorityType InvokeID,
+            GLO::Set_Response& Response) :
+            APPBaseCallbackParameter(SourceAddress, DestinationAddress),
+            m_Type((SetResponseType)0),
+            m_InvokeIDAndPriority(InvokeID),
+            m_pGloResponse(std::make_unique<GLO::Set_Response>(GLO::Set_Response(Response)))
+        {
+        }
+        // Himanshu - GLO - required by the unique_ptr
+        APPSetConfirmOrResponse(const APPSetConfirmOrResponse& Response)
+            : APPBaseCallbackParameter(Response.m_SourceAddress, Response.m_DestinationAddress)
+            , m_Type(Response.m_Type)
+            , m_InvokeIDAndPriority(Response.m_InvokeIDAndPriority)
+            , m_Result(Response.m_Result)
+            //, m_pGloResponse(Response.m_pGloResponse ? std::make_unique<GLO::Set_Response>(GLO::Set_Response(*Response.m_pGloResponse)) : nullptr)
+        {
+            if (Response.m_pGloResponse)
+                m_pGloResponse = std::make_unique<GLO::Set_Response>(*Response.m_pGloResponse);
+        }
+
         SetResponseType                   m_Type;
         InvokeIdAndPriorityType           m_InvokeIDAndPriority;
         APDUConstants::Data_Access_Result m_Result;
+        std::unique_ptr<GLO::Set_Response> m_pGloResponse = nullptr;        // Himanshu - GLO
     };
 
     using SetRequestEventData = COSEMEventData<APPSetRequestOrIndication>;
@@ -472,11 +546,36 @@ namespace EPRI
         {
             m_Parameter = MethodDescriptor;
         }
+        // Himanshu - GLO
+        APPActionRequestOrIndication(COSEMAddressType SourceAddress,
+            COSEMAddressType DestinationAddress,
+            GLO::Action_Request& Request)
+            : APPBaseCallbackParameter(SourceAddress, DestinationAddress)
+            , m_Type((ActionRequestType)0)
+            , m_InvokeIDAndPriority(0)
+            , m_Parameter()
+            , m_ActionParameters()
+            , m_pGloRequest(std::make_unique<GLO::Action_Request>(GLO::Action_Request(Request)))
+        {
+        }
+        // Himanshu - GLO - required by the unique_ptr
+        APPActionRequestOrIndication(const APPActionRequestOrIndication& Request)
+            : APPBaseCallbackParameter(Request.m_SourceAddress, Request.m_DestinationAddress)
+            , m_Type(Request.m_Type)
+            , m_InvokeIDAndPriority(Request.m_InvokeIDAndPriority)
+            , m_Parameter(Request.m_Parameter)
+            , m_ActionParameters(Request.m_ActionParameters)
+            //, m_pGloRequest(Request.m_pGloRequest ? std::make_unique<GLO::Action_Request>(Request.m_pGloRequest) : nullptr)
+        {
+            if (Request.m_pGloRequest)
+                m_pGloRequest = std::make_unique<GLO::Action_Request>(*Request.m_pGloRequest);
+        }
 
         ActionRequestType              m_Type;
         InvokeIdAndPriorityType        m_InvokeIDAndPriority;
         RequestParameter               m_Parameter;
         DLMSOptional<DLMSVector>       m_ActionParameters;
+        std::unique_ptr<GLO::Action_Request> m_pGloRequest = nullptr;        // Himanshu - GLO
     };
 
     struct APPActionConfirmOrResponse : public APPBaseCallbackParameter
@@ -494,9 +593,33 @@ namespace EPRI
             m_Result(Result)
         {
         }
+        // Himanshu - GLO
+        APPActionConfirmOrResponse(COSEMAddressType SourceAddress,
+            COSEMAddressType DestinationAddress,
+            InvokeIdAndPriorityType InvokeID,
+            GLO::Action_Response& Response) :
+            APPBaseCallbackParameter(SourceAddress, DestinationAddress),
+            m_Type((ActionResponseType)0),
+            m_InvokeIDAndPriority(InvokeID),
+            m_pGloResponse(std::make_unique<GLO::Action_Response>(GLO::Action_Response(Response)))
+        {
+        }
+        // Himanshu - GLO - required by the unique_ptr
+        APPActionConfirmOrResponse(const APPActionConfirmOrResponse& Response)
+            : APPBaseCallbackParameter(Response.m_SourceAddress, Response.m_DestinationAddress)
+            , m_Type(Response.m_Type)
+            , m_InvokeIDAndPriority(Response.m_InvokeIDAndPriority)
+            , m_Result(Response.m_Result)
+            //, m_pGloResponse(Response.m_pGloResponse ? std::make_unique<GLO::Action_Response>(GLO::Action_Response(*Response.m_pGloResponse)) : nullptr)
+        {
+            if (Response.m_pGloResponse)
+                m_pGloResponse = std::make_unique<GLO::Action_Response>(*Response.m_pGloResponse);
+        }
+
         ActionResponseType                m_Type;
         InvokeIdAndPriorityType           m_InvokeIDAndPriority;
         APDUConstants::Action_Result      m_Result;
+        std::unique_ptr<GLO::Action_Response> m_pGloResponse = nullptr;        // Himanshu - GLO
     };
 
     using ActionRequestEventData = COSEMEventData<APPActionRequestOrIndication>;
@@ -512,7 +635,7 @@ namespace EPRI
 
         APPReleaseConfirmOrResponse(COSEMAddressType SourceAddress,
             COSEMAddressType DestinationAddress,
-            const xDLMS::InitiateResponse& xDLMS,
+            const xDLMS::InitiateResponseVariant& xDLMS,
             bool UseRLRQRLRE = true,
             const ReasonType& Reason = DLMSOptionalNone) :
             APPBaseCallbackParameter(SourceAddress, DestinationAddress),
@@ -526,7 +649,7 @@ namespace EPRI
 
         bool                     m_UseRLRQRLRE;
         ReasonType               m_Reason;
-        xDLMS::InitiateResponse  m_xDLMS;
+        xDLMS::InitiateResponseVariant  m_xDLMS;
     };
 
     struct APPReleaseRequestOrIndication : public APPBaseCallbackParameter
@@ -537,7 +660,7 @@ namespace EPRI
 
         APPReleaseRequestOrIndication(COSEMAddressType SourceAddress,
             COSEMAddressType DestinationAddress,
-            const xDLMS::InitiateRequest& xDLMS,
+            const xDLMS::InitiateRequestVariant& xDLMS,
             bool UseRLRQRLRE = true,
             const ReasonType& Reason = DLMSOptionalNone) :
             APPBaseCallbackParameter(SourceAddress, DestinationAddress),
@@ -551,7 +674,7 @@ namespace EPRI
 
         bool                    m_UseRLRQRLRE;
         ReasonType              m_Reason;
-        xDLMS::InitiateRequest  m_xDLMS;
+        xDLMS::InitiateRequestVariant  m_xDLMS;
     };
 
     using ReleaseRequestEventData = COSEMEventData<APPReleaseRequestOrIndication>;
@@ -596,10 +719,36 @@ namespace EPRI
         {
         }
 
+        // Himanshu - GLO
+        APPAccessRequestOrIndication(COSEMAddressType SourceAddress,
+            COSEMAddressType DestinationAddress,
+            GLO::Access_Request& Request)
+            : APPBaseCallbackParameter(SourceAddress, DestinationAddress)
+            , m_LongInvokeIDAndPriority(0)
+            , m_DateTime(0)
+            , m_AccessParameters()
+            , m_AccessDatas()
+            , m_pGloRequest(std::make_unique<GLO::Access_Request>(GLO::Access_Request(Request)))
+        {
+        }
+        // Himanshu - GLO - required by the unique_ptr
+        APPAccessRequestOrIndication(const APPAccessRequestOrIndication& Request)
+            : APPBaseCallbackParameter(Request.m_SourceAddress, Request.m_DestinationAddress)
+            , m_LongInvokeIDAndPriority(Request.m_LongInvokeIDAndPriority)
+            , m_DateTime(Request.m_DateTime)
+            , m_AccessParameters(Request.m_AccessParameters)
+            , m_AccessDatas(Request.m_AccessDatas)
+            //, m_pGloRequest(Request.m_pGloRequest ? std::make_unique<GLO::Access_Request>(Request.m_pGloRequest) : nullptr)
+        {
+            if (Request.m_pGloRequest)
+                m_pGloRequest = std::make_unique<GLO::Access_Request>(*Request.m_pGloRequest);
+        }
+
         LongInvokeIdAndPriorityType m_LongInvokeIDAndPriority;
         COSEMDateTime               m_DateTime;
         AccessRequestSpecs          m_AccessParameters;
         AccessRequestDatas          m_AccessDatas;
+        std::unique_ptr<GLO::Access_Request> m_pGloRequest = nullptr;          // Himanshu - GLO
     };
 
     struct APPAccessConfirmOrResponse : public APPBaseCallbackParameter
@@ -625,11 +774,37 @@ namespace EPRI
             m_pAccessRequestSpecs(AccessRequestSpecs)
         {
         }
+        // Himanshu - GLO
+        APPAccessConfirmOrResponse(COSEMAddressType SourceAddress,
+            COSEMAddressType DestinationAddress,
+            GLO::Access_Response& Response) :
+            APPBaseCallbackParameter(SourceAddress, DestinationAddress),
+            m_LongInvokeIDAndPriority(0),
+            m_DateTime(0),
+            m_AccessResults(),
+            m_AccessDatas(),
+            m_pGloResponse(std::make_unique<GLO::Access_Response>(GLO::Access_Response(Response)))
+        {
+        }
+        // Himanshu - GLO - required by the unique_ptr
+        APPAccessConfirmOrResponse(const APPAccessConfirmOrResponse& Response)
+            : APPBaseCallbackParameter(Response.m_SourceAddress, Response.m_DestinationAddress)
+            , m_LongInvokeIDAndPriority(Response.m_LongInvokeIDAndPriority)
+            , m_DateTime(Response.m_DateTime)
+            , m_AccessResults(Response.m_AccessResults)
+            , m_AccessDatas(Response.m_AccessDatas)
+            //, m_pGloResponse(Response.m_pGloResponse ? std::make_unique<GLO::Access_Response>(GLO::Access_Response(*Response.m_pGloResponse)) : nullptr)
+        {
+            if (Response.m_pGloResponse)
+                m_pGloResponse = std::make_unique<GLO::Access_Response>(*Response.m_pGloResponse);
+        }
+
         LongInvokeIdAndPriorityType m_LongInvokeIDAndPriority;
         COSEMDateTime               m_DateTime;
         AccessResponseSpecs         m_AccessResults;
         AccessResponseDatas         m_AccessDatas;
-        APPAccessRequestOrIndication::AccessRequestSpecs * m_pAccessRequestSpecs;
+        APPAccessRequestOrIndication::AccessRequestSpecs * m_pAccessRequestSpecs = nullptr;
+        std::unique_ptr<GLO::Access_Response> m_pGloResponse = nullptr;          // Himanshu - GLO
     };
 
     using AccessRequestEventData = COSEMEventData<APPAccessRequestOrIndication>;

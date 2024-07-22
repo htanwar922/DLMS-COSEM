@@ -454,10 +454,13 @@ namespace EPRI
             std::bind(&COSEM::ACTION_Request_Handler, this, std::placeholders::_1));
         pXPort->RegisterAPDUHandler(m_Address, GLO::Action_Response::Tag,
             std::bind(&COSEM::ACTION_Response_Handler, this, std::placeholders::_1));
+#if MODE == SERVER
         pXPort->RegisterAPDUHandler(m_Address, GLO::Access_Request::Tag,
             std::bind(&COSEM::ACCESS_Request_Handler, this, std::placeholders::_1));
+#else
         pXPort->RegisterAPDUHandler(m_Address, GLO::Access_Response::Tag,
             std::bind(&COSEM::ACCESS_Response_Handler, this, std::placeholders::_1));
+#endif
 
         return HANDLE_COUNTER;
     }

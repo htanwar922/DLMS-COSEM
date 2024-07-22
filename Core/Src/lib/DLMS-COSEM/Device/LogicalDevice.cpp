@@ -100,7 +100,7 @@ namespace EPRI
         {
             Result = APPOpenConfirmOrResponse::AssociationResultType::rejected_transient;
         }
-        std::unique_ptr<xDLMS::InitiateResponseVariant> pResponse_xDLMS;
+        std::unique_ptr<xDLMS::InitiateResponseVariant> pResponse_xDLMS;        // Himanshu - GLO
         if (Request.m_xDLMS.IsPlain())
         {
             pResponse_xDLMS = std::make_unique<xDLMS::InitiateResponseVariant>(xDLMS::InitiateResponse(Request.m_xDLMS.GetPlainRequest()));
@@ -148,7 +148,7 @@ namespace EPRI
         if (IsForMe(Request))
         {
             const AssociationContext* pContext = m_Association.GetAssociationContext(Request);
-            if (pContext and Request.m_pGloRequest)
+            if (pContext and Request.m_pGloRequest)     // Himanshu - GLO
             {
                 DLMSVector Plaintext = Request.m_pGloRequest->Decrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite(), pContext->m_SecurityOptions);
                 std::unique_ptr<Get_Request_Normal> pNormalRequest = std::make_unique<Get_Request_Normal>();
@@ -215,6 +215,24 @@ namespace EPRI
         if (IsForMe(Request))
         {
             const AssociationContext * pContext = m_Association.GetAssociationContext(Request);
+            if (pContext and Request.m_pGloRequest)     // Himanshu - GLO
+            {
+                DLMSVector Plaintext = Request.m_pGloRequest->Decrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite(), pContext->m_SecurityOptions);
+                std::unique_ptr<Set_Request_Normal> pNormalRequest = std::make_unique<Set_Request_Normal>();
+                if (pNormalRequest->Parse(&Plaintext, Request.m_SourceAddress, Request.m_DestinationAddress))
+                {
+                    return InitiateSet(
+                        APPSetRequestOrIndication(
+                            Request.m_SourceAddress,
+                            Request.m_DestinationAddress,
+                            pNormalRequest->invoke_id_and_priority,
+                            pNormalRequest->cosem_attribute_descriptor,
+                            pNormalRequest->value
+                        ),
+                        UpperLayerAllowed
+                    );
+                }
+            }
             InvokeIdAndPriorityType    InvokeID = COSEM_GET_INVOKE_ID(Request.m_InvokeIDAndPriority);
             switch (Request.m_Type)
             {
@@ -260,6 +278,24 @@ namespace EPRI
         if (IsForMe(Request))
         {
             const AssociationContext * pContext = m_Association.GetAssociationContext(Request);
+            if (pContext and Request.m_pGloRequest)     // Himanshu - GLO
+            {
+                DLMSVector Plaintext = Request.m_pGloRequest->Decrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite(), pContext->m_SecurityOptions);
+                std::unique_ptr<Action_Request_Normal> pNormalRequest = std::make_unique<Action_Request_Normal>();
+                if (pNormalRequest->Parse(&Plaintext, Request.m_SourceAddress, Request.m_DestinationAddress))
+                {
+                    return InitiateAction(
+                        APPActionRequestOrIndication(
+                            Request.m_SourceAddress,
+                            Request.m_DestinationAddress,
+                            pNormalRequest->invoke_id_and_priority,
+                            pNormalRequest->cosem_method_descriptor,
+                            pNormalRequest->method_invocation_parameters
+                        ),
+                        UpperLayerAllowed
+                    );
+                }
+            }
             InvokeIdAndPriorityType    InvokeID = COSEM_GET_INVOKE_ID(Request.m_InvokeIDAndPriority);
             switch (Request.m_Type)
             {
@@ -299,9 +335,37 @@ namespace EPRI
 
     bool LogicalDevice::InitiateRelease(const APPReleaseRequestOrIndication& Request, bool UpperLayerAllowed)
     {
+        std::unique_ptr<xDLMS::InitiateResponseVariant> pResponse_xDLMS;        // Himanshu - GLO
+        if (Request.m_xDLMS.IsPlain())
+        {
+            pResponse_xDLMS = std::make_unique<xDLMS::InitiateResponseVariant>(xDLMS::InitiateResponse(Request.m_xDLMS.GetPlainRequest()));
+        }
+        else if (Request.m_xDLMS.IsGloCiphered())
+        {
+            const std::shared_ptr<ISecuritySuite> pSuite = m_Association.GetSecuritySetup(Request.m_SourceAddress);
+            if (pSuite)
+            {
+                DLMSVector Plaintext = Request.m_xDLMS.GetGloRequest().Decrypt(pSuite, m_Association.GetAssociationContext(Request)->m_SecurityOptions);
+                std::unique_ptr<xDLMS::InitiateRequest> pRequest_xDLMS = std::make_unique<xDLMS::InitiateRequest>();
+                if (pRequest_xDLMS->Parse(&Plaintext))
+                {
+                    xDLMS::GLO::InitiateResponse Response_xDLMS;
+                    Response_xDLMS.Encrypt(pSuite, m_Association.GetAssociationContext(Request)->m_SecurityOptions, xDLMS::InitiateResponse(*pRequest_xDLMS).GetBytes());
+                    pResponse_xDLMS = std::make_unique<xDLMS::InitiateResponseVariant>(Response_xDLMS);
+                }
+            }
+        }
+        else if (not Request.m_xDLMS.Initialized())
+        {
+            pResponse_xDLMS = std::make_unique<xDLMS::InitiateResponseVariant>(xDLMS::InitiateResponse());
+        }
+        if (!pResponse_xDLMS)
+        {
+            return false;
+        }
         APPReleaseConfirmOrResponse Response(SAP(),
             Request.m_SourceAddress,
-            xDLMS::InitiateRequest(Request.m_xDLMS),
+            *pResponse_xDLMS,
             Request.m_UseRLRQRLRE,
             UpperLayerAllowed ? APPReleaseConfirmOrResponse::ReleaseReason::normal :
                   APPReleaseConfirmOrResponse::ReleaseReason::not_finished);
@@ -318,6 +382,25 @@ namespace EPRI
         if (IsForMe(Request))
         {
             const AssociationContext * pContext = m_Association.GetAssociationContext(Request);
+            if (pContext and Request.m_pGloRequest)     // Himanshu - GLO
+            {
+                DLMSVector Plaintext = Request.m_pGloRequest->Decrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite(), pContext->m_SecurityOptions);
+                std::unique_ptr<Access_Request> pRequest = std::make_unique<Access_Request>();
+                if (pRequest->Parse(&Plaintext, Request.m_SourceAddress, Request.m_DestinationAddress))
+                {
+                    return InitiateAccess(
+                        APPAccessRequestOrIndication(
+                            Request.m_SourceAddress,
+                            Request.m_DestinationAddress,
+                            pRequest->long_invoke_id_and_priority,
+                            pRequest->date_time,
+                            pRequest->access_request_list_of_spec,
+                            pRequest->access_request_list_of_data
+                        ),
+                        UpperLayerAllowed
+                    );
+                }
+            }
             InvokeIdAndPriorityType    InvokeID = COSEM_GET_INVOKE_ID_FROM_LONG(Request.m_LongInvokeIDAndPriority);
 
             APPAccessConfirmOrResponse::AccessResponseSpecs Results;

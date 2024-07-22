@@ -166,12 +166,16 @@ namespace EPRI
             {
                 pRetVal.release();
             }
+            pRetVal.reset(new GLO::Access_Request());
+            pData->SetReadPosition(0);
 #else
             pRetVal.reset(new GLO::Access_Response());
             if (!pRetVal->Parse(pData, SourceAddress, DestinationAddress))
             {
                 pRetVal.release();
             }
+            pRetVal.reset(new GLO::Access_Response());
+            pData->SetReadPosition(0);
 #endif
             break;
         }

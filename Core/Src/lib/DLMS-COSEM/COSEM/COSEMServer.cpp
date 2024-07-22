@@ -588,7 +588,7 @@ namespace EPRI
                 pNormalRequest->invoke_id_and_priority,
                 pNormalRequest->cosem_attribute_descriptor));
         }
-        else if (pGLORequest)
+        else if (pGLORequest)   // Himanshu - GLO
         {
             pEvent = new GetRequestEventData(APPGetRequestOrIndication(
                 pAPDU->GetSourceAddress(),
@@ -620,6 +620,7 @@ namespace EPRI
     {
         SetRequestEventData * pEvent = nullptr;
         Set_Request_Normal *  pNormalRequest = dynamic_cast<Set_Request_Normal *>(pAPDU.get());
+        GLO::Set_Request *    pGLORequest = dynamic_cast<GLO::Set_Request *>(pAPDU.get());  // Himanshu - GLO
         if (pNormalRequest)
         {
             pEvent = new SetRequestEventData(APPSetRequestOrIndication(
@@ -628,6 +629,13 @@ namespace EPRI
                 pNormalRequest->invoke_id_and_priority,
                 pNormalRequest->cosem_attribute_descriptor,
                 pNormalRequest->value));
+        }
+        else if (pGLORequest)   // Himanshu - GLO
+        {
+            pEvent = new SetRequestEventData(APPSetRequestOrIndication(
+                pAPDU->GetSourceAddress(),
+                pAPDU->GetDestinationAddress(),
+                *pGLORequest));
         }
         if (pEvent)
         {
@@ -653,6 +661,7 @@ namespace EPRI
     {
         ActionRequestEventData * pEvent = nullptr;
         Action_Request_Normal *  pNormalRequest = dynamic_cast<Action_Request_Normal *>(pAPDU.get());
+        GLO::Action_Request *    pGLORequest = dynamic_cast<GLO::Action_Request *>(pAPDU.get());  // Himanshu - GLO
         if (pNormalRequest)
         {
             pEvent = new ActionRequestEventData(APPActionRequestOrIndication(
@@ -661,6 +670,13 @@ namespace EPRI
                 pNormalRequest->invoke_id_and_priority,
                 pNormalRequest->cosem_method_descriptor,
                 pNormalRequest->method_invocation_parameters));
+        }
+        else if (pGLORequest)   // Himanshu - GLO
+        {
+            pEvent = new ActionRequestEventData(APPActionRequestOrIndication(
+                pAPDU->GetSourceAddress(),
+                pAPDU->GetDestinationAddress(),
+                *pGLORequest));
         }
         if (pEvent)
         {
@@ -715,6 +731,7 @@ namespace EPRI
     {
         AccessRequestEventData * pEvent = nullptr;
         Access_Request *  pRequest = dynamic_cast<Access_Request *>(pAPDU.get());
+        GLO::Access_Request *    pGLORequest = dynamic_cast<GLO::Access_Request *>(pAPDU.get());  // Himanshu - GLO
         if (pRequest)
         {
             pEvent = new AccessRequestEventData(APPAccessRequestOrIndication(
@@ -724,6 +741,13 @@ namespace EPRI
                 pRequest->date_time,
                 pRequest->access_request_list_of_spec,
                 pRequest->access_request_list_of_data));
+        }
+        else if (pGLORequest)   // Himanshu - GLO
+        {
+            pEvent = new AccessRequestEventData(APPAccessRequestOrIndication(
+                pAPDU->GetSourceAddress(),
+                pAPDU->GetDestinationAddress(),
+                *pGLORequest));
         }
         if (pEvent)
         {
