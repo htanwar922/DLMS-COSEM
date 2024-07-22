@@ -122,7 +122,7 @@ namespace EPRI
         public:
             Get_Response() = default;
             Get_Response(const Get_Response& Response)
-                : EPRI::GLO::CipheredBase<0xcc>(Response)
+                : Get_Response::CipheredBase(Response)
             {
             }
             virtual ~Get_Response() = default;

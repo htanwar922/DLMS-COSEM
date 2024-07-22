@@ -418,17 +418,17 @@ namespace EPRI
             std::bind(&COSEM::AARQ_Handler, this, std::placeholders::_1));
         pXPort->RegisterAPDUHandler(m_Address, AARE::Tag,
             std::bind(&COSEM::AARE_Handler, this, std::placeholders::_1));
-        pXPort->RegisterAPDUHandler(m_Address, Get_Request_Base::Tag,
+        pXPort->RegisterAPDUHandler(m_Address, Get_Request::Tag,
             std::bind(&COSEM::GET_Request_Handler, this, std::placeholders::_1));
-        pXPort->RegisterAPDUHandler(m_Address, Get_Response_Base::Tag,
+        pXPort->RegisterAPDUHandler(m_Address, Get_Response::Tag,
             std::bind(&COSEM::GET_Response_Handler, this, std::placeholders::_1));
-        pXPort->RegisterAPDUHandler(m_Address, Set_Request_Base::Tag,
+        pXPort->RegisterAPDUHandler(m_Address, Set_Request::Tag,
             std::bind(&COSEM::SET_Request_Handler, this, std::placeholders::_1));
-        pXPort->RegisterAPDUHandler(m_Address, Set_Response_Base::Tag,
+        pXPort->RegisterAPDUHandler(m_Address, Set_Response::Tag,
             std::bind(&COSEM::SET_Response_Handler, this, std::placeholders::_1));
-        pXPort->RegisterAPDUHandler(m_Address, Action_Request_Base::Tag,
+        pXPort->RegisterAPDUHandler(m_Address, Action_Request::Tag,
             std::bind(&COSEM::ACTION_Request_Handler, this, std::placeholders::_1));
-        pXPort->RegisterAPDUHandler(m_Address, Action_Response_Base::Tag,
+        pXPort->RegisterAPDUHandler(m_Address, Action_Response::Tag,
             std::bind(&COSEM::ACTION_Response_Handler, this, std::placeholders::_1));
         pXPort->RegisterAPDUHandler(m_Address, RLRQ::Tag,
             std::bind(&COSEM::RLRQ_Handler, this, std::placeholders::_1));
@@ -436,9 +436,9 @@ namespace EPRI
             std::bind(&COSEM::RLRE_Handler, this, std::placeholders::_1));
 
         // Himanshu - ACCESS
-        pXPort->RegisterAPDUHandler(m_Address, Access_Request_Base::Tag,
+        pXPort->RegisterAPDUHandler(m_Address, Access_Request::Tag,
             std::bind(&COSEM::ACCESS_Request_Handler, this, std::placeholders::_1));
-        pXPort->RegisterAPDUHandler(m_Address, Access_Response_Base::Tag,
+        pXPort->RegisterAPDUHandler(m_Address, Access_Response::Tag,
             std::bind(&COSEM::ACCESS_Response_Handler, this, std::placeholders::_1));
 
         // Himanshu - GLO

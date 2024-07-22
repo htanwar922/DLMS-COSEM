@@ -342,7 +342,6 @@ namespace EPRI
             , m_Type(Request.m_Type)
             , m_InvokeIDAndPriority(Request.m_InvokeIDAndPriority)
             , m_Parameter(Request.m_Parameter)
-            //, m_pGloRequest(Request.m_pGloRequest ? std::make_unique<GLO::Get_Request>(Request.m_pGloRequest) : nullptr)
         {
             if (Request.m_pGloRequest)
                 m_pGloRequest = std::make_unique<GLO::Get_Request>(*Request.m_pGloRequest);
@@ -386,7 +385,6 @@ namespace EPRI
             , m_Type(Response.m_Type)
             , m_InvokeIDAndPriority(Response.m_InvokeIDAndPriority)
             , m_Result(Response.m_Result)
-            //, m_pGloResponse(Response.m_pGloResponse ? std::make_unique<GLO::Get_Response>(*Response.m_pGloResponse) : nullptr)
         {
             if (Response.m_pGloResponse)
                 m_pGloResponse = std::make_unique<GLO::Get_Response>(*Response.m_pGloResponse);
@@ -453,7 +451,6 @@ namespace EPRI
             , m_InvokeIDAndPriority(Request.m_InvokeIDAndPriority)
             , m_Parameter(Request.m_Parameter)
             , m_Value(Request.m_Value)
-            //, m_pGloRequest(Request.m_pGloRequest ? std::make_unique<GLO::Set_Request>(Request.m_pGloRequest) : nullptr)
         {
             if (Request.m_pGloRequest)
                 m_pGloRequest = std::make_unique<GLO::Set_Request>(*Request.m_pGloRequest);
@@ -497,7 +494,6 @@ namespace EPRI
             , m_Type(Response.m_Type)
             , m_InvokeIDAndPriority(Response.m_InvokeIDAndPriority)
             , m_Result(Response.m_Result)
-            //, m_pGloResponse(Response.m_pGloResponse ? std::make_unique<GLO::Set_Response>(GLO::Set_Response(*Response.m_pGloResponse)) : nullptr)
         {
             if (Response.m_pGloResponse)
                 m_pGloResponse = std::make_unique<GLO::Set_Response>(*Response.m_pGloResponse);
@@ -565,7 +561,6 @@ namespace EPRI
             , m_InvokeIDAndPriority(Request.m_InvokeIDAndPriority)
             , m_Parameter(Request.m_Parameter)
             , m_ActionParameters(Request.m_ActionParameters)
-            //, m_pGloRequest(Request.m_pGloRequest ? std::make_unique<GLO::Action_Request>(Request.m_pGloRequest) : nullptr)
         {
             if (Request.m_pGloRequest)
                 m_pGloRequest = std::make_unique<GLO::Action_Request>(*Request.m_pGloRequest);
@@ -610,7 +605,6 @@ namespace EPRI
             , m_Type(Response.m_Type)
             , m_InvokeIDAndPriority(Response.m_InvokeIDAndPriority)
             , m_Result(Response.m_Result)
-            //, m_pGloResponse(Response.m_pGloResponse ? std::make_unique<GLO::Action_Response>(GLO::Action_Response(*Response.m_pGloResponse)) : nullptr)
         {
             if (Response.m_pGloResponse)
                 m_pGloResponse = std::make_unique<GLO::Action_Response>(*Response.m_pGloResponse);
@@ -738,7 +732,6 @@ namespace EPRI
             , m_DateTime(Request.m_DateTime)
             , m_AccessParameters(Request.m_AccessParameters)
             , m_AccessDatas(Request.m_AccessDatas)
-            //, m_pGloRequest(Request.m_pGloRequest ? std::make_unique<GLO::Access_Request>(Request.m_pGloRequest) : nullptr)
         {
             if (Request.m_pGloRequest)
                 m_pGloRequest = std::make_unique<GLO::Access_Request>(*Request.m_pGloRequest);
@@ -793,7 +786,6 @@ namespace EPRI
             , m_DateTime(Response.m_DateTime)
             , m_AccessResults(Response.m_AccessResults)
             , m_AccessDatas(Response.m_AccessDatas)
-            //, m_pGloResponse(Response.m_pGloResponse ? std::make_unique<GLO::Access_Response>(GLO::Access_Response(*Response.m_pGloResponse)) : nullptr)
         {
             if (Response.m_pGloResponse)
                 m_pGloResponse = std::make_unique<GLO::Access_Response>(*Response.m_pGloResponse);

@@ -88,7 +88,7 @@ namespace EPRI
     ASN_END_SCHEMA
 
     Get_Response::Get_Response()
-        : Get_Response_Base::APDUSingleType(Get_Response::Get_Response_Schema)
+        : Get_Response::APDUSingleType(Get_Response::Get_Response_Schema)
     {
 
     }

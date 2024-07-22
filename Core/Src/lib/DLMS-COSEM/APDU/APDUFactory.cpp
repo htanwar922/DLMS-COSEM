@@ -96,25 +96,25 @@ namespace EPRI
         case AARE::Tag:
             pRetVal.reset(new AARE());
             break;
-        case Get_Request_Base::Tag:
+        case Get_Request::Tag:
             //
             // TODO - Appropriate GET types... Phase II.
             //
             pRetVal.reset(new Get_Request_Normal());
             break;
-        case Get_Response_Base::Tag:
+        case Get_Response::Tag:
             pRetVal.reset(new Get_Response_Normal());
             break;
-        case Set_Request_Base::Tag:
+        case Set_Request::Tag:
             //
             // TODO - Appropriate SET types... Phase II.
             //
             pRetVal.reset(new Set_Request_Normal());
             break;
-        case Set_Response_Base::Tag:
+        case Set_Response::Tag:
             pRetVal.reset(new Set_Response_Normal());
             break;
-        case Action_Request_Base::Tag:
+        case Action_Request::Tag:
             //
             // TODO - Appropriate ACTION types... Phase II.
             //

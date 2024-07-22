@@ -56,6 +56,7 @@ namespace EPRI
         virtual const std::shared_ptr<ISecuritySuite> GetSecuritySetup(COSEMAddressType Address) const;
         virtual bool RegisterAssociation(const APPOpenConfirmOrResponse& Response);
         virtual bool ReleaseAssociation(const APPReleaseConfirmOrResponse& Response);
+        virtual const AssociationContext* GetAssociationContext(const COSEMAddressType& Address);
         virtual const AssociationContext* GetAssociationContext(
             const APPBaseCallbackParameter& Parameter);
         COSEMAddressType GetAssociatedAddress() const;

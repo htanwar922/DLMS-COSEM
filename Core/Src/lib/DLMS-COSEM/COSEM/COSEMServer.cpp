@@ -393,7 +393,20 @@ namespace EPRI
 
                     TransportParam.SourceAddress = GetAddress();
                     TransportParam.DestinationAddress = pGetResponse->Data.m_DestinationAddress;
-                    TransportParam.Data = Response.GetBytes();
+
+                    const AssociationContext* pContext = m_Association.GetAssociationContext(pGetResponse->Data.m_DestinationAddress);
+                    if (pContext->m_SecurityOptions.Encryption())
+                    {
+                        GLO::Get_Response EncryptedResponse;
+                        EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
+                            , pContext->m_SecurityOptions
+                            , Response.GetBytes());
+                        TransportParam.Data = EncryptedResponse.GetBytes();
+                    }
+                    else
+                    {
+                        TransportParam.Data = Response.GetBytes();
+                    }
                 }
                 break;
 
@@ -438,8 +451,21 @@ namespace EPRI
 
                     TransportParam.SourceAddress = GetAddress();
                     TransportParam.DestinationAddress = Parameters.m_DestinationAddress;
-                    TransportParam.Data = Response.GetBytes();
-                }
+
+                    const AssociationContext* pContext = m_Association.GetAssociationContext(Parameters.m_DestinationAddress);
+                    if (pContext->m_SecurityOptions.Encryption())
+                    {
+                        GLO::Set_Response EncryptedResponse;
+                        EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
+                            , pContext->m_SecurityOptions
+                            , Response.GetBytes());
+                        TransportParam.Data = EncryptedResponse.GetBytes();
+                    }
+                    else
+                    {
+                        TransportParam.Data = Response.GetBytes();
+                    }
+            }
                 break;
 
             case APPSetConfirmOrResponse::SetResponseType::set_response_with_first_datablock :
@@ -489,8 +515,21 @@ namespace EPRI
 
                     TransportParam.SourceAddress = GetAddress();
                     TransportParam.DestinationAddress = Parameters.m_DestinationAddress;
-                    TransportParam.Data = Response.GetBytes();
-                }
+
+                    const AssociationContext* pContext = m_Association.GetAssociationContext(Parameters.m_DestinationAddress);
+                    if (pContext->m_SecurityOptions.Encryption())
+                    {
+                        GLO::Action_Response EncryptedResponse;
+                        EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
+                            , pContext->m_SecurityOptions
+                            , Response.GetBytes());
+                        TransportParam.Data = EncryptedResponse.GetBytes();
+                    }
+                    else
+                    {
+                        TransportParam.Data = Response.GetBytes();
+                    }
+            }
                 break;
 
             default:
@@ -529,7 +568,21 @@ namespace EPRI
             Transport::DataRequestParameter TransportParam;
             TransportParam.SourceAddress = GetAddress();
             TransportParam.DestinationAddress = pAccessResponse->Data.m_DestinationAddress;
-            TransportParam.Data = Response.GetBytes();
+
+            const AssociationContext* pContext = m_Association.GetAssociationContext(pAccessResponse->Data.m_DestinationAddress);
+            if (pContext->m_SecurityOptions.Encryption())
+            {
+                GLO::Access_Response EncryptedResponse;
+                EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
+                    , pContext->m_SecurityOptions
+                    , Response.GetBytes());
+                TransportParam.Data = EncryptedResponse.GetBytes();
+            }
+            else
+            {
+                TransportParam.Data = Response.GetBytes();
+            }
+
             pTransport->DataRequest(TransportParam);
 
             return;

@@ -126,7 +126,7 @@ namespace EPRI
         public:
             Get_Request() = default;
             Get_Request(const Get_Request& Request)
-                : EPRI::GLO::CipheredBase<0xc8>(Request)
+                : Get_Request::CipheredBase(Request)
             {
             }
             virtual ~Get_Request() = default;

@@ -225,6 +225,14 @@ namespace EPRI
 
     const std::shared_ptr<ISecuritySuite> Association::GetSecuritySetup(COSEMAddressType Address) const
     {
+        if (Address == INVALID_ADDRESS)
+        {
+            return nullptr;
+        }
+        //if (GetAssociationContextByAddress(Address))
+        //{
+        //    return GetAssociationContextByAddress(Address)->m_SecurityOptions.SecurityContext.GetSecuritySuite();
+        //}
         uint8_t AssociationIndex = 0;
         switch (Address)
         {
@@ -303,6 +311,11 @@ namespace EPRI
             m_pCurrentContext->m_Initialized = false;
         m_pCurrentContext = nullptr;
         return true;
+    }
+
+    const AssociationContext* Association::GetAssociationContext(const COSEMAddressType& Address)
+    {
+        return GetAssociationContextByAddress(Address);
     }
 
     COSEMAddressType Association::GetAssociatedAddress() const

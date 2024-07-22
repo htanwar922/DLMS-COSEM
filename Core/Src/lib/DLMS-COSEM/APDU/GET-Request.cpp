@@ -96,7 +96,7 @@ namespace EPRI
     ASN_END_SCHEMA
         
     Get_Request::Get_Request() :
-       Get_Request_Base::APDUSingleType(Get_Request::Get_Request_Schema)
+       Get_Request::APDUSingleType(Get_Request::Get_Request_Schema)
     {
 
     }
