@@ -683,6 +683,18 @@ namespace EPRI
         return RetVal;
     }
 
+    size_t ASNType::GetNextLength()
+    {
+        size_t Length = 0;
+        GetLength(&m_Data, &Length);
+        return Length;
+    }
+
+    bool ASNType::AppendNextLength(size_t Length)
+    {
+        return AppendLength(Length, &m_Data);
+    }
+
     bool ASNType::Append(const DLMSValue& Value)
     {
         return InternalAppend(Value);

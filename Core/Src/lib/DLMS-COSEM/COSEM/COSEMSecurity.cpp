@@ -68,7 +68,7 @@
 // FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
+//
 
 #include "COSEM/COSEMSecurity.h"
 
@@ -78,15 +78,22 @@ namespace EPRI
     const ASNObjectIdentifier COSEMSecurityOptions::ContextSNRNoCipher({ 2, 16, 756, 5, 8, 1, 2 });
     const ASNObjectIdentifier COSEMSecurityOptions::ContextLNRCipher({ 2, 16, 756, 5, 8, 1, 3 });
     const ASNObjectIdentifier COSEMSecurityOptions::ContextSNRCipher({ 2, 16, 756, 5, 8, 1, 4 });
-    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameLowLevelSecurity({ 2, 16, 756, 5, 8, 2, 1 }, 
-                                                                                  ASN::IMPLICIT);
-    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecurity({ 2, 16, 756, 5, 8, 2, 5 }, 
-                                                                                   ASN::IMPLICIT);
-    
-    COSEMSecurityOptions::COSEMSecurityOptions()
+
+    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameNoSecurity({ 2, 16, 756, 5, 8, 2, 0 }, ASN::IMPLICIT);
+    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameLowLevelSecurity({ 2, 16, 756, 5, 8, 2, 1 }, ASN::IMPLICIT);
+    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecurity({ 2, 16, 756, 5, 8, 2, 5 }, ASN::IMPLICIT);
+    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecurityMD5({ 2, 16, 756, 5, 8, 2, 6 }, ASN::IMPLICIT);
+    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecuritySHA1({ 2, 16, 756, 5, 8, 2, 7 }, ASN::IMPLICIT);
+    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecurityGMAC({ 2, 16, 756, 5, 8, 2, 8 }, ASN::IMPLICIT);
+    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecuritySHA256({ 2, 16, 756, 5, 8, 2, 9 }, ASN::IMPLICIT);
+    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecurityECDSA({ 2, 16, 756, 5, 8, 2, 10 }, ASN::IMPLICIT);
+
+    COSEMSecurityOptions::COSEMSecurityOptions(SecurityContext::SecuritySuiteOption Suite /*= SecurityContext::NO_SUITE*/
+            , uint8_t Policy /*= SecurityContext::no_policy*/)
+        : SecurityContext(Suite, Policy)
     {
     }
-    
+
     COSEMSecurityOptions::~COSEMSecurityOptions()
     {
     }
@@ -97,32 +104,43 @@ namespace EPRI
         {
             return SecurityLevel::SECURITY_LOW_LEVEL;
         }
-        else if (MechanismName == MechanismNameHighLevelSecurity)
+        else if (MechanismName == MechanismNameHighLevelSecurity
+            or MechanismName == MechanismNameHighLevelSecurityMD5
+            or MechanismName == MechanismNameHighLevelSecuritySHA1
+            or MechanismName == MechanismNameHighLevelSecurityGMAC
+            or MechanismName == MechanismNameHighLevelSecuritySHA256
+            or MechanismName == MechanismNameHighLevelSecurityECDSA)
         {
             return SecurityLevel::SECURITY_HIGH_LEVEL;
         }
         return SecurityLevel::SECURITY_NONE;
     }
-    
+
     bool COSEMSecurityOptions::LogicalNameReferencing() const
     {
         return (ApplicationContextName == ContextLNRNoCipher ||
                 ApplicationContextName == ContextLNRCipher);
     }
-    
+
     bool COSEMSecurityOptions::Authentication() const
     {
         return IsInitialized(AuthenticationValue);
     }
-    
+
+    bool COSEMSecurityOptions::Encryption() const
+    {
+        return (ApplicationContextName == ContextSNRCipher ||
+                ApplicationContextName == ContextLNRCipher);
+    }
+
     APDUConstants::AuthenticationValueChoice COSEMSecurityOptions::AuthenticationType() const
     {
         enum AuthenticationValueChoice : int8_t
         {
             charstring = 0,
-            bitstring  = 1,
-            external   = 2,
-            other      = 3
+            bitstring = 1,
+            external = 2,
+            other = 3
         };
         if (IsSequence(AuthenticationValue))
         {
@@ -139,6 +157,89 @@ namespace EPRI
         default:
             return APDUConstants::AuthenticationValueChoice::other;
         }
-    }        
-        
+    }
+
+    SecurityContext::SecurityContext(SecuritySuiteOption Suite, uint8_t Policy)
+        : m_SuiteOption(Suite)
+        , m_Policy(Policy)
+        , m_pSecuritySuite(nullptr)
+    {
+    }
+
+    SecurityContext::~SecurityContext()
+    {
+    }
+
+    const std::shared_ptr<ISecuritySuite> SecurityContext::GetSecuritySuite() const
+    {
+        return m_pSecuritySuite;
+    }
+
+    void SecurityContext::SetSecuritySuite(const ISecuritySuite& riSuite)
+    {
+        if (m_pSecuritySuite)
+        {
+            m_pSecuritySuite.~shared_ptr();
+        }
+        if (nullptr != dynamic_cast<const SecuritySuite_None*>(&riSuite))
+        {
+            m_SuiteOption = NO_SUITE;
+            //m_pSecuritySuite = new SecuritySuite_None();
+            m_pSecuritySuite = std::make_shared<SecuritySuite_None>();
+        }
+        else if (nullptr != dynamic_cast<const SecuritySuite_0 *>(&riSuite))
+        {
+            m_SuiteOption = SUITE_0;
+            const SecuritySuite_0 & rSuite = dynamic_cast<const SecuritySuite_0 &>(riSuite);
+            //m_pSecuritySuite = new SecuritySuite_0(rSuite.GetKey().GetData(), rSuite.GetAAD().GetData());
+            m_pSecuritySuite = std::make_shared<SecuritySuite_0>(rSuite.GetKey().GetData(), rSuite.GetAAD().GetData());
+        }
+        else if (nullptr != dynamic_cast<const SecuritySuite_1*>(&riSuite))
+        {
+            m_SuiteOption = SUITE_1;
+            throw std::runtime_error("SecuritySuite_1 not implemented");
+        }
+        else if (nullptr != dynamic_cast<const SecuritySuite_2*>(&riSuite))
+        {
+            m_SuiteOption = SUITE_2;
+            throw std::runtime_error("SecuritySuite_2 not implemented");
+        }
+        else
+        {
+            throw std::runtime_error("Unknown Security Suite");
+        }
+    }
+
+    uint8_t SecurityContext::GetPolicy() const
+    {
+        return m_Policy;
+    }
+
+    void SecurityContext::ClearPolicy()
+    {
+        m_Policy = 0;
+    }
+
+    void SecurityContext::SetPolicyBit(SecurityPolicyBitmask policy)
+    {
+        m_Policy |= policy;
+    }
+
+    const COSEMObjectInstanceID& SecurityContext::GetSecuritySetupObjectID() const
+    {
+        if (m_pSecuritySuite == nullptr)
+        {
+            throw std::runtime_error("Security Suite not set");
+        }
+        return m_pSecuritySuite->GetSecuritySetupObjectID();
+    }
+
+    void SecurityContext::SetSecuritySetupObjectID(const COSEMObjectInstanceID& ID)
+    {
+        if (m_pSecuritySuite == nullptr)
+        {
+            throw std::runtime_error("Security Suite not set");
+        }
+        m_pSecuritySuite->SetSecuritySetupObjectID(ID);
+    }
 }

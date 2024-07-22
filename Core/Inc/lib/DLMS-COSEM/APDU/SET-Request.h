@@ -123,4 +123,16 @@ namespace EPRI
         
     };
 
+    namespace GLO {
+        class Set_Request : public EPRI::GLO::CipheredBase<0xc9>
+        {
+        public:
+            Set_Request() = default;
+            Set_Request(const Set_Request& Request)
+                : EPRI::GLO::CipheredBase<0xc9>(Request)
+            {
+            }
+            virtual ~Set_Request() = default;
+        };
+    }
 }

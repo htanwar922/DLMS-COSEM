@@ -119,4 +119,16 @@ namespace EPRI
         
     };
 
+    namespace GLO {
+        class Set_Response : public EPRI::GLO::CipheredBase<0xcd>
+        {
+        public:
+            Set_Response() = default;
+            Set_Response(const Set_Response& Response)
+                : EPRI::GLO::CipheredBase<0xcd>(Response)
+            {
+            }
+            virtual ~Set_Response() = default;
+        };
+    }
 }

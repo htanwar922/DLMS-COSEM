@@ -78,16 +78,18 @@ public:
 	~COSEMDateTime() {
 	}
 
-	void operator=(EPRI::DLMSValue value) {
+	COSEMDateTime& operator=(EPRI::DLMSValue value) {
 		if(value.is<EPRI::DLMSVector>()) {
 			m_Initialized = true;
 			memcpy(&m_DateTime, value.get<EPRI::DLMSVector>().GetData(), value.get<EPRI::DLMSVector>().Size());
 		}
+		return *this;
 	}
 
-	void operator=(DateTime dateTime) {
+	COSEMDateTime& operator=(DateTime dateTime) {
 		m_DateTime = dateTime;
 		m_Initialized = true;
+		return *this;
 	}
 
 	DateTime GetDateTime() {

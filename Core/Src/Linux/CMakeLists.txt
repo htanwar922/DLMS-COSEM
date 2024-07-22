@@ -36,7 +36,6 @@ set_with_path_prefix(LinuxServer_SOURCES
 	Objects/Data.cpp
 	Objects/Register.cpp
 	Objects/ProfileNameplate.cpp
-	Objects/SecuritySetup.cpp
 )
 
 set_with_path_prefix(LinuxClient_SOURCES
@@ -47,5 +46,4 @@ set_with_path_prefix(LinuxClient_SOURCES
 	Objects/Data.cpp
 	Objects/Register.cpp
 	Objects/ProfileNameplate.cpp
-	Objects/SecuritySetup.cpp
 )

@@ -14,8 +14,8 @@ namespace EPRI
         //for (uint8_t i = 0; i <= 9; i++)
         //{
         //    RegisterObjectInstanceID({ 0, 0, 96, 1, i, 255 });
-        //    SetAttributeAccessRights({0, 0, 96, 1, i, 255}, LOGICAL_NAME, Association::read_access);
-        //    SetAttributeAccessRights({ 0, 0, 96, 1, i, 255 }, ATTR_VALUE, Association::read_access);
+        //    SetAttributeAccessRights({0, 0, 96, 1, i, 255}, LOGICAL_NAME, Association::attr_read_access);
+        //    SetAttributeAccessRights({ 0, 0, 96, 1, i, 255 }, ATTR_VALUE, Association::attr_read_access);
         //    
         //    std::string value = "DATA VALUE #" + std::to_string(i);
         //    SetCaptureValue({ 0, 0, 96, 1, i, 255 }, value);
@@ -23,8 +23,8 @@ namespace EPRI
         for (const MeterConfigType& Config : MeterConfig)
         {
             RegisterObjectInstanceID(Config.OID);
-            SetAttributeAccessRights(Config.OID, LOGICAL_NAME, IAssociationLN::read_access);
-            SetAttributeAccessRights(Config.OID, ATTR_VALUE, IAssociationLN::read_access);
+            SetAttributeAccessRights(Config.OID, LOGICAL_NAME, IAssociationLN::attr_read_access);
+            SetAttributeAccessRights(Config.OID, ATTR_VALUE, IAssociationLN::attr_read_access);
             SetCaptureValue(Config.OID, Config.Value);
         }
     }

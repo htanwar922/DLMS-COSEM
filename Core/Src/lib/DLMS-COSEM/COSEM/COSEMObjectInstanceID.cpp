@@ -272,4 +272,9 @@ namespace EPRI
         return DLMSVector(*this);
     }
 
+    COSEMObjectInstanceID& COSEMObjectInstanceID::operator=(const COSEMObjectInstanceID& RHS)
+    {
+        std::memcpy(m_OBIS, RHS.m_OBIS, sizeof(m_OBIS));
+        return *this;
+    }
 }

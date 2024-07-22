@@ -124,4 +124,16 @@ namespace EPRI
         
     };
 
+    namespace GLO {
+        class Action_Request : public EPRI::GLO::CipheredBase<0xcb>
+        {
+        public:
+            Action_Request() = default;
+            Action_Request(const Action_Request& Request)
+                : EPRI::GLO::CipheredBase<0xcb>(Request)
+            {
+            }
+            virtual ~Action_Request() = default;
+        };
+    }
 }

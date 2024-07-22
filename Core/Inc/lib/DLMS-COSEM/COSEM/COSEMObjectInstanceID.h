@@ -182,6 +182,7 @@ namespace EPRI
         bool operator<(const COSEMObjectInstanceID& RHS) const;
         operator DLMSVector() const;
         operator DLMSValue() const;
+        COSEMObjectInstanceID& operator=(const COSEMObjectInstanceID& RHS);
 
     protected:
         uint8_t m_OBIS[COSEMValueGroupElements] = { };

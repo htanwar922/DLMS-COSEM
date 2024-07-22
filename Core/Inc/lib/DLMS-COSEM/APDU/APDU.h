@@ -78,6 +78,8 @@
 
 #include "APDUComponent.h"
 #include "COSEM/COSEMAddress.h"
+#include "COSEM/COSEMSecurity.h"
+#include "COSEM/COSEMSecuritySuite.h"
 
 namespace EPRI
 {
@@ -284,5 +286,152 @@ namespace EPRI
         
     };
 
-    
+    namespace GLO {
+        extern const ASN::SchemaEntry Ciphered_APDU_Schema[];
+
+        template <ASN::TagIDType TAG>
+        class CipheredBase : public APDUSingleType<TAG>
+        {
+        public:
+            virtual ~CipheredBase()
+            {
+            }
+
+            virtual std::vector<uint8_t> GetBytes() final
+            {
+                if (Serialize())
+                {
+                    return APDUSingleType<TAG>::GetBytes();
+                }
+                return std::vector<uint8_t>();
+            }
+
+            bool Parse(DLMSVector* pData,
+                COSEMAddressType SourceAddress = ReservedAddresses::NO_STATION,
+                COSEMAddressType DestinationAddress = ReservedAddresses::NO_STATION)
+            {
+                if (APDUSingleType<TAG>::Parse(pData, SourceAddress, DestinationAddress))
+                {
+                    if (Deserialize())
+                    {
+                        return (m_Initialized = true);
+                    }
+                }
+                return false;
+            }
+
+            bool Initialized() const
+            {
+                return m_Initialized;
+            }
+
+            uint8_t GetSecurityControlByte() const
+            {
+                return m_SecurityControlByte;
+            }
+
+            uint32_t GetInvocationCounter() const
+            {
+                return m_InvocationCounter;
+            }
+
+            const DLMSVector& GetCipheredDataAndAuthenticationTag() const
+            {
+                return m_CipheredDataAndAuthenticationTag;
+            }
+
+            DLMSVector Encrypt(const std::shared_ptr<ISecuritySuite> pSuite, const COSEMSecurityOptions& SecurityOptions, const DLMSVector& Plaintext)
+            {
+                DLMSVector IV(METER_SYSTEM_TITLE); IV.Append(++m_InvocationCounter);
+                DLMSVector Ciphertext;
+                DLMSVector Tag;
+                if (pSuite->Encrypt(Plaintext, IV, Ciphertext, Tag))
+                {
+                    Ciphertext.Append(Tag);
+                    m_SecurityControlByte = pSuite->GetSecurityControlByte();
+                    m_CipheredDataAndAuthenticationTag = Ciphertext;
+                    m_Initialized = true;
+                    return m_CipheredDataAndAuthenticationTag;
+                }
+                return DLMSVector();
+            }
+
+            DLMSVector Decrypt(const std::shared_ptr<ISecuritySuite> pSuite, const COSEMSecurityOptions& SecurityOptions) const
+            {
+                DLMSVector IV(SecurityOptions.CallingAPTitle); IV.Append(m_InvocationCounter);
+                DLMSVector Ciphertext = m_CipheredDataAndAuthenticationTag;
+                DLMSVector Tag(Ciphertext, Ciphertext.Size() - pSuite->GetTagLength());
+                Ciphertext.Resize(Ciphertext.Size() - pSuite->GetTagLength());
+                DLMSVector Plaintext;
+                pSuite->ClearSecurityControlByte();
+                pSuite->SetSecurityControlBits((ISecuritySuite::SecurityControlBitMask)m_SecurityControlByte);
+                if (pSuite->Decrypt(Ciphertext, IV, Plaintext, Tag))
+                {
+                    return Plaintext;
+                }
+                return DLMSVector();
+            }
+        protected:
+            CipheredBase()
+                : APDUSingleType<TAG>::APDUSingleType(Ciphered_APDU_Schema)
+            {
+            }
+            CipheredBase(const CipheredBase& Request)
+                : APDUSingleType<TAG>::APDUSingleType(Ciphered_APDU_Schema)
+            {
+                m_SecurityControlByte = Request.m_SecurityControlByte;
+                m_InvocationCounter = Request.m_InvocationCounter;
+                m_CipheredDataAndAuthenticationTag = Request.m_CipheredDataAndAuthenticationTag;
+                m_Initialized = Request.m_Initialized;
+            }
+            virtual bool Deserialize()
+            {
+                DLMSValue Value;
+                try
+                {
+                    m_Type.Rewind();
+                    size_t Length = m_Type.GetNextLength();
+                    if (ASNType::GetNextResult::VALUE_RETRIEVED != m_Type.GetNextValue(&Value))
+                        return false;
+                    m_SecurityControlByte = DLMSValueGet<uint8_t>(Value);
+                    if (ASNType::GetNextResult::VALUE_RETRIEVED != m_Type.GetNextValue(&Value))
+                        return false;
+                    m_InvocationCounter = DLMSValueGet<uint32_t>(Value);
+                    if (ASNType::GetNextResult::VALUE_RETRIEVED != m_Type.GetNextValue(&Value))
+                        return false;
+                    m_CipheredDataAndAuthenticationTag = DLMSValueGet<DLMSVector>(Value);
+                    if (Length != sizeof m_SecurityControlByte + sizeof m_InvocationCounter + m_CipheredDataAndAuthenticationTag.Size())
+                        return false;
+                    return true;
+                }
+                catch (const std::exception&)
+                {
+                }
+                return false;
+            }
+            virtual bool Serialize()
+            {
+                if (not m_Initialized)
+                    return false;
+                m_Type.Clear();
+                m_Type.AppendNextLength(sizeof m_SecurityControlByte + sizeof m_InvocationCounter + m_CipheredDataAndAuthenticationTag.Size());
+                m_Type.Append(m_SecurityControlByte);
+                m_Type.Append(m_InvocationCounter);
+                m_Type.Append(m_CipheredDataAndAuthenticationTag);
+                return true;
+            }
+            //
+            // IAPDU
+            //
+            virtual bool IsValid() const final
+            {
+                return true;
+            }
+
+            uint8_t m_SecurityControlByte = 0x00;
+            uint32_t m_InvocationCounter = 0;
+            DLMSVector m_CipheredDataAndAuthenticationTag;
+            bool m_Initialized = false;
+        };
+    }
 }

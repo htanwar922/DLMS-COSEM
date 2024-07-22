@@ -120,4 +120,16 @@ namespace EPRI
         
     };
 
+    namespace GLO {
+        class Get_Request : public EPRI::GLO::CipheredBase<0xc8>
+        {
+        public:
+            Get_Request() = default;
+            Get_Request(const Get_Request& Request)
+                : EPRI::GLO::CipheredBase<0xc8>(Request)
+            {
+            }
+            virtual ~Get_Request() = default;
+        };
+    }
 }

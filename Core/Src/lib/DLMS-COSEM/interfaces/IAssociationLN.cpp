@@ -74,6 +74,7 @@
 // 	0	0	42	0	0	255	COSEM Logical device name (16 Byte OCTET-STRING; 3 = MANU; 13 = UNIQUE)
 
 #include "interfaces/IAssociationLN.h"
+#include "APDU/xDLMS.h"
 
 namespace EPRI
 {
@@ -141,7 +142,7 @@ namespace EPRI
     COSEM_END_SCHEMA
     COSEM_BEGIN_SCHEMA(IAssociationLN_3::xDLMS_Schema)
         COSEM_BEGIN_STRUCTURE
-            COSEM_BIT_STRING_TYPE(24)
+            COSEM_BIT_STRING_TYPE(xDLMS::ConformanceBits::max_bits)
             COSEM_LONG_UNSIGNED_TYPE
             COSEM_LONG_UNSIGNED_TYPE
             COSEM_UNSIGNED_TYPE
@@ -174,6 +175,9 @@ namespace EPRI
         )
     COSEM_END_SCHEMA
 
+    //
+    // IAssociationLN_3
+    //
     IAssociationLN_3::IAssociationLN_3()
         : ICOSEMInterface(CLSID_IAssociationLN, 3, 0, 1)
     {

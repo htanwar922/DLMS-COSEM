@@ -85,12 +85,12 @@ namespace EPRI
         enum ConformanceBits
         {
             reserved_zero                    = 0,
-            reserved_one                     = 1,
-            reserved_two                     = 2,
+            general_protection               = 1,
+            general_block_transfer           = 2,
             read                             = 3,
             write                            = 4,
             unconfirmed_write                = 5,
-            reserved_six                     = 6,
+            delta_value_encoding             = 6,
             reserved_seven                   = 7,
             attribute0_supported_with_set    = 8,
             priority_mgmt_supported          = 9,
@@ -100,8 +100,8 @@ namespace EPRI
             block_transfer_with_action       = 13,
             multiple_references              = 14,
             information_report               = 15,
-            reserved_sixteen                 = 16,
-            reserved_seventeen               = 17,
+            data_notification                = 16,
+            access                           = 17,
             parameterized_access             = 18,
             get                              = 19,
             set                              = 20,
@@ -117,7 +117,8 @@ namespace EPRI
         (
             1 << ConformanceBits::get |
             1 << ConformanceBits::set |
-            1 << ConformanceBits::action
+            1 << ConformanceBits::action |
+            1 << ConformanceBits::access
         );
         
         class Context
@@ -131,12 +132,15 @@ namespace EPRI
                 const ConformanceBitsType& Conformance = AvailableStackConformance,
                 uint8_t DLMSVersion = APDUConstants::CURRENT_DLMS_VERSION,
                 const QOSType& QOS = DLMSOptionalNone);
+            Context(const Context& RHS);
+            Context& operator=(const Context& RHS);
             virtual ~Context();
 
             void Clear();
             bool Initialized() const;
             uint16_t APDUSize() const;
             ConformanceBitsType ConformanceBits() const;
+            ConformanceBitsType SetConformance(const ConformanceBitsType& Bits);
             uint8_t DLMSVersion() const;
             DLMSValue DedicatedKey() const;
             DLMSValue QOS() const;
@@ -270,6 +274,88 @@ namespace EPRI
             
             bool m_LogicalNameReferencing = true;
         };        
+
+        namespace GLO {
+            class InitiateRequest : public EPRI::GLO::CipheredBase<0x21>
+            {
+            public:
+                InitiateRequest() = default;
+                InitiateRequest(const InitiateRequest& Request)
+                    : EPRI::GLO::CipheredBase<0x21>(Request)
+                {
+                }
+                virtual ~InitiateRequest() = default;
+            };
+
+            class InitiateResponse : public EPRI::GLO::CipheredBase<0x28>
+            {
+            public:
+                InitiateResponse() = default;
+                InitiateResponse(const InitiateResponse& Response)
+                    : EPRI::GLO::CipheredBase<0x28>(Response)
+                {
+                }
+                virtual ~InitiateResponse() = default;
+            };
+        }
+
+        class InitiateRequestVariant {
+            enum RequestType
+            {
+                none = 0,
+                plain = 1,
+                glo_ciphered = 2
+            };
+        public:
+            InitiateRequestVariant();
+            InitiateRequestVariant(const InitiateRequest& Request);
+            InitiateRequestVariant(const GLO::InitiateRequest& Request);
+            InitiateRequestVariant(const InitiateRequestVariant& Request);
+            ~InitiateRequestVariant();
+
+            InitiateRequest& GetPlainRequest() const;
+            GLO::InitiateRequest& GetGloRequest() const;
+ 
+            bool Initialized() const;
+            bool IsPlain() const;
+            bool IsGloCiphered() const;
+
+            bool Parse(DLMSVector* pData);
+            std::vector<uint8_t>GetBytes() const;
+
+        private:
+            RequestType m_Type;
+            void * m_pRequest;
+        };
+
+        class InitiateResponseVariant {
+            enum ResponseType
+            {
+                none = 0,
+                plain = 1,
+                glo_ciphered = 2
+            };
+        public:
+            InitiateResponseVariant();
+            InitiateResponseVariant(const InitiateResponse& Response);
+            InitiateResponseVariant(const GLO::InitiateResponse& Response);
+            InitiateResponseVariant(const InitiateResponseVariant& Response);
+            ~InitiateResponseVariant();
+
+            InitiateResponse& GetPlainResponse() const;
+            GLO::InitiateResponse& GetGloResponse() const;
+
+            bool Initialized() const;
+            bool IsPlain() const;
+            bool IsGloCiphered() const;
+
+            bool Parse(DLMSVector* pData);
+            std::vector<uint8_t>GetBytes() const;
+
+        private:
+            ResponseType m_Type;
+            void* m_pResponse;
+        };
     }
 
 }

@@ -174,6 +174,4 @@ namespace EPRI
         }
         return std::vector<uint8_t>();
     }
-
-
 }

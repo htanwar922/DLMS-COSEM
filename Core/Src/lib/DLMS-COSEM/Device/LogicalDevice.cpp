@@ -76,243 +76,15 @@
 namespace EPRI
 {
     //
-    // AssociationContext
-    //
-    AssociationContext::AssociationContext(const APPOpenConfirmOrResponse& Response) :
-        m_ClientSAP(Response.m_DestinationAddress), m_ServerSAP(Response.m_SourceAddress),
-        m_SecurityOptions(Response.m_SecurityOptions), m_xDLMS(Response.m_xDLMS),
-        m_Status(AssociationStatusType::non_associated)
-    {
-    }
-    //
-    //	0	0	40	0	0	    255	Current association	             12	15		Class 12 is SN referencing and Class 15 is LN referencing.
-    //	0	0	40	0	1	    255	Association instance 1	         12	15		Idem
-    //	0	0	40	0	2 - 127	255	Association instance 2 - 127	 12	15		Idem
-    //
-    // Association
-    //
-    Association::Association(std::vector<ICOSEMObject *> * pObjects) :
-        IAssociationLNObject({0, 0, 40, 0, 0, 255}),
-        m_pObjects(pObjects)
-    {
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_OBJ_LIST, read_access);
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_PARTNERS_ID, read_access);
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_APP_CTX_NAME, read_access);
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_XDLMS_CTX_INFO, read_access);
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_AUTH_MECH_NAME, read_access);
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_SECRET, access_denied);
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_STATUS, read_access);
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_SECURITY_SETUP_REF, read_access);
-
-    }
-
-    Association::Association(std::vector<ICOSEMObject*>* pObjects
-            , const COSEMObjectInstanceID& OID
-            , uint16_t ShortNameBase /*= std::numeric_limits<uint16_t>::max()*/)
-    : IAssociationLNObject(OID, ShortNameBase)
-    , m_pObjects(pObjects)
-    {
-    }
-
-    Association::~Association()
-    {
-    }
-
-    size_t Association::AvailableAssociations() const
-    {
-        //
-        // TODO - Only 1 association allowed for this release. Phase II.
-        //
-        return 1 - m_Associations.size();
-    }
-
-    bool Association::RegisterAssociation(const APPOpenConfirmOrResponse& Response)
-    {
-        if (AvailableAssociations())
-        {
-            m_Associations.emplace_back(Response);
-            return true;
-        }
-        return false;
-    }
-
-    bool Association::ReleaseAssociation(const APPReleaseConfirmOrResponse& Response)
-    {
-        m_Associations.remove_if(
-            [&Response](const AssociationContext& Entry) -> bool
-            {
-                return Response.m_DestinationAddress == Entry.m_ClientSAP;
-            });
-        return true;
-    }
-
-    COSEMAddressType Association::GetAssociatedAddress() const
-    {
-        if (m_Associations.size())
-        {
-            //
-            // Only one at this point.  Phase II.
-            //
-            return (*m_Associations.cbegin()).m_ClientSAP;
-        }
-        return INVALID_ADDRESS;
-    }
-
-    void Association::ReleaseTransientAssociations()
-    {
-        //
-        // All are transient at this phase.
-        //
-        m_Associations.clear();
-    }
-
-    const AssociationContext * Association::GetAssociationContext(
-        const APPBaseCallbackParameter& Parameter)
-    {
-        return GetAssociationContextByAddress(Parameter.m_SourceAddress);
-    }
-
-    APDUConstants::Data_Access_Result Association::InternalGet(const AssociationContext& Context,
-        ICOSEMAttribute * pAttribute,
-        const Cosem_Attribute_Descriptor& Descriptor,
-        SelectiveAccess * pSelectiveAccess)
-    {
-        bool                              AppendResult = false;
-        uint8_t                           AssociationIndex =
-                                                Descriptor.instance_id.GetValueGroup(COSEMObjectInstanceID::VALUE_GROUP_E);
-        AssociationContext *              pContext;
-        APDUConstants::Data_Access_Result RetVal = APDUConstants::Data_Access_Result::temporary_failure;
-        //
-        // Current Association?
-        //
-        if (0 == AssociationIndex)
-        {
-            pContext = GetAssociationContextByAddress(Context.m_ClientSAP);
-        }
-        else
-        {
-            pContext = GetAssociationContextByIndex(AssociationIndex);
-        }
-        if (!pContext)
-        {
-            return APDUConstants::Data_Access_Result::object_unavailable;
-        }
-        switch (pAttribute->AttributeID)
-        {
-        case ATTR_OBJ_LIST:     // ToDo - check LogocalDevice::m_Objects
-            {
-                LOG_ALL("HERE WE WERE\r\n");
-                DLMSArray array;
-                for(std::vector<ICOSEMObject *>::iterator it = m_pObjects->begin(); it != m_pObjects->end(); it++)
-                {
-                    const ICOSEMObject * pObject = *it;
-                    const ICOSEMInterface * pInterface = dynamic_cast<const ICOSEMInterface *>(pObject);
-                    for (const COSEMObjectInstanceID& Entry : pInterface->GetObjectInstanceIDList()) {
-                        array.push_back(DLMSStructure({
-                            pInterface->GetClassID(),
-                            pInterface->GetVersion(),
-                            Entry,
-                            pInterface->GetAccessRights(Entry)
-                        }));
-                    }
-                }
-                pAttribute->SelectChoice(COSEMDataType::NULL_DATA);
-                AppendResult = pAttribute->Append(array);
-                LOG_ALL("HERE WE ARE %d\r\n", AppendResult);
-            }
-            break;
-        case ATTR_PARTNERS_ID:
-            AppendResult = pAttribute->Append(
-                DLMSStructure
-                ({
-                    pContext->m_ClientSAP,
-                    pContext->m_ServerSAP,      // ToDo - change to uint16_t
-                }));
-            break;
-        case ATTR_APP_CTX_NAME:
-            pAttribute->SelectChoice(COSEMDataType::OCTET_STRING);
-            AppendResult = pAttribute->Append(pContext->m_SecurityOptions.ApplicationContextName);
-            break;
-        case ATTR_XDLMS_CTX_INFO:
-            pAttribute->SelectChoice(COSEMDataType::STRUCTURE);
-            AppendResult = pAttribute->Append(
-                DLMSStructure
-                ({
-                    pContext->m_xDLMS.ConformanceBits(),
-                    pContext->m_xDLMS.APDUSize(),
-                    pContext->m_xDLMS.APDUSize(),
-                    pContext->m_xDLMS.DLMSVersion(),
-                    pContext->m_xDLMS.QOS(),
-                    pContext->m_xDLMS.DedicatedKey()
-                }));
-            break;
-        case ATTR_AUTH_MECH_NAME:
-            pAttribute->SelectChoice(COSEMDataType::OCTET_STRING);
-            AppendResult = pAttribute->Append(pContext->m_SecurityOptions.MechanismName);
-            break;
-        case ATTR_SECRET:
-            //
-            // Not cool to have the SECRET out
-            //
-            RetVal = APDUConstants::Data_Access_Result::read_write_denied;
-            break;
-        case ATTR_STATUS:
-            AppendResult = pAttribute->Append((uint8_t) pContext->m_Status);
-            break;
-        case ATTR_SECURITY_SETUP_REF:
-            //
-            // Not cool to have the SECRET out
-            //
-            RetVal = APDUConstants::Data_Access_Result::read_write_denied;
-            break;
-        default:
-            RetVal = APDUConstants::Data_Access_Result::object_unavailable;
-            break;
-        }
-        if (AppendResult)
-        {
-            RetVal = APDUConstants::Data_Access_Result::success;
-        }
-        return RetVal;
-    }
-
-    AssociationContext * Association::GetAssociationContextByIndex(int Index)
-    {
-        AssociationInfoList::iterator it = m_Associations.begin();
-        while (it != m_Associations.end())
-        {
-            if (0 == Index--)
-            {
-                return &(*it);
-            }
-            ++it;
-        }
-        return nullptr;
-    }
-
-    AssociationContext * Association::GetAssociationContextByAddress(COSEMAddressType Address)
-    {
-        AssociationInfoList::iterator it =
-            std::find_if(m_Associations.begin(),
-            m_Associations.end(),
-            [Address](const AssociationContext& Entry) -> bool
-            {
-                return Address == Entry.m_ClientSAP;
-            });
-        if (it == m_Associations.end())
-        {
-            return nullptr;
-        }
-        return &(*it);
-    }
-    //
     // LogicalDevice
     //
     LogicalDevice::LogicalDevice(COSEMServer * pServer) :
         m_pServer(pServer),
+        m_SecuritySetup(),
         m_Association(&m_Objects)
     {
         LOGICAL_DEVICE_BEGIN_OBJECTS
+            LOGICAL_DEVICE_OBJECT(m_SecuritySetup)
             LOGICAL_DEVICE_OBJECT(m_Association)
         LOGICAL_DEVICE_END_OBJECTS
     }
@@ -328,10 +100,38 @@ namespace EPRI
         {
             Result = APPOpenConfirmOrResponse::AssociationResultType::rejected_transient;
         }
+        std::unique_ptr<xDLMS::InitiateResponseVariant> pResponse_xDLMS;
+        if (Request.m_xDLMS.IsPlain())
+        {
+            pResponse_xDLMS = std::make_unique<xDLMS::InitiateResponseVariant>(xDLMS::InitiateResponse(Request.m_xDLMS.GetPlainRequest()));
+        }
+        else if (Request.m_xDLMS.IsGloCiphered())
+        {
+            const std::shared_ptr<ISecuritySuite> pSuite = m_Association.GetSecuritySetup(Request.m_SourceAddress);
+            if (pSuite)
+            {
+                DLMSVector Plaintext = Request.m_xDLMS.GetGloRequest().Decrypt(pSuite, Request.m_SecurityOptions);
+                std::unique_ptr<xDLMS::InitiateRequest> pRequest_xDLMS = std::make_unique<xDLMS::InitiateRequest>();
+                if (!pRequest_xDLMS->Parse(&Plaintext))
+                {
+                    Result = APPOpenConfirmOrResponse::AssociationResultType::rejected_permanent;
+                }
+                else
+                {
+                    xDLMS::GLO::InitiateResponse Response_xDLMS;
+                    Response_xDLMS.Encrypt(pSuite, Request.m_SecurityOptions, xDLMS::InitiateResponse(*pRequest_xDLMS).GetBytes());
+                    pResponse_xDLMS = std::make_unique<xDLMS::InitiateResponseVariant>(Response_xDLMS);
+                }
+            }
+            else
+            {
+                Result = APPOpenConfirmOrResponse::AssociationResultType::rejected_permanent;
+            }
+        }
         APPOpenConfirmOrResponse
             Response(SAP(),
                      Request.m_SourceAddress,
-                     xDLMS::InitiateResponse(Request.m_xDLMS),
+                     *pResponse_xDLMS,
                      Request.m_SecurityOptions,
                      Result,
                      APPOpenConfirmOrResponse::DiagnosticSourceType::acse_service_user,
@@ -347,8 +147,25 @@ namespace EPRI
     {
         if (IsForMe(Request))
         {
+            const AssociationContext* pContext = m_Association.GetAssociationContext(Request);
+            if (pContext and Request.m_pGloRequest)
+            {
+                DLMSVector Plaintext = Request.m_pGloRequest->Decrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite(), pContext->m_SecurityOptions);
+                std::unique_ptr<Get_Request_Normal> pNormalRequest = std::make_unique<Get_Request_Normal>();
+                if (pNormalRequest->Parse(&Plaintext, Request.m_SourceAddress, Request.m_DestinationAddress))
+                {
+                    return InitiateGet(
+                        APPGetRequestOrIndication(
+                            Request.m_SourceAddress,
+                            Request.m_DestinationAddress,
+                            pNormalRequest->invoke_id_and_priority,
+                            pNormalRequest->cosem_attribute_descriptor
+                        ),
+                        UpperLayerAllowed
+                    );
+                }
+            }
             // ToDo - pSelectiveAccess
-            const AssociationContext * pContext = m_Association.GetAssociationContext(Request);
             InvokeIdAndPriorityType    InvokeID = COSEM_GET_INVOKE_ID(Request.m_InvokeIDAndPriority);
             switch (Request.m_Type)
             {

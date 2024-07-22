@@ -125,12 +125,16 @@ namespace EPRI
     {
         if (m_ObjectValueMap.find(ObjectId) == m_ObjectValueMap.end())
             return 0;
+        if (m_ObjectValueMap.at(ObjectId).attribute_access.find(AttributeId) == m_ObjectValueMap.at(ObjectId).attribute_access.end())
+            return 0;
         return m_ObjectValueMap.at(ObjectId).attribute_access.at(AttributeId);
     }
 
     uint8_t ICOSEM::GetMethodAccessRights(COSEMObjectInstanceID ObjectId, ObjectAttributeIdType MethodId) const
     {
         if (m_ObjectValueMap.find(ObjectId) == m_ObjectValueMap.end())
+            return 0;
+        if (m_ObjectValueMap.at(ObjectId).method_access.find(MethodId) == m_ObjectValueMap.at(ObjectId).method_access.end())
             return 0;
         return m_ObjectValueMap.at(ObjectId).method_access.at(MethodId);
     }

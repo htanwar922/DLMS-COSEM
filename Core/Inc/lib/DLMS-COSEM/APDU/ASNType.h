@@ -314,6 +314,8 @@ namespace EPRI
 
         virtual GetNextResult GetNextValue(ASNType * pValue);
         virtual GetNextResult GetNextValue(DLMSValue * pValue);
+        virtual size_t GetNextLength();
+        virtual bool AppendNextLength(size_t Length);
 
         inline ASN::DataTypes GetCurrentSchemaType() const
         {

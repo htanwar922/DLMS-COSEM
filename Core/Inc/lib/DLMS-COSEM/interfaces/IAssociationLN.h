@@ -113,8 +113,9 @@ namespace EPRI
         enum AccessModeBitmask : uint8_t
         {
             access_denied             = 0x00,
-            read_access               = 0x01,
-            write_access              = 0x02,
+            attr_read_access          = 0x01,
+            method_access             = 0x01,
+            attr_write_access         = 0x02,
             authenticated_request     = 0x04,
             encrypted_request         = 0x08,
             digitally_signed_request  = 0x10,

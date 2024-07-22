@@ -567,7 +567,7 @@ namespace EPRI
             {
             }
 
-        	LOG_ALL("5:1.1: AARQ_Handler : State == %u\r\n", m_CurrentState);		// ToDo - check breakpoint
+        	LOG_ALL("5:1.1: AARQ_Handler : State == %u\r\n", m_CurrentState);
         	//osDelay(1000);
             return bAllowed;
         }
@@ -579,6 +579,7 @@ namespace EPRI
     	LOG_ALL("5:2: APDUHandler\r\n");		// ToDo - check breakpoint
         GetRequestEventData * pEvent = nullptr;
         Get_Request_Normal *  pNormalRequest = dynamic_cast<Get_Request_Normal *>(pAPDU.get());
+        GLO::Get_Request *    pGLORequest = dynamic_cast<GLO::Get_Request *>(pAPDU.get());  // Himanshu - GLO
         if (pNormalRequest)
         {
             pEvent = new GetRequestEventData(APPGetRequestOrIndication(
@@ -586,6 +587,13 @@ namespace EPRI
                 pAPDU->GetDestinationAddress(),
                 pNormalRequest->invoke_id_and_priority,
                 pNormalRequest->cosem_attribute_descriptor));
+        }
+        else if (pGLORequest)
+        {
+            pEvent = new GetRequestEventData(APPGetRequestOrIndication(
+                pAPDU->GetSourceAddress(),
+                pAPDU->GetDestinationAddress(),
+                *pGLORequest));
         }
         if (pEvent)
         {

@@ -135,7 +135,44 @@ namespace EPRI
         case Access_Response_Base::Tag:     // Himanshu - ACCESS
             pRetVal.reset(new Access_Response());
             break;
+        case GLO::Get_Request::Tag:
+            pRetVal.reset(new GLO::Get_Request());
+            break;
+        case GLO::Get_Response::Tag:
+            pRetVal.reset(new GLO::Get_Response());
+            break;
+        case GLO::Set_Request::Tag:
+            pRetVal.reset(new GLO::Set_Request());
+            break;
+        case GLO::Set_Response::Tag:
+            pRetVal.reset(new GLO::Set_Response());
+            break;
+        case GLO::Action_Request::Tag:
+            pRetVal.reset(new GLO::Action_Request());
+            break;
+        case GLO::Action_Response::Tag:
+            pRetVal.reset(new GLO::Action_Response());
+            break;
+        //case GLO::Access_Request::Tag:
+        //    pRetVal.reset(new GLO::Access_Request());
+        //    break;
+        //case GLO::Action_Response::Tag:
+        //    pRetVal.reset(new GLO::Action_Response());
+        //    break;
         default:
+#if MODE == SERVER
+            pRetVal.reset(new GLO::Access_Request());
+            if (!pRetVal->Parse(pData, SourceAddress, DestinationAddress))
+            {
+                pRetVal.release();
+            }
+#else
+            pRetVal.reset(new GLO::Access_Response());
+            if (!pRetVal->Parse(pData, SourceAddress, DestinationAddress))
+            {
+                pRetVal.release();
+            }
+#endif
             break;
         }
         if (pRetVal &&

@@ -89,11 +89,36 @@ namespace EPRI
             const QOSType& QOS /*= DLMSOptionalNone*/)
             : m_Initialized(true)
             , m_APDUSize(APDUSize)
-            , m_Conformance(Conformance)
+            , m_Conformance(Conformance & AvailableStackConformance)
             , m_DLMSVersion(DLMSVersion)
             , m_QOS(QOS)
         {
         }
+
+        Context::Context(const Context& RHS)
+            : m_Initialized(RHS.m_Initialized)
+            , m_APDUSize(RHS.m_APDUSize)
+            , m_Conformance(RHS.m_Conformance & AvailableStackConformance)
+            , m_DLMSVersion(RHS.m_DLMSVersion)
+            , m_DedicatedKey(RHS.m_DedicatedKey)
+            , m_QOS(RHS.m_QOS)
+        {
+        }
+
+        Context& Context::operator=(const Context& RHS)
+        {
+            if (this != &RHS)
+            {
+                m_Initialized = RHS.m_Initialized;
+                m_APDUSize = RHS.m_APDUSize;
+                m_Conformance = RHS.m_Conformance & AvailableStackConformance;
+                m_DLMSVersion = RHS.m_DLMSVersion;
+                m_DedicatedKey = RHS.m_DedicatedKey;
+                m_QOS = RHS.m_QOS;
+            }
+            return *this;
+        }
+
 
         Context::~Context()
         {
@@ -122,6 +147,11 @@ namespace EPRI
         ConformanceBitsType Context::ConformanceBits() const
         {
             return m_Conformance;
+        }
+
+        ConformanceBitsType Context::SetConformance(const ConformanceBitsType& Bits)
+        {
+            return m_Conformance = Bits & AvailableStackConformance;
         }
 
         uint8_t Context::DLMSVersion() const
@@ -369,6 +399,268 @@ namespace EPRI
             return false;
         }
 
+        //
+        // InitiateRequestVariant
+        //
+        InitiateRequestVariant::InitiateRequestVariant()
+            : m_Type(none)
+            , m_pRequest(nullptr)
+        {
+        }
+        InitiateRequestVariant::InitiateRequestVariant(const InitiateRequest& Request)
+            : m_Type(plain)
+            , m_pRequest(new InitiateRequest(Request))
+        {
+        }
+        InitiateRequestVariant::InitiateRequestVariant(const GLO::InitiateRequest& Request)
+            : m_Type(glo_ciphered)
+            , m_pRequest(new GLO::InitiateRequest(Request))
+        {
+        }
+        InitiateRequestVariant::InitiateRequestVariant(const InitiateRequestVariant& Request)
+            : m_Type(Request.m_Type)
+            , m_pRequest(nullptr)
+        {
+            if (m_Type == plain)
+            {
+                m_pRequest = new InitiateRequest(Request.GetPlainRequest());
+            }
+            else if (m_Type == glo_ciphered)
+            {
+                m_pRequest = new GLO::InitiateRequest(Request.GetGloRequest());
+            }
+        }
+        InitiateRequestVariant::~InitiateRequestVariant()
+        {
+            if (m_Type == plain)
+            {
+                delete static_cast<InitiateRequest*>(m_pRequest);
+            }
+            else if (m_Type == glo_ciphered)
+            {
+                delete static_cast<GLO::InitiateRequest*>(m_pRequest);
+            }
+        }
+
+        InitiateRequest& InitiateRequestVariant::GetPlainRequest() const
+        {
+            if (m_Type != plain)
+            {
+                throw std::runtime_error("Request is not of type InitiateRequest");
+            }
+            return *static_cast<InitiateRequest*>(m_pRequest);
+        }
+
+        GLO::InitiateRequest& InitiateRequestVariant::GetGloRequest() const
+        {
+            if (m_Type != glo_ciphered)
+            {
+                throw std::runtime_error("Request is not of type GLO::InitiateRequest");
+            }
+            return *static_cast<GLO::InitiateRequest*>(m_pRequest);
+        }
+
+        bool InitiateRequestVariant::Initialized() const
+        {
+            if (m_Type == plain)
+            {
+                return static_cast<InitiateRequest*>(m_pRequest)->Initialized();
+            }
+            else if (m_Type == glo_ciphered)
+            {
+                return static_cast<GLO::InitiateRequest*>(m_pRequest)->Initialized();
+            }
+            return false;
+        }
+
+        bool InitiateRequestVariant::IsPlain() const
+        {
+            return m_Type == plain;
+        }
+
+        bool InitiateRequestVariant::IsGloCiphered() const
+        {
+            return m_Type == glo_ciphered;
+        }
+
+        bool InitiateRequestVariant::Parse(DLMSVector* pData)
+        {
+            if (m_Type == none)
+            {
+                m_Type = plain;
+                m_pRequest = new InitiateRequest();
+                if (Parse(pData))
+                {
+                    return true;
+                }
+                delete static_cast<InitiateRequest*>(m_pRequest);
+
+                m_Type = glo_ciphered;
+                m_pRequest = new GLO::InitiateRequest();
+                if (Parse(pData))
+                {
+                    return true;
+                }
+                delete static_cast<GLO::InitiateRequest*>(m_pRequest);
+
+                m_Type = none;
+                return false;
+            }
+            else if (m_Type == plain)
+            {
+                return static_cast<InitiateRequest*>(m_pRequest)->Parse(pData);
+            }
+            else if (m_Type == glo_ciphered)
+            {
+                return static_cast<GLO::InitiateRequest*>(m_pRequest)->Parse(pData);
+            }
+            return false;
+        }
+
+        std::vector<uint8_t> InitiateRequestVariant::GetBytes() const
+        {
+            if (m_Type == plain)
+            {
+                return static_cast<InitiateRequest*>(m_pRequest)->GetBytes();
+            }
+            else if (m_Type == glo_ciphered)
+            {
+                return static_cast<GLO::InitiateRequest*>(m_pRequest)->GetBytes();
+            }
+            return std::vector<uint8_t>();
+        }
+
+
+        //
+        // InitiateResponseVariant
+        //
+        InitiateResponseVariant::InitiateResponseVariant()
+            : m_Type(none)
+            , m_pResponse(nullptr)
+        {
+        }
+        InitiateResponseVariant::InitiateResponseVariant(const InitiateResponse& Response)
+            : m_Type(plain)
+            , m_pResponse(new InitiateResponse(Response))
+        {
+        }
+        InitiateResponseVariant::InitiateResponseVariant(const GLO::InitiateResponse& Response)
+            : m_Type(glo_ciphered)
+            , m_pResponse(new GLO::InitiateResponse(Response))
+        {
+        }
+        InitiateResponseVariant::InitiateResponseVariant(const InitiateResponseVariant& Response)
+            : m_Type(Response.m_Type)
+            , m_pResponse(nullptr)
+        {
+            if (m_Type == plain)
+            {
+                m_pResponse = new InitiateResponse(Response.GetPlainResponse());
+            }
+            else if (m_Type == glo_ciphered)
+            {
+                m_pResponse = new GLO::InitiateResponse(Response.GetGloResponse());
+            }
+        }
+        InitiateResponseVariant::~InitiateResponseVariant()
+        {
+            if (m_Type == plain)
+            {
+                delete static_cast<InitiateResponse*>(m_pResponse);
+            }
+            else if (m_Type == glo_ciphered)
+            {
+                delete static_cast<GLO::InitiateResponse*>(m_pResponse);
+            }
+        }
+
+        InitiateResponse& InitiateResponseVariant::GetPlainResponse() const
+        {
+            if (m_Type != plain)
+            {
+                throw std::runtime_error("Response is not of type InitiateResponse");
+            }
+            return *static_cast<InitiateResponse*>(m_pResponse);
+        }
+
+        GLO::InitiateResponse& InitiateResponseVariant::GetGloResponse() const
+        {
+            if (m_Type != glo_ciphered)
+            {
+                throw std::runtime_error("Response is not of type GLO::InitiateResponse");
+            }
+            return *static_cast<GLO::InitiateResponse*>(m_pResponse);
+        }
+
+        bool InitiateResponseVariant::Initialized() const
+        {
+            if (m_Type == plain)
+            {
+                return static_cast<InitiateResponse*>(m_pResponse)->Initialized();
+            }
+            else if (m_Type == glo_ciphered)
+            {
+                return static_cast<GLO::InitiateResponse*>(m_pResponse)->Initialized();
+            }
+            return false;
+        }
+
+        bool InitiateResponseVariant::IsPlain() const
+        {
+            return m_Type == plain;
+        }
+
+        bool InitiateResponseVariant::IsGloCiphered() const
+        {
+            return m_Type == glo_ciphered;
+        }
+
+        bool InitiateResponseVariant::Parse(DLMSVector* pData)
+        {
+            if (m_Type == none)
+            {
+                m_Type = plain;
+                m_pResponse = new InitiateResponse();
+                if (Parse(pData))
+                {
+                    return true;
+                }
+                delete static_cast<InitiateResponse*>(m_pResponse);
+
+                m_Type = glo_ciphered;
+                m_pResponse = new GLO::InitiateResponse();
+                if (Parse(pData))
+                {
+                    return true;
+                }
+                delete static_cast<GLO::InitiateResponse*>(m_pResponse);
+
+                m_Type = none;
+                return false;
+            }
+            else if (m_Type == plain)
+            {
+                return static_cast<InitiateResponse*>(m_pResponse)->Parse(pData);
+            }
+            else if (m_Type == glo_ciphered)
+            {
+                return static_cast<GLO::InitiateResponse*>(m_pResponse)->Parse(pData);
+            }
+            return false;
+        }
+
+        std::vector<uint8_t> InitiateResponseVariant::GetBytes() const
+        {
+            if (m_Type == plain)
+            {
+                return static_cast<InitiateResponse*>(m_pResponse)->GetBytes();
+            }
+            else if (m_Type == glo_ciphered)
+            {
+                return static_cast<GLO::InitiateResponse*>(m_pResponse)->GetBytes();
+            }
+            return std::vector<uint8_t>();
+        }
     }
 
 }

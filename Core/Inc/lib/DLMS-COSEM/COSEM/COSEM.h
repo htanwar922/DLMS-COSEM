@@ -231,7 +231,7 @@ namespace EPRI
 
         APPOpenConfirmOrResponse(COSEMAddressType SourceAddress,
                                  COSEMAddressType DestinationAddress,
-                                 const xDLMS::InitiateResponse& xDLMS,
+                                 const xDLMS::InitiateResponseVariant& xDLMS,
                                  const COSEMSecurityOptions& Security,
                                  AssociationResultType Result,
                                  DiagnosticSourceType DiagnosticSource,
@@ -255,7 +255,7 @@ namespace EPRI
 
         DiagnosticSourceType    m_DiagnosticSource;
         BaseDiagnosticType      m_Diagnostic;
-        xDLMS::InitiateResponse m_xDLMS;
+        xDLMS::InitiateResponseVariant m_xDLMS;
 
     };
 
@@ -264,7 +264,7 @@ namespace EPRI
         static const uint16_t ID = 0x2002;
         APPOpenRequestOrIndication(COSEMAddressType SourceAddress,
                                    COSEMAddressType DestinationAddress,
-                                   const xDLMS::InitiateRequest& xDLMS,
+                                   const xDLMS::InitiateRequestVariant& xDLMS,
                                    const COSEMSecurityOptions& Security) :
             APPBaseCallbackParameter(SourceAddress, DestinationAddress),
             m_xDLMS(xDLMS),
@@ -276,7 +276,7 @@ namespace EPRI
         //
         // Application Context Name Building
         //
-        xDLMS::InitiateRequest  m_xDLMS;
+        xDLMS::InitiateRequestVariant  m_xDLMS;
         //
         // Mechanism and Security
         //
@@ -326,10 +326,30 @@ namespace EPRI
         {
             m_Parameter = BlockNumber;
         }
+        // Himanshu - GLO
+        APPGetRequestOrIndication(COSEMAddressType SourceAddress,
+            COSEMAddressType DestinationAddress,
+            GLO::Get_Request& Request)
+            : APPBaseCallbackParameter(SourceAddress, DestinationAddress)
+            , m_Type((GetRequestType)0)
+            , m_InvokeIDAndPriority(0)
+            , m_pGloRequest(std::make_unique<GLO::Get_Request>(GLO::Get_Request(Request)))
+        {
+        }
+        // Himanshu - GLO - required by the unique_ptr
+        APPGetRequestOrIndication(const APPGetRequestOrIndication& Request)
+            : APPBaseCallbackParameter(Request.m_SourceAddress, Request.m_DestinationAddress)
+            , m_Type(Request.m_Type)
+            , m_InvokeIDAndPriority(Request.m_InvokeIDAndPriority)
+            , m_Parameter(Request.m_Parameter)
+            , m_pGloRequest(std::make_unique<GLO::Get_Request>(GLO::Get_Request(*Request.m_pGloRequest)))
+        {
+        }
 
         GetRequestType                 m_Type;
         InvokeIdAndPriorityType        m_InvokeIDAndPriority;
         RequestParameter               m_Parameter;
+        std::unique_ptr<GLO::Get_Request>   m_pGloRequest = nullptr;        // Himanshu - GLO
     };
 
     struct APPGetConfirmOrResponse : public APPBaseCallbackParameter

@@ -79,7 +79,8 @@
 #include "ITemplates/IBaseLibrary.h"
 #include "COSEM/COSEM.h"
 #include "interfaces/ICOSEMInterface.h"
-#include "interfaces/IAssociationLN.h"
+#include "Device/Association.h"
+#include "Device/SecuritySetup.h"
 #include "COSEM/COSEMSecurity.h"
 
 namespace EPRI
@@ -109,62 +110,6 @@ namespace EPRI
     struct APPAccessRequestOrIndication;    // Himanshu
     struct APPAccessConfirmOrResponse;      // Himanshu
 
-    struct AssociationContext
-    {
-        using AssociationStatusType = IAssociationLN::AssociationState;
-
-        AssociationContext(const APPOpenConfirmOrResponse& Response);
-        //
-        // Partners
-        //
-        COSEMAddressType        m_ClientSAP;
-        COSEMAddressType        m_ServerSAP;
-        //
-        // Application Context
-        //
-        COSEMSecurityOptions    m_SecurityOptions;
-        //
-        // xDLMS Context Information
-        //
-        xDLMS::Context          m_xDLMS;
-        //
-        // Status Information
-        //
-        AssociationStatusType   m_Status;
-
-    };
-
-    class Association : public IAssociationLNObject
-    {
-    public:
-        Association() = delete;
-        Association(std::vector<ICOSEMObject *> * pObjects);
-        Association(std::vector<ICOSEMObject *> * pObjects
-            , const COSEMObjectInstanceID& OID
-            , uint16_t ShortNameBase = std::numeric_limits<uint16_t>::max());
-        virtual ~Association();
-
-        virtual size_t AvailableAssociations() const;
-        virtual bool RegisterAssociation(const APPOpenConfirmOrResponse& Response);
-        virtual bool ReleaseAssociation(const APPReleaseConfirmOrResponse& Response);
-        virtual const AssociationContext * GetAssociationContext(
-            const APPBaseCallbackParameter& Parameter);
-        COSEMAddressType GetAssociatedAddress() const;
-        virtual void ReleaseTransientAssociations();
-
-    protected:
-        using AssociationInfoList = std::list<AssociationContext>;
-        virtual APDUConstants::Data_Access_Result InternalGet(const AssociationContext& Context,
-            ICOSEMAttribute * pAttribute,
-            const Cosem_Attribute_Descriptor& Descriptor,
-            SelectiveAccess * pSelectiveAccess) final;
-        AssociationContext * GetAssociationContextByIndex(int Index);
-        AssociationContext * GetAssociationContextByAddress(COSEMAddressType Address);
-
-        AssociationInfoList m_Associations;
-        std::vector<ICOSEMObject *> * m_pObjects;
-    };
-
     class LogicalDevice
     {
     public:
@@ -191,6 +136,7 @@ namespace EPRI
         virtual void ReleaseTransientAssociations();
 
         std::vector<ICOSEMObject *>  m_Objects;
+        SecuritySetup                m_SecuritySetup;
         Association                  m_Association;
         COSEMServer *                m_pServer = nullptr;
 

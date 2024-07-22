@@ -90,6 +90,14 @@ namespace EPRI
         {
             throw std::logic_error("application_context_name Required");
         }
+        else if (m_SecurityOptions.Encryption())
+        {
+            RetVal = pAARQ->calling_AP_title.GetNextValue(&m_SecurityOptions.CallingAPTitle);
+            if (RetVal != ASNType::GetNextResult::VALUE_RETRIEVED)
+            {
+                throw std::logic_error("calling_AP_title Required");
+            }
+        }
         //
         // Mechanism is Optional
         //
@@ -250,6 +258,11 @@ namespace EPRI
             pAARE->result.Append(int8_t(m_Result)) &&
             pAARE->result_source_diagnostic.SelectChoice(m_DiagnosticSource) &&
             pAARE->result_source_diagnostic.Append(m_Diagnostic);
+        if (m_SecurityOptions.Encryption())
+        {
+            RetVal = RetVal &&
+                pAARE->responding_AP_title.Append(m_SecurityOptions.RespondingAPTitle);
+        }
         if (m_xDLMS.Initialized())
         {
             RetVal = RetVal &&
@@ -426,6 +439,24 @@ namespace EPRI
         pXPort->RegisterAPDUHandler(m_Address, Access_Request_Base::Tag,
             std::bind(&COSEM::ACCESS_Request_Handler, this, std::placeholders::_1));
         pXPort->RegisterAPDUHandler(m_Address, Access_Response_Base::Tag,
+            std::bind(&COSEM::ACCESS_Response_Handler, this, std::placeholders::_1));
+
+        // Himanshu - GLO
+        pXPort->RegisterAPDUHandler(m_Address, GLO::Get_Request::Tag,
+            std::bind(&COSEM::GET_Request_Handler, this, std::placeholders::_1));
+        pXPort->RegisterAPDUHandler(m_Address, GLO::Get_Response::Tag,
+            std::bind(&COSEM::GET_Response_Handler, this, std::placeholders::_1));
+        pXPort->RegisterAPDUHandler(m_Address, GLO::Set_Request::Tag,
+            std::bind(&COSEM::SET_Request_Handler, this, std::placeholders::_1));
+        pXPort->RegisterAPDUHandler(m_Address, GLO::Set_Response::Tag,
+            std::bind(&COSEM::SET_Response_Handler, this, std::placeholders::_1));
+        pXPort->RegisterAPDUHandler(m_Address, GLO::Action_Request::Tag,
+            std::bind(&COSEM::ACTION_Request_Handler, this, std::placeholders::_1));
+        pXPort->RegisterAPDUHandler(m_Address, GLO::Action_Response::Tag,
+            std::bind(&COSEM::ACTION_Response_Handler, this, std::placeholders::_1));
+        pXPort->RegisterAPDUHandler(m_Address, GLO::Access_Request::Tag,
+            std::bind(&COSEM::ACCESS_Request_Handler, this, std::placeholders::_1));
+        pXPort->RegisterAPDUHandler(m_Address, GLO::Access_Response::Tag,
             std::bind(&COSEM::ACCESS_Response_Handler, this, std::placeholders::_1));
 
         return HANDLE_COUNTER;

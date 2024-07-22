@@ -30,15 +30,15 @@ namespace EPRI
         SetEntriesInUse(1);
         SetBuffer({});
 
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_BUFFER, IAssociationLN::read_access);
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_CAPTURE_OBJECTS, IAssociationLN::read_access);
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_CAPTURE_PERIOD, IAssociationLN::read_access);
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_ENTRIES_IN_USE, IAssociationLN::read_access);
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_PROFILE_ENTRIES, IAssociationLN::read_access);
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_SORT_METHOD, IAssociationLN::read_access);
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_SORT_OBJECT, IAssociationLN::read_access);
-        SetMethodAccessRights(m_InstanceCriteria, METHOD_RESET, IAssociationLN::write_access);
-        SetMethodAccessRights(m_InstanceCriteria, METHOD_CAPTURE, IAssociationLN::write_access);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_BUFFER, IAssociationLN::attr_read_access);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_CAPTURE_OBJECTS, IAssociationLN::attr_read_access);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_CAPTURE_PERIOD, IAssociationLN::attr_read_access);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_ENTRIES_IN_USE, IAssociationLN::attr_read_access);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_PROFILE_ENTRIES, IAssociationLN::attr_read_access);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_SORT_METHOD, IAssociationLN::attr_read_access);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_SORT_OBJECT, IAssociationLN::attr_read_access);
+        SetMethodAccessRights(m_InstanceCriteria, METHOD_RESET, IAssociationLN::method_access);
+        SetMethodAccessRights(m_InstanceCriteria, METHOD_CAPTURE, IAssociationLN::method_access);
     }
 
     void LinuxProfileNameplate::CaptureData()
@@ -131,7 +131,7 @@ namespace EPRI
         {
             DLMSValue Value;
 
-            if (not (GetAttributeAccessRights(Descriptor.instance_id, Descriptor.attribute_id) & IAssociationLN::write_access))
+            if (not (GetAttributeAccessRights(Descriptor.instance_id, Descriptor.attribute_id) & IAssociationLN::attr_write_access))
             {
                 return APDUConstants::Data_Access_Result::scope_of_access_violated;
             }

@@ -9,11 +9,13 @@ set(libDLMS-COSEM-SRC-FILES
 	${CMAKE_CURRENT_LIST_DIR}/COSEM/COSEMEngine.cpp
 	${CMAKE_CURRENT_LIST_DIR}/COSEM/COSEMObjectInstanceID.cpp
 	${CMAKE_CURRENT_LIST_DIR}/COSEM/COSEMSecurity.cpp
+	${CMAKE_CURRENT_LIST_DIR}/COSEM/COSEMSecuritySuite.cpp
 	${CMAKE_CURRENT_LIST_DIR}/COSEM/COSEMServer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/COSEM/DLMS-COSEM.cpp
 	${CMAKE_CURRENT_LIST_DIR}/COSEM/COSEMData.cpp
 	${CMAKE_CURRENT_LIST_DIR}/Device/LogicalDevice.cpp
 	${CMAKE_CURRENT_LIST_DIR}/Device/StateMachine.cpp
+	${CMAKE_CURRENT_LIST_DIR}/APDU/APDU.cpp
 	${CMAKE_CURRENT_LIST_DIR}/APDU/AARE.cpp
 	${CMAKE_CURRENT_LIST_DIR}/APDU/AARQ.cpp
 	${CMAKE_CURRENT_LIST_DIR}/APDU/APDUConstants.cpp
@@ -36,11 +38,16 @@ set(libDLMS-COSEM-SRC-FILES
 	${CMAKE_CURRENT_LIST_DIR}/interfaces/IRegister.cpp
 	${CMAKE_CURRENT_LIST_DIR}/interfaces/IProfileGeneric.cpp
 	${CMAKE_CURRENT_LIST_DIR}/interfaces/IAssociationLN.cpp
+	${CMAKE_CURRENT_LIST_DIR}/interfaces/ISecuritySetup.cpp
 	${CMAKE_CURRENT_LIST_DIR}/wrapper/Wrapper.cpp
 	${CMAKE_CURRENT_LIST_DIR}/wrapper/SerialWrapper.cpp
 	${CMAKE_CURRENT_LIST_DIR}/wrapper/TCPWrapper.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Device/Association.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Device/SecuritySetup.cpp
 	${HDLC_SOURCES}			# Himanshu
 	)
 
 add_library(DLMS-COSEM-Server ${libDLMS-COSEM-SRC-FILES})
 add_library(DLMS-COSEM-Client ${libDLMS-COSEM-SRC-FILES})
+target_link_libraries(DLMS-COSEM-Server OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(DLMS-COSEM-Client OpenSSL::SSL OpenSSL::Crypto)

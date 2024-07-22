@@ -116,4 +116,16 @@ namespace EPRI
         
     };
 
+    namespace GLO {
+        class Get_Response : public EPRI::GLO::CipheredBase<0xcc>
+        {
+        public:
+            Get_Response() = default;
+            Get_Response(const Get_Response& Response)
+                : EPRI::GLO::CipheredBase<0xcc>(Response)
+            {
+            }
+            virtual ~Get_Response() = default;
+        };
+    }
 }

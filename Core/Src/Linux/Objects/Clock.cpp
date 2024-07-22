@@ -12,9 +12,9 @@ namespace EPRI
         : IClockObject({ 0, 0, 1, 0, 0, 255 })
     {
         for (const std::pair<ObjectAttributeIdType, ICOSEMAttribute*>& Attribute : m_Attributes)
-            SetAttributeAccessRights(m_InstanceCriteria, Attribute.first, IAssociationLN::read_access);
+            SetAttributeAccessRights(m_InstanceCriteria, Attribute.first, IAssociationLN::attr_read_access);
         for (const std::pair<ObjectMethodIdType, ICOSEMMethod*>& Method : m_Methods)
-            SetMethodAccessRights(m_InstanceCriteria, Method.first, IAssociationLN::write_access);
+            SetMethodAccessRights(m_InstanceCriteria, Method.first, IAssociationLN::method_access);
     }
 
     APDUConstants::Data_Access_Result LinuxClock::InternalGet(const AssociationContext& Context,

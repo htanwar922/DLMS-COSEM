@@ -115,6 +115,14 @@ namespace EPRI
 
     LinuxManagementDevice::~LinuxManagementDevice()
     {
+        for (auto p : m_DataListP)
+        {
+            delete p;
+        }
+        for (auto p : m_RegisterListP)
+        {
+            delete p;
+        }
     }
     //
     // COSEM Device

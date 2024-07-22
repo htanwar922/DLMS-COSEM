@@ -61,4 +61,18 @@ namespace EPRI
     using AccessRequestData = Access_Request::AccessRequestData;
     using AccessRequestListOfSpec = Access_Request::AccessRequestListOfSpec;
     using AccessRequestListOfData = Access_Request::AccessRequestListOfData;
+
+
+    namespace GLO {
+        class Access_Request : public EPRI::GLO::CipheredBase<0x00>
+        {
+        public:
+            Access_Request() = default;
+            Access_Request(const Access_Request& Request)
+                : EPRI::GLO::CipheredBase<0x00>(Request)
+            {
+            }
+            virtual ~Access_Request() = default;
+        };
+    }
 }

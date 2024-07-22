@@ -124,4 +124,16 @@ namespace EPRI
         
     };
 
+    namespace GLO {
+        class Action_Response : public EPRI::GLO::CipheredBase<0xcf>
+        {
+        public:
+            Action_Response() = default;
+            Action_Response(const Action_Response& Response)
+                : EPRI::GLO::CipheredBase<0xcf>(Response)
+            {
+            }
+            virtual ~Action_Response() = default;
+        };
+    }
 }

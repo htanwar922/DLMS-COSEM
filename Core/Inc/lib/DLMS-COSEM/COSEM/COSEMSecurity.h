@@ -68,45 +68,101 @@
 // FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
+//
 
 #pragma once
 
 #include "APDU/ASNType.h"
 #include "APDU/APDUConstants.h"
+#include "COSEM/COSEMObjectInstanceID.h"
+#include "COSEM/COSEMSecuritySuite.h"
 #include "DLMSValue.h"
 
 namespace EPRI
 {
+    struct SecurityContext
+    {
+        enum SecuritySuiteOption : uint8_t
+        {
+            NO_SUITE = 0,
+            SUITE_0 = 1,
+            SUITE_1 = 2,
+            SUITE_2 = 3
+        };
+
+        enum SecurityPolicyBitmask : uint8_t
+        {
+            no_policy = 0x00,
+            authenticated_request = 0x04,
+            encrypted_request = 0x08,
+            digitally_signed_request = 0x10,
+            authenticated_response = 0x20,
+            encrypted_response = 0x40,
+            digitally_signed_response = 0x80
+        };
+
+        SecurityContext(SecuritySuiteOption Suite, uint8_t Policy);
+        virtual ~SecurityContext();
+
+        const std::shared_ptr<ISecuritySuite> GetSecuritySuite() const;
+        void SetSecuritySuite(const ISecuritySuite& riSuite);
+
+        uint8_t GetPolicy() const;
+        void ClearPolicy();
+        void SetPolicyBit(SecurityPolicyBitmask policy);
+
+        const COSEMObjectInstanceID& GetSecuritySetupObjectID() const;
+        void SetSecuritySetupObjectID(const COSEMObjectInstanceID& ID);
+
+    protected:
+        uint8_t             m_Policy;
+        SecuritySuiteOption m_SuiteOption;
+        std::shared_ptr<ISecuritySuite> m_pSecuritySuite;
+
+    };
+
     struct COSEMSecurityOptions
     {
         using AuthenticationValueType = DLMSValue;
-        
+        using APTitleType = DLMSValue;
+
         static const ASNObjectIdentifier ContextLNRNoCipher;
         static const ASNObjectIdentifier ContextSNRNoCipher;
         static const ASNObjectIdentifier ContextLNRCipher;
         static const ASNObjectIdentifier ContextSNRCipher;
+
+        static const ASNObjectIdentifier MechanismNameNoSecurity;
         static const ASNObjectIdentifier MechanismNameLowLevelSecurity;
         static const ASNObjectIdentifier MechanismNameHighLevelSecurity;
-        
+        static const ASNObjectIdentifier MechanismNameHighLevelSecurityMD5;
+        static const ASNObjectIdentifier MechanismNameHighLevelSecuritySHA1;
+        static const ASNObjectIdentifier MechanismNameHighLevelSecurityGMAC;
+        static const ASNObjectIdentifier MechanismNameHighLevelSecuritySHA256;
+        static const ASNObjectIdentifier MechanismNameHighLevelSecurityECDSA;
+
         enum SecurityLevel : uint8_t
         {
             SECURITY_NONE       = 0,
             SECURITY_LOW_LEVEL  = 1,
             SECURITY_HIGH_LEVEL = 2
         };
-        
-        COSEMSecurityOptions();
+
+        COSEMSecurityOptions(SecurityContext::SecuritySuiteOption Suite = SecurityContext::NO_SUITE
+            , uint8_t Policy = SecurityContext::no_policy);
         virtual ~COSEMSecurityOptions();
 
         SecurityLevel Level() const;
         bool LogicalNameReferencing() const;
         bool Authentication() const;
-        APDUConstants::AuthenticationValueChoice AuthenticationType() const;        
-        
+        bool Encryption() const;
+        APDUConstants::AuthenticationValueChoice AuthenticationType() const;
+
         ASNObjectIdentifier     ApplicationContextName;
         ASNObjectIdentifier     MechanismName;
         AuthenticationValueType AuthenticationValue;
+        APTitleType             CallingAPTitle;
+        APTitleType             RespondingAPTitle = DLMSVector{ METER_SYSTEM_TITLE };
+        SecurityContext         SecurityContext;
     };
-    
+
 }

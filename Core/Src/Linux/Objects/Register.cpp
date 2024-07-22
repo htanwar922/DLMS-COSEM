@@ -10,9 +10,9 @@ namespace EPRI
     LinuxRegister::LinuxRegister()
         : IRegisterObject({ 1, 0, 0, 7, 0, 255 })
     {
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_VALUE, IAssociationLN::read_access);
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_SCALAR_UNIT, IAssociationLN::read_access);
-        SetMethodAccessRights(m_InstanceCriteria, METHOD_RESET, IAssociationLN::write_access);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_VALUE, IAssociationLN::attr_read_access);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_SCALAR_UNIT, IAssociationLN::attr_read_access);
+        SetMethodAccessRights(m_InstanceCriteria, METHOD_RESET, IAssociationLN::method_access);
 
         SetCaptureValue(m_InstanceCriteria, 0.f);
     }
@@ -67,7 +67,7 @@ namespace EPRI
         {
             DLMSValue Value;
 
-            if (not (GetAttributeAccessRights(Descriptor.instance_id, Descriptor.attribute_id) & IAssociationLN::write_access))
+            if (not (GetAttributeAccessRights(Descriptor.instance_id, Descriptor.attribute_id) & IAssociationLN::attr_write_access))
             {
                 return APDUConstants::Data_Access_Result::scope_of_access_violated;
             }

@@ -60,4 +60,18 @@ namespace EPRI
     using AccessResponseData = Access_Response::AccessResponseData;
     using AccessResponseListOfSpecs = Access_Response::AccessResponseListOfSpec;
     using AccessResponseListOfData = Access_Response::AccessResponseListOfData;
+
+
+    namespace GLO {
+        class Access_Response : public EPRI::GLO::CipheredBase<0x00>
+        {
+        public:
+            Access_Response() = default;
+            Access_Response(const Access_Response& Response)
+                : EPRI::GLO::CipheredBase<0x00>(Response)
+            {
+            }
+            virtual ~Access_Response() = default;
+        };
+    }
 }
