@@ -69,6 +69,11 @@ namespace EPRI
             ICOSEMAttribute* pAttribute,
             const Cosem_Attribute_Descriptor& Descriptor,
             SelectiveAccess* pSelectiveAccess) final;
+        virtual APDUConstants::Action_Result InternalAction(const AssociationContext& Context,
+            ICOSEMMethod* pMethod,
+            const Cosem_Method_Descriptor& Descriptor,
+            const DLMSOptional<DLMSVector>& Parameters,
+            DLMSVector* pReturnValue = nullptr) final;
         AssociationContext* GetAssociationContextByIndex(int Index);
         AssociationContext* GetAssociationContextByAddress(COSEMAddressType Address);
         ssize_t FindObject(const Cosem_Attribute_Descriptor& Descriptor) const;

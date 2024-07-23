@@ -78,46 +78,61 @@
 
 namespace EPRI
 {
+#define COSEM_USER_SCHEMA                   \
+    COSEM_BEGIN_STRUCTURE                   \
+        COSEM_UNSIGNED_TYPE /* User ID */   \
+        COSEM_BEGIN_CHOICE  /* Username */  \
+            COSEM_VISIBLE_STRING_TYPE       \
+            COSEM_OCTET_STRING_TYPE         \
+        COSEM_END_CHOICE                    \
+    COSEM_END_STRUCTURE
+
+#define COSEM_OBJECT_SCHEMA                                 \
+    COSEM_BEGIN_STRUCTURE                                   \
+        COSEM_LONG_UNSIGNED_TYPE        /* Class ID */      \
+        COSEM_UNSIGNED_TYPE             /* Version */       \
+        COSEM_OCTET_STRING_TYPE         /* Logical Name */  \
+        /* access rights */                                 \
+        COSEM_BEGIN_STRUCTURE                               \
+            /* attribute access */                          \
+            COSEM_BEGIN_ARRAY                               \
+                COSEM_BEGIN_STRUCTURE                       \
+                    COSEM_INTEGER_TYPE                      \
+                    COSEM_ENUM_TYPE                         \
+                    (                                       \
+                        {                                   \
+                            /**/                            \
+                        }                                   \
+                    )                                       \
+                    COSEM_BEGIN_CHOICE                      \
+                        COSEM_NULL_DATA_TYPE                \
+                        COSEM_BEGIN_ARRAY                   \
+                            COSEM_INTEGER_TYPE              \
+                        COSEM_END_ARRAY                     \
+                    COSEM_END_CHOICE                        \
+                COSEM_END_STRUCTURE                         \
+            COSEM_END_ARRAY                                 \
+            /* method access */                             \
+            COSEM_BEGIN_ARRAY                               \
+                COSEM_BEGIN_STRUCTURE                       \
+                    COSEM_INTEGER_TYPE                      \
+                    COSEM_ENUM_TYPE                         \
+                    (                                       \
+                        {                                   \
+                            /**/                            \
+                        }                                   \
+                    )                                       \
+                COSEM_END_STRUCTURE                         \
+            COSEM_END_ARRAY                                 \
+        COSEM_END_STRUCTURE                                 \
+    COSEM_END_STRUCTURE
+
+    COSEM_BEGIN_SCHEMA(IAssociationLN_3::Object_Schema)
+        COSEM_OBJECT_SCHEMA
+    COSEM_END_SCHEMA
     COSEM_BEGIN_SCHEMA(IAssociationLN_3::Object_List_Schema)
         COSEM_BEGIN_ARRAY                                   // Object count
-            COSEM_BEGIN_STRUCTURE
-                COSEM_LONG_UNSIGNED_TYPE                    // Class ID
-                COSEM_UNSIGNED_TYPE                         // Version
-                COSEM_OCTET_STRING_TYPE                     // Logical Name
-                /* access rights */
-                COSEM_BEGIN_STRUCTURE                       // Access Rights
-                    /* attribute access */
-                    COSEM_BEGIN_ARRAY
-                        COSEM_BEGIN_STRUCTURE
-                            COSEM_INTEGER_TYPE
-                            COSEM_ENUM_TYPE
-                            (
-                                {
-                                    //
-                                }
-                            )
-                            COSEM_BEGIN_CHOICE
-                                COSEM_NULL_DATA_TYPE
-                                COSEM_BEGIN_ARRAY
-                                    COSEM_INTEGER_TYPE
-                                COSEM_END_ARRAY
-                            COSEM_END_CHOICE
-                        COSEM_END_STRUCTURE
-                    COSEM_END_ARRAY
-                    /* method access */
-                    COSEM_BEGIN_ARRAY
-                        COSEM_BEGIN_STRUCTURE
-                            COSEM_INTEGER_TYPE
-                            COSEM_ENUM_TYPE
-                            (
-                                {
-                                    //
-                                }
-                            )
-                        COSEM_END_STRUCTURE
-                    COSEM_END_ARRAY
-                COSEM_END_STRUCTURE
-            COSEM_END_STRUCTURE
+            COSEM_OBJECT_SCHEMA
         COSEM_END_ARRAY
     COSEM_END_SCHEMA
     COSEM_BEGIN_SCHEMA(IAssociationLN_3::Assoc_Partners_Schema)
@@ -174,6 +189,14 @@ namespace EPRI
             }
         )
     COSEM_END_SCHEMA
+    COSEM_BEGIN_SCHEMA(IAssociationLN_3::User_List_Schema)
+        COSEM_BEGIN_ARRAY
+            COSEM_USER_SCHEMA
+        COSEM_END_ARRAY
+    COSEM_END_SCHEMA
+    COSEM_BEGIN_SCHEMA(IAssociationLN_3::User_Schema)
+        COSEM_USER_SCHEMA
+    COSEM_END_SCHEMA
 
     //
     // IAssociationLN_3
@@ -190,7 +213,18 @@ namespace EPRI
             COSEM_ATTRIBUTE(secret)
             COSEM_ATTRIBUTE(association_status)
             COSEM_ATTRIBUTE(security_setup_reference)
+            //COSEM_ATTRIBUTE(user_list)
+            //COSEM_ATTRIBUTE(current_user)
         COSEM_END_ATTRIBUTES
+
+        COSEM_BEGIN_METHODS
+            COSEM_METHOD(reply_to_HLS_authentication)
+            //COSEM_METHOD(change_HLS_secret)
+            //COSEM_METHOD(add_object)
+            //COSEM_METHOD(remove_object)
+            //COSEM_METHOD(add_user)
+            //COSEM_METHOD(remove_user)
+        COSEM_END_METHODS
     }
 
     IAssociationLN_3::~IAssociationLN_3()

@@ -55,6 +55,15 @@ namespace EPRI
                 return false;
             }
         }
+        else if (m_SecurityOptions.MechanismName == COSEMSecurityOptions::MechanismNameHighLevelSecurity
+            or m_SecurityOptions.MechanismName == COSEMSecurityOptions::MechanismNameHighLevelSecurityMD5
+            or m_SecurityOptions.MechanismName == COSEMSecurityOptions::MechanismNameHighLevelSecuritySHA1
+            or m_SecurityOptions.MechanismName == COSEMSecurityOptions::MechanismNameHighLevelSecurityGMAC
+            or m_SecurityOptions.MechanismName == COSEMSecurityOptions::MechanismNameHighLevelSecuritySHA256
+            or m_SecurityOptions.MechanismName == COSEMSecurityOptions::MechanismNameHighLevelSecurityECDSA)
+        {
+            m_SecurityOptions.AuthenticationValue = Response.m_SecurityOptions.AuthenticationValue;
+        }
         if (m_SecurityOptions.ApplicationContextName != Response.m_SecurityOptions.ApplicationContextName)
         {
             return false;
@@ -473,6 +482,71 @@ namespace EPRI
         if (AppendResult)
         {
             RetVal = APDUConstants::Data_Access_Result::success;
+        }
+        return RetVal;
+    }
+
+    APDUConstants::Action_Result Association::InternalAction(const AssociationContext& Context,
+        ICOSEMMethod* pMethod,
+        const Cosem_Method_Descriptor& Descriptor,
+        const DLMSOptional<DLMSVector>& Parameters,
+        DLMSVector* pReturnValue /*= nullptr*/)
+    {
+        bool                              AppendResult = false;
+        uint8_t                           AssociationIndex =
+            Descriptor.instance_id.GetValueGroup(COSEMObjectInstanceID::VALUE_GROUP_E);
+        AssociationContext* pContext;
+        APDUConstants::Action_Result RetVal = APDUConstants::Action_Result::temporary_failure;
+        //
+        // Current Association?
+        //
+        if (0 == AssociationIndex)
+        {
+            pContext = GetAssociationContextByAddress(Context.m_ClientSAP);
+            while (GetAssociationContextByIndex(AssociationIndex) != pContext)
+            {
+                ++AssociationIndex;
+            }
+        }
+        else
+        {
+            pContext = GetAssociationContextByIndex(AssociationIndex);
+        }
+        if (!pContext)
+        {
+            return APDUConstants::Action_Result::object_unavailable;
+        }
+        switch (pMethod->MethodID)
+        {
+        case METHOD_REPLY_TO_HLS_AUTHENTICATION:
+            if (pContext->m_SecurityOptions.MechanismName == COSEMSecurityOptions::MechanismNameHighLevelSecurity
+                or pContext->m_SecurityOptions.MechanismName == COSEMSecurityOptions::MechanismNameHighLevelSecurityGMAC)
+            {
+                if (Parameters.value()[0] == 0)
+                {
+                    RetVal = APDUConstants::Action_Result::other_reason;
+                    break;
+                }
+                DLMSVector data(Parameters.value(), 1, Parameters.value().Size() - 1);
+                
+                RetVal = APDUConstants::Action_Result::success;
+
+                if (RetVal == APDUConstants::Action_Result::success)
+                {
+                    DLMSVector AAD;
+                    //AAD.
+                    pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()->GenerateGMAC();
+                    pContext->m_SecurityOptions.VerificationValue = data;
+                }
+            }
+            else
+            {
+                RetVal = APDUConstants::Action_Result::type_unmatched;
+            }
+            break;
+        default:
+            RetVal = APDUConstants::Action_Result::object_unavailable;
+            break;
         }
         return RetVal;
     }

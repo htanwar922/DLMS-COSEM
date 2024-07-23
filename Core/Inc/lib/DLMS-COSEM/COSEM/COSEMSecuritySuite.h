@@ -58,6 +58,7 @@ namespace EPRI
 
         virtual bool Encrypt(const DLMSVector& plaintext, const DLMSVector& iv, DLMSVector& ciphertext, DLMSVector& tag) const = 0;
         virtual bool Decrypt(const DLMSVector& ciphertext, const DLMSVector& iv, DLMSVector& plaintext, const DLMSVector& tag) const = 0;
+        virtual bool GenerateGMAC(const DLMSVector& iv, const DLMSVector& Challenge, DLMSVector& tag) const = 0;
         virtual int GetTagLength() const = 0;
 
         const COSEMObjectInstanceID& GetSecuritySetupObjectID() const
@@ -120,6 +121,7 @@ namespace EPRI
 
         bool Encrypt(const DLMSVector& plaintext, const DLMSVector& iv, DLMSVector& ciphertext, DLMSVector& tag) const;
         bool Decrypt(const DLMSVector& ciphertext, const DLMSVector& iv, DLMSVector& plaintext, const DLMSVector& tag) const;
+        bool GenerateGMAC(const DLMSVector& iv, const DLMSVector& Challenge, DLMSVector& tag) const;
         int GetTagLength() const;
 
     protected:
@@ -141,6 +143,10 @@ namespace EPRI
         {
             return false;
         }
+        bool GenerateGMAC(const DLMSVector& iv, const DLMSVector& Challenge, DLMSVector& tag) const
+        {
+            return false;
+        }
         int GetTagLength() const
         {
             return 0;
@@ -158,6 +164,10 @@ namespace EPRI
             return false;
         }
         bool Decrypt(const DLMSVector& ciphertext, const DLMSVector& iv, DLMSVector& plaintext, const DLMSVector& tag) const
+        {
+            return false;
+        }
+        bool GenerateGMAC(const DLMSVector& iv, const DLMSVector& Challenge, DLMSVector& tag) const
         {
             return false;
         }

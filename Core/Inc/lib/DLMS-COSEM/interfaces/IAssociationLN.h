@@ -80,12 +80,15 @@ namespace EPRI
 
     class IAssociationLN_3 : public ICOSEMInterface
     {
+        COSEM_DEFINE_SCHEMA(Object_Schema)
         COSEM_DEFINE_SCHEMA(Object_List_Schema)
         COSEM_DEFINE_SCHEMA(Assoc_Partners_Schema)
         COSEM_DEFINE_SCHEMA(App_Context_Name_Schema)
         COSEM_DEFINE_SCHEMA(xDLMS_Schema)
         COSEM_DEFINE_SCHEMA(Mechanism_Schema)
         COSEM_DEFINE_SCHEMA(Assoc_Status_Schema)
+        COSEM_DEFINE_SCHEMA(User_List_Schema)
+        COSEM_DEFINE_SCHEMA(User_Schema)
 
     public :
         IAssociationLN_3();
@@ -100,7 +103,9 @@ namespace EPRI
             ATTR_AUTH_MECH_NAME      = 6,
             ATTR_SECRET              = 7,
             ATTR_STATUS              = 8,
-            ATTR_SECURITY_SETUP_REF  = 9
+            ATTR_SECURITY_SETUP_REF  = 9,
+            ATTR_USER_LIST           = 10,
+            ATTR_CURRENT_USER        = 11
         };
 
         enum AssociationState : uint8_t
@@ -132,9 +137,26 @@ namespace EPRI
         COSEMAttribute<ATTR_SECRET, OctetStringSchema, 0x30>              secret;
         COSEMAttribute<ATTR_STATUS, Assoc_Status_Schema, 0x38>            association_status;
         COSEMAttribute<ATTR_SECURITY_SETUP_REF, OctetStringSchema, 0x40>  security_setup_reference;
-        //
-        // All Methods Are Optional; Not Implementing at this Time
-        //
+        COSEMAttribute<ATTR_USER_LIST, User_List_Schema, 0x48>            user_list;
+        COSEMAttribute<ATTR_CURRENT_USER, User_Schema, 0x50>              current_user;
+
+        enum Methods : ObjectMethodIdType
+        {
+            METHOD_REPLY_TO_HLS_AUTHENTICATION = 1,
+            METHOD_CHANGE_HLS_SECRET = 2,
+            METHOD_ADD_OBJECT = 3,
+            METHOD_REMOVE_OBJECT = 4,
+            METHOD_ADD_USER = 5,
+            METHOD_REMOVE_USER = 6
+        };
+
+        COSEMMethod<METHOD_REPLY_TO_HLS_AUTHENTICATION, OctetStringSchema, 0x60> reply_to_HLS_authentication;
+        COSEMMethod<METHOD_CHANGE_HLS_SECRET, OctetStringSchema, 0x68>           change_HLS_secret;
+        COSEMMethod<METHOD_ADD_OBJECT, Object_Schema, 0x70>                      add_object;
+        COSEMMethod<METHOD_REMOVE_OBJECT, Object_Schema, 0x78>                   remove_object;
+        COSEMMethod<METHOD_ADD_USER, User_Schema, 0x80>                          add_user;
+        COSEMMethod<METHOD_REMOVE_USER, User_Schema, 0x88>                       remove_user;
+
     };
 
     typedef IAssociationLN_3 IAssociationLN;

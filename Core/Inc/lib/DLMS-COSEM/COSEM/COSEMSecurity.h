@@ -160,6 +160,7 @@ namespace EPRI
         ASNObjectIdentifier     ApplicationContextName;
         ASNObjectIdentifier     MechanismName;
         AuthenticationValueType AuthenticationValue;
+        AuthenticationValueType VerificationValue;
         APTitleType             CallingAPTitle;
         APTitleType             RespondingAPTitle = DLMSVector{ METER_SYSTEM_TITLE };
         SecurityContext         SecurityContext;
