@@ -153,6 +153,9 @@ namespace EPRI
         case GLO::Action_Response::Tag:
             pRetVal.reset(new GLO::Action_Response());
             break;
+        case GLO::General_Glo_Ciphering::Tag:
+            pRetVal.reset(new GLO::General_Glo_Ciphering());
+            break;
         //case GLO::Access_Request::Tag:
         //    pRetVal.reset(new GLO::Access_Request());
         //    break;
@@ -179,8 +182,7 @@ namespace EPRI
 #endif
             break;
         }
-        if (pRetVal &&
-            !pRetVal->Parse(pData, SourceAddress, DestinationAddress))
+        if (pRetVal and not pRetVal->Parse(pData, SourceAddress, DestinationAddress))
         {
             pRetVal.release();
         }

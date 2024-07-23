@@ -712,4 +712,10 @@ namespace EPRI
         return false;
     }
 
+    // Himanshu - General
+    bool COSEMClient::General_Glo_Ciphering_Handler(const IAPDUPtr& pAPDU)
+    {
+        return false;
+    }
+
 }

@@ -136,11 +136,12 @@ namespace EPRI
                      Result,
                      APPOpenConfirmOrResponse::DiagnosticSourceType::acse_service_user,
                      APPOpenConfirmOrResponse::UserDiagnosticType::user_null);
-        if (m_pServer->OpenResponse(Response))
+        if (not m_Association.RegisterAssociation(Response) or not m_pServer->OpenResponse(Response))
         {
-            return m_Association.RegisterAssociation(Response);
+            m_Association.ReleaseTransientAssociations();
+            return false;
         }
-        return false;
+        return true;
     }
 
     bool LogicalDevice::InitiateGet(const APPGetRequestOrIndication& Request, bool UpperLayerAllowed)

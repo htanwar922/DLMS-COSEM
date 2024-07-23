@@ -130,7 +130,7 @@ namespace EPRI
         public:
             Action_Request() = default;
             Action_Request(const Action_Request& Request)
-                : EPRI::GLO::CipheredBase<0xcb>(Request)
+                : Action_Request::CipheredBase(Request)
             {
             }
             virtual ~Action_Request() = default;

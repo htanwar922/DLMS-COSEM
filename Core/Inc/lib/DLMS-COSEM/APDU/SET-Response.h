@@ -125,7 +125,7 @@ namespace EPRI
         public:
             Set_Response() = default;
             Set_Response(const Set_Response& Response)
-                : EPRI::GLO::CipheredBase<0xcd>(Response)
+                : Set_Response::CipheredBase(Response)
             {
             }
             virtual ~Set_Response() = default;

@@ -129,7 +129,7 @@ namespace EPRI
         public:
             Set_Request() = default;
             Set_Request(const Set_Request& Request)
-                : EPRI::GLO::CipheredBase<0xc9>(Request)
+                : Set_Request::CipheredBase(Request)
             {
             }
             virtual ~Set_Request() = default;

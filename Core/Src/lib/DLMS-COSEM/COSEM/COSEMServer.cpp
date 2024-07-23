@@ -572,11 +572,23 @@ namespace EPRI
             const AssociationContext* pContext = m_Association.GetAssociationContext(pAccessResponse->Data.m_DestinationAddress);
             if (pContext->m_SecurityOptions.Encryption())
             {
-                GLO::Access_Response EncryptedResponse;
-                EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
-                    , pContext->m_SecurityOptions
-                    , Response.GetBytes());
-                TransportParam.Data = EncryptedResponse.GetBytes();
+                if (pContext->m_SecurityOptions.CallingAPTitle == DLMSVector(GuruxCLIClientSystemTitle))
+                {
+                    GLO::Access_Response EncryptedResponse;
+                    EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
+                        , pContext->m_SecurityOptions
+                        , Response.GetBytes());
+                    TransportParam.Data = EncryptedResponse.GetBytes();
+                }
+                else
+                {
+                    GLO::General_Glo_Ciphering EncryptedResponse;
+                    TransportParam.Data = EncryptedResponse.Encrypt(
+                        pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
+                        , pContext->m_SecurityOptions
+                        , Response.GetBytes());
+                }
+
             }
             else
             {
@@ -819,6 +831,36 @@ namespace EPRI
 
     bool COSEMServer::ACCESS_Response_Handler(const IAPDUPtr& pAPDU)
     {
+        return false;
+    }
+
+    // Himanshu - General
+    bool COSEMServer::General_Glo_Ciphering_Handler(const IAPDUPtr& pAPDU)
+    {
+        GLO::General_Glo_Ciphering *  pCiphering = dynamic_cast<GLO::General_Glo_Ciphering *>(pAPDU.get());
+        if (pCiphering)
+        {
+            DLMSVector Plaintext = pCiphering->Decrypt(
+                m_Association.GetAssociationContext(pCiphering->GetSourceAddress())->m_SecurityOptions.SecurityContext.GetSecuritySuite()
+                , m_Association.GetAssociationContext(pCiphering->GetSourceAddress())->m_SecurityOptions
+            );
+            if (Plaintext.Size() == 0)
+            {
+                return false;
+            }
+            IAPDUPtr pAPDU = APDUFactory().Parse(pCiphering->GetSourceAddress(), pCiphering->GetDestinationAddress(), &Plaintext);
+            if (pAPDU)
+            {
+                switch (pAPDU->GetTag())
+                {
+                case Access_Request::Tag:
+                    return ACCESS_Request_Handler(pAPDU);
+                default:
+                    throw std::logic_error("General_Glo_Ciphering_Handler Not Implemented!");
+                }
+            }
+            return true;
+        }
         return false;
     }
 

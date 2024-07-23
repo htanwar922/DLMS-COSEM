@@ -307,8 +307,10 @@ namespace EPRI
 
     bool Association::ReleaseAssociation(const APPReleaseConfirmOrResponse& Response)
     {
-        if (m_pCurrentContext)
+        if (m_pCurrentContext) {
             m_pCurrentContext->m_Initialized = false;
+            m_pCurrentContext->m_ClientSAP = INVALID_ADDRESS;
+        }
         m_pCurrentContext = nullptr;
         return true;
     }
@@ -333,8 +335,10 @@ namespace EPRI
         //
         // All are transient at this phase.
         //
-        if (m_pCurrentContext)
+        if (m_pCurrentContext) {
             m_pCurrentContext->m_Initialized = false;
+            m_pCurrentContext->m_ClientSAP = INVALID_ADDRESS;
+        }
         m_pCurrentContext = nullptr;
     }
 

@@ -357,6 +357,19 @@ namespace EPRI
                 }
             }
         }
+        else if (ASN_SCHEMA_DATA_TYPE(SchemaEntry) == ASN::OCTET_STRING and ASN_IS_CONSTRUCTED(SchemaEntry))    // Himanshu
+        {
+            DLMSVector Vector;
+            size_t Length = 0;
+            if (GetLength(&m_Data, &Length))
+            {
+                if (m_Data.GetVector(&Vector, Length))
+                {
+                    pValue->set<DLMSVector>(Vector);
+                    RetVal = VALUE_RETRIEVED;
+                }
+            }
+        }
         return RetVal;
     }
 
@@ -438,6 +451,12 @@ namespace EPRI
                         pValue->set<DLMSVector>(Vector);
                         RetVal = VALUE_RETRIEVED;
                     }
+                }
+                break;
+            case ASN::DT_Length:
+                if (GetLength(&m_Data, &pValue->get<size_t>()))
+                {
+                    RetVal = VALUE_RETRIEVED;
                 }
                 break;
             default:
@@ -676,23 +695,25 @@ namespace EPRI
                 }
             }
             break;
+        case ASN::DT_Length:
+            if (GetLength(&m_Data, &Value.get<size_t>()))
+            {
+                pValue->SetSchemaType(SchemaEntry->m_SchemaType);
+                if (!pValue->Append(Value))
+                {
+                    RetVal = INVALID_CONDITION;
+                }
+                else
+                {
+                    pValue->Rewind();
+                    RetVal = VALUE_RETRIEVED;
+                }
+            }
         default:
             throw std::out_of_range("GetNextValue Not Implemented");
             break;
         }
         return RetVal;
-    }
-
-    size_t ASNType::GetNextLength()
-    {
-        size_t Length = 0;
-        GetLength(&m_Data, &Length);
-        return Length;
-    }
-
-    bool ASNType::AppendNextLength(size_t Length)
-    {
-        return AppendLength(Length, &m_Data);
     }
 
     bool ASNType::Append(const DLMSValue& Value)
@@ -911,16 +932,17 @@ namespace EPRI
             {
                 ssize_t Length = -1;
                 bool    IsImplicit = ASN_IS_IMPLICIT(SchemaEntry);
-                if (!IsImplicit)
+                if (not IsImplicit)
                 {
-                    m_Data.Append<uint8_t>(ASN::OCTET_STRING);
+                    if (not ASN_IS_CONSTRUCTED(SchemaEntry))
+                        m_Data.Append<uint8_t>(ASN::OCTET_STRING);
                     Length = Value.get<DLMSVector>().Size();
                 }
                 else // if (ASN_SCHEMA_DATA_TYPE_SIZE(SchemaEntry)) // Himanshu - commented
                 {
                     Length = ASN_SCHEMA_DATA_TYPE_SIZE(SchemaEntry);
                 }
-                if (!IsImplicit && Length >= 0)
+                if (not IsImplicit and Length >= 0)
                 {
                     AppendLength(Value.get<DLMSVector>().Size(), &m_Data);
                 }
@@ -999,6 +1021,12 @@ namespace EPRI
             {
                 m_Data.Append(Value.get<DLMSVector>());
                 return true;
+            }
+            break;
+        case ASN::DT_Length:
+            if (Value.which() == VAR_UINT64)
+            {
+                return AppendLength(Value.get<uint64_t>(), &m_Data);
             }
             break;
         case ASN::VOID:

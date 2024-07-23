@@ -130,7 +130,7 @@ namespace EPRI
         public:
             Action_Response() = default;
             Action_Response(const Action_Response& Response)
-                : EPRI::GLO::CipheredBase<0xcf>(Response)
+                : Action_Response::CipheredBase(Response)
             {
             }
             virtual ~Action_Response() = default;

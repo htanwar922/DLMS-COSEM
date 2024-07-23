@@ -68,7 +68,7 @@ namespace EPRI
         public:
             Access_Response() = default;
             Access_Response(const Access_Response& Response)
-                : EPRI::GLO::CipheredBase<0x00>(Response)
+                : Access_Response::CipheredBase(Response)
             {
             }
             virtual ~Access_Response() = default;

@@ -206,6 +206,8 @@ namespace EPRI
         }
         template <typename T>
         T& get() {
+            if (not is_valid())
+                set<T>(T{ });
             return const_cast<T&>(static_cast<const DLMSValue*>(this)->get<T>());
         }
         template <typename T>

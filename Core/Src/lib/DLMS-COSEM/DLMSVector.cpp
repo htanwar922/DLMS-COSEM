@@ -96,26 +96,9 @@ namespace EPRI
         m_Data = Value;
     }
 
-    DLMSVector::DLMSVector(const DLMSVector& Value, size_t Start /*= 0*/, size_t End /*= 0*/)
+    DLMSVector::DLMSVector(const DLMSVector& Value, size_t Position /*= 0*/, size_t Count /*= 0*/)
     {
-        if (Start == 0 and End == 0)
-        {
-            m_Data = Value.m_Data;
-        }
-        else {
-            if (End == 0)
-            {
-                End = Value.m_Data.size();
-            }
-            if (0 <= Start and Start < End and End <= Value.m_Data.size())
-            {
-                m_Data.assign(Value.m_Data.begin() + Start, Value.m_Data.begin() + End);
-            }
-            else
-            {
-                throw std::out_of_range("Invalid start or end index");
-            }
-        }
+        Append(Value, Position, Count);
     }
     
     DLMSVector::DLMSVector(const std::vector<uint8_t>& Value)

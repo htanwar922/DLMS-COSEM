@@ -461,6 +461,8 @@ namespace EPRI
         pXPort->RegisterAPDUHandler(m_Address, GLO::Access_Response::Tag,
             std::bind(&COSEM::ACCESS_Response_Handler, this, std::placeholders::_1));
 #endif
+        pXPort->RegisterAPDUHandler(m_Address, GLO::General_Glo_Ciphering::Tag,
+            std::bind(&COSEM::General_Glo_Ciphering_Handler, this, std::placeholders::_1));
 
         return HANDLE_COUNTER;
     }

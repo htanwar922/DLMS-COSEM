@@ -94,7 +94,7 @@ namespace EPRI
         DLMSVector();
         DLMSVector(size_t Size);
         DLMSVector(const std::initializer_list<uint8_t>& Value);
-        DLMSVector(const DLMSVector& Value, size_t Start=0, size_t End=0);
+        DLMSVector(const DLMSVector& Value, size_t Position = 0, size_t Count = 0);
         DLMSVector(const std::vector<uint8_t>& Value);
         DLMSVector(const void * pBuffer, size_t Size);
         ~DLMSVector();

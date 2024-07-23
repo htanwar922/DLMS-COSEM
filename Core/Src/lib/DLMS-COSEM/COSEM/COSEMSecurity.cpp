@@ -81,12 +81,12 @@ namespace EPRI
 
     const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameNoSecurity({ 2, 16, 756, 5, 8, 2, 0 }, ASN::IMPLICIT);
     const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameLowLevelSecurity({ 2, 16, 756, 5, 8, 2, 1 }, ASN::IMPLICIT);
-    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecurity({ 2, 16, 756, 5, 8, 2, 5 }, ASN::IMPLICIT);
-    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecurityMD5({ 2, 16, 756, 5, 8, 2, 6 }, ASN::IMPLICIT);
-    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecuritySHA1({ 2, 16, 756, 5, 8, 2, 7 }, ASN::IMPLICIT);
-    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecurityGMAC({ 2, 16, 756, 5, 8, 2, 8 }, ASN::IMPLICIT);
-    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecuritySHA256({ 2, 16, 756, 5, 8, 2, 9 }, ASN::IMPLICIT);
-    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecurityECDSA({ 2, 16, 756, 5, 8, 2, 10 }, ASN::IMPLICIT);
+    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecurity({ 2, 16, 756, 5, 8, 2, 2 }, ASN::IMPLICIT);
+    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecurityMD5({ 2, 16, 756, 5, 8, 2, 3 }, ASN::IMPLICIT);
+    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecuritySHA1({ 2, 16, 756, 5, 8, 2, 4 }, ASN::IMPLICIT);
+    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecurityGMAC({ 2, 16, 756, 5, 8, 2, 5 }, ASN::IMPLICIT);
+    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecuritySHA256({ 2, 16, 756, 5, 8, 2, 6 }, ASN::IMPLICIT);
+    const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecurityECDSA({ 2, 16, 756, 5, 8, 2, 7 }, ASN::IMPLICIT);
 
     COSEMSecurityOptions::COSEMSecurityOptions(SecurityContext::SecuritySuiteOption Suite /*= SecurityContext::NO_SUITE*/
             , uint8_t Policy /*= SecurityContext::no_policy*/)
@@ -179,7 +179,7 @@ namespace EPRI
     {
         if (m_pSecuritySuite)
         {
-            m_pSecuritySuite.~shared_ptr();
+            m_pSecuritySuite.reset();
         }
         if (nullptr != dynamic_cast<const SecuritySuite_None*>(&riSuite))
         {

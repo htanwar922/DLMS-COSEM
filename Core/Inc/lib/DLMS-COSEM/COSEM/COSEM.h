@@ -207,6 +207,10 @@ namespace EPRI
         // Himanshu - ACCESS
         virtual bool ACCESS_Request_Handler(const IAPDUPtr& pAPDU) = 0;
         virtual bool ACCESS_Response_Handler(const IAPDUPtr& pAPDU) = 0;
+
+        // Himanshu - General
+        virtual bool General_Glo_Ciphering_Handler(const IAPDUPtr& pAPDU) = 0;
+
         //
         // Helpers
         //
@@ -879,6 +883,9 @@ namespace EPRI
         virtual bool ACCESS_Request_Handler(const IAPDUPtr& pAPDU);
         virtual bool ACCESS_Response_Handler(const IAPDUPtr& pAPDU);
 
+        // Himanshu - General
+        virtual bool General_Glo_Ciphering_Handler(const IAPDUPtr& pAPDU);
+
         COSEMAddressType  m_AssociatedAddress = INVALID_ADDRESS;
 
     };
@@ -975,6 +982,9 @@ namespace EPRI
         // Himanshu - ACCESS
         virtual bool ACCESS_Request_Handler(const IAPDUPtr& pAPDU);
         virtual bool ACCESS_Response_Handler(const IAPDUPtr& pAPDU);
+
+        // Himanshu - General
+        virtual bool General_Glo_Ciphering_Handler(const IAPDUPtr& pAPDU);
     };
 
 }

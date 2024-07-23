@@ -69,7 +69,7 @@ namespace EPRI
         public:
             Access_Request() = default;
             Access_Request(const Access_Request& Request)
-                : EPRI::GLO::CipheredBase<0x00>(Request)
+                : Access_Request::CipheredBase(Request)
             {
             }
             virtual ~Access_Request() = default;

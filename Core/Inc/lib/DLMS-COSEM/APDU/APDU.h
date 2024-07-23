@@ -301,7 +301,7 @@ namespace EPRI
             {
                 if (Serialize())
                 {
-                    return APDUSingleType<TAG>::GetBytes();
+                    return CipheredBase::APDUSingleType::GetBytes();
                 }
                 return std::vector<uint8_t>();
             }
@@ -373,11 +373,11 @@ namespace EPRI
             }
         protected:
             CipheredBase()
-                : APDUSingleType<TAG>::APDUSingleType(Ciphered_APDU_Schema)
+                : CipheredBase::APDUSingleType(Ciphered_APDU_Schema)
             {
             }
             CipheredBase(const CipheredBase& Request)
-                : APDUSingleType<TAG>::APDUSingleType(Ciphered_APDU_Schema)
+                : CipheredBase::APDUSingleType(Ciphered_APDU_Schema)
             {
                 m_SecurityControlByte = Request.m_SecurityControlByte;
                 m_InvocationCounter = Request.m_InvocationCounter;
@@ -390,7 +390,9 @@ namespace EPRI
                 try
                 {
                     m_Type.Rewind();
-                    size_t Length = m_Type.GetNextLength();
+                    if (ASNType::GetNextResult::VALUE_RETRIEVED != m_Type.GetNextValue(&Value))
+                        return false;
+                    size_t Length = Value.get<size_t>();
                     if (ASNType::GetNextResult::VALUE_RETRIEVED != m_Type.GetNextValue(&Value))
                         return false;
                     m_SecurityControlByte = DLMSValueGet<uint8_t>(Value);
@@ -414,7 +416,7 @@ namespace EPRI
                 if (not m_Initialized)
                     return false;
                 m_Type.Clear();
-                m_Type.AppendNextLength(sizeof m_SecurityControlByte + sizeof m_InvocationCounter + m_CipheredDataAndAuthenticationTag.Size());
+                m_Type.Append(sizeof m_SecurityControlByte + sizeof m_InvocationCounter + m_CipheredDataAndAuthenticationTag.Size());
                 m_Type.Append(m_SecurityControlByte);
                 m_Type.Append(m_InvocationCounter);
                 m_Type.Append(m_CipheredDataAndAuthenticationTag);
@@ -432,6 +434,42 @@ namespace EPRI
             uint32_t m_InvocationCounter = 0;
             DLMSVector m_CipheredDataAndAuthenticationTag;
             bool m_Initialized = false;
+        };
+
+        class General_Glo_Ciphering : public APDUSingleType<0xdb>
+        {
+            ASN_DEFINE_SCHEMA(General_Glo_Ciphering_Schema)
+
+            struct Ciphered : public CipheredBase<General_Glo_Ciphering::Tag>
+            {
+                Ciphered() = default;
+                Ciphered(const Ciphered& Request) : Ciphered::CipheredBase(Request)
+                {
+                }
+                virtual ~Ciphered()
+                {
+                }
+            };
+        public:
+            General_Glo_Ciphering();
+            virtual ~General_Glo_Ciphering();
+
+            virtual bool IsValid() const;
+            virtual bool Parse(DLMSVector* pData,
+                COSEMAddressType SourceAddress = ReservedAddresses::NO_STATION,
+                COSEMAddressType DestinationAddress = ReservedAddresses::NO_STATION);
+            virtual std::vector<uint8_t> GetBytes() final;
+
+            DLMSVector Encrypt(const std::shared_ptr<ISecuritySuite> pSuite, const COSEMSecurityOptions& SecurityOptions, const DLMSVector& Plaintext);
+            DLMSVector Decrypt(const std::shared_ptr<ISecuritySuite> pSuite, const COSEMSecurityOptions& SecurityOptions) const;
+
+        protected:
+            DLMSVector  m_SystemTitle;
+            Ciphered    m_Ciphered;
+            bool        m_Initialized = false;
+
+            virtual bool Deserialize();
+            virtual bool Serialize();
         };
     }
 }
