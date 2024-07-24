@@ -304,6 +304,7 @@ namespace EPRI
                 {
                     APDUConstants::Action_Result Result =
                     APDUConstants::Action_Result::scope_of_access_violated;
+                    DLMSVector ReturnValue;
                     if (pContext)
                     {
                         ssize_t ObjectIndex =
@@ -312,7 +313,8 @@ namespace EPRI
                         {
                             Result = m_Objects[ObjectIndex]->Action(*pContext,
                                                                     Request.m_Parameter.get<Cosem_Method_Descriptor>(),
-                                                                    Request.m_ActionParameters);
+                                                                    Request.m_ActionParameters,
+                                                                    &ReturnValue);
                         }
                         else
                         {
@@ -322,7 +324,8 @@ namespace EPRI
                     return m_pServer->ActionResponse(APPActionConfirmOrResponse(SAP(),
                                                         Request.m_SourceAddress,
                                                         Request.m_InvokeIDAndPriority,
-                                                        Result));
+                                                        Result,
+                                                        ReturnValue));
                 }
                 break;
 

@@ -512,6 +512,8 @@ namespace EPRI
 
                     Response.invoke_id_and_priority = Parameters.m_InvokeIDAndPriority;
                     Response.single_response.result = Parameters.m_Result;
+                    if (Parameters.m_ReturnValue)
+                        Response.single_response.return_parameters = Get_Data_Result(Parameters.m_ReturnValue);
 
                     TransportParam.SourceAddress = GetAddress();
                     TransportParam.DestinationAddress = Parameters.m_DestinationAddress;

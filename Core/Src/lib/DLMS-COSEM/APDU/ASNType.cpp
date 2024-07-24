@@ -1036,9 +1036,14 @@ namespace EPRI
         return false;
     }
 
-    bool ASNType::IsAppendingOptional(const ParseState& State, const DLMSValue& Value) const
+    bool ASNType::IsAppendingOptional(const ParseState& State, const DLMSValue& Value) //const
     {
-        return ASN_IS_OPTIONAL(State.m_SchemaEntry) && IsBlank(Value);
+        if (ASN_IS_OPTIONAL(State.m_SchemaEntry) and not IsBlank(Value)
+            and ASN::BEGIN_CHOICE_T == ASN_SCHEMA_INTERNAL_DATA_TYPE(CURRENT_APPEND_STATE.m_SchemaEntry))
+        {
+            m_Data.Append<uint8_t>(0x01);
+        }
+        return ASN_IS_OPTIONAL(State.m_SchemaEntry) and IsBlank(Value);
     }
 
     bool ASNType::InternalAppend(const DLMSValue& Value)

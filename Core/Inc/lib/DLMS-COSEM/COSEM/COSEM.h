@@ -585,11 +585,13 @@ namespace EPRI
         APPActionConfirmOrResponse(COSEMAddressType SourceAddress,
             COSEMAddressType DestinationAddress,
             InvokeIdAndPriorityType InvokeID,
-            APDUConstants::Action_Result Result) :
+            APDUConstants::Action_Result Result,
+            DLMSVector ReturnValue) :
             APPBaseCallbackParameter(SourceAddress, DestinationAddress),
             m_Type(ActionResponseType::action_response_normal),
             m_InvokeIDAndPriority(InvokeID),
-            m_Result(Result)
+            m_Result(Result),
+            m_ReturnValue(ReturnValue)
         {
         }
         // Himanshu - GLO
@@ -609,6 +611,7 @@ namespace EPRI
             , m_Type(Response.m_Type)
             , m_InvokeIDAndPriority(Response.m_InvokeIDAndPriority)
             , m_Result(Response.m_Result)
+            , m_ReturnValue(Response.m_ReturnValue)
         {
             if (Response.m_pGloResponse)
                 m_pGloResponse = std::make_unique<GLO::Action_Response>(*Response.m_pGloResponse);
@@ -617,6 +620,7 @@ namespace EPRI
         ActionResponseType                m_Type;
         InvokeIdAndPriorityType           m_InvokeIDAndPriority;
         APDUConstants::Action_Result      m_Result;
+        DLMSVector                        m_ReturnValue;
         std::unique_ptr<GLO::Action_Response> m_pGloResponse = nullptr;        // Himanshu - GLO
     };
 

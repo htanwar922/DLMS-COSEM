@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <random>
+
 #include "DLMSValue.h"
 #include "COSEM/COSEMObjectInstanceID.h"
 
@@ -58,7 +60,7 @@ namespace EPRI
 
         virtual bool Encrypt(const DLMSVector& plaintext, const DLMSVector& iv, DLMSVector& ciphertext, DLMSVector& tag) const = 0;
         virtual bool Decrypt(const DLMSVector& ciphertext, const DLMSVector& iv, DLMSVector& plaintext, const DLMSVector& tag) const = 0;
-        virtual bool GenerateGMAC(const DLMSVector& iv, const DLMSVector& Challenge, DLMSVector& tag) const = 0;
+        virtual bool GenerateGMAC(const DLMSVector& iv, const DLMSVector& CtoS, DLMSVector& tag) const = 0;
         virtual int GetTagLength() const = 0;
 
         const COSEMObjectInstanceID& GetSecuritySetupObjectID() const
@@ -81,9 +83,14 @@ namespace EPRI
         {
             m_SecurityControlByte |= BitMask;
         }
+        uint32_t GetRandom()
+        {
+            return (std::mt19937(m_RandomDevice()))();
+        }
     protected:
         COSEMObjectInstanceID m_SecuritySetupObjectID;
         uint8_t m_SecurityControlByte;
+        std::random_device m_RandomDevice;
     };
 
     class SecuritySuite_None : public ISecuritySuite
@@ -101,6 +108,10 @@ namespace EPRI
         {
             plaintext = ciphertext;
             return true;
+        }
+        bool GenerateGMAC(const DLMSVector& iv, const DLMSVector& CtoS, DLMSVector& tag) const
+        {
+            return false;
         }
         int GetTagLength() const
         {
@@ -121,7 +132,7 @@ namespace EPRI
 
         bool Encrypt(const DLMSVector& plaintext, const DLMSVector& iv, DLMSVector& ciphertext, DLMSVector& tag) const;
         bool Decrypt(const DLMSVector& ciphertext, const DLMSVector& iv, DLMSVector& plaintext, const DLMSVector& tag) const;
-        bool GenerateGMAC(const DLMSVector& iv, const DLMSVector& Challenge, DLMSVector& tag) const;
+        bool GenerateGMAC(const DLMSVector& iv, const DLMSVector& CtoS, DLMSVector& tag) const;
         int GetTagLength() const;
 
     protected:
@@ -143,7 +154,7 @@ namespace EPRI
         {
             return false;
         }
-        bool GenerateGMAC(const DLMSVector& iv, const DLMSVector& Challenge, DLMSVector& tag) const
+        bool GenerateGMAC(const DLMSVector& iv, const DLMSVector& CtoS, DLMSVector& tag) const
         {
             return false;
         }
@@ -167,7 +178,7 @@ namespace EPRI
         {
             return false;
         }
-        bool GenerateGMAC(const DLMSVector& iv, const DLMSVector& Challenge, DLMSVector& tag) const
+        bool GenerateGMAC(const DLMSVector& iv, const DLMSVector& CtoS, DLMSVector& tag) const
         {
             return false;
         }

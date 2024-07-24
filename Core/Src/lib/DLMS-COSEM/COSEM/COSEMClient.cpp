@@ -632,7 +632,8 @@ namespace EPRI
             pEvent = new ActionResponseEventData(APPActionConfirmOrResponse(pActionResponse->GetSourceAddress(),
                                                     pActionResponse->GetDestinationAddress(),
                                                     pActionResponse->invoke_id_and_priority,
-                                                    pActionResponse->single_response.result));
+                                                    pActionResponse->single_response.result,
+                                                    DLMSVector()));
         }
         if (pEvent)
         {

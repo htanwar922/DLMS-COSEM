@@ -527,16 +527,39 @@ namespace EPRI
                     RetVal = APDUConstants::Action_Result::other_reason;
                     break;
                 }
-                DLMSVector data(Parameters.value(), 1, Parameters.value().Size() - 1);
-                
-                RetVal = APDUConstants::Action_Result::success;
-
-                if (RetVal == APDUConstants::Action_Result::success)
+                if (pReturnValue)
                 {
-                    DLMSVector AAD;
-                    //AAD.
-                    pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()->GenerateGMAC();
-                    pContext->m_SecurityOptions.VerificationValue = data;
+                    COSEMType Value(OctetStringSchema);
+                    Value.Parse(DLMSVector(Parameters.value(), 1, Parameters.value().Size() - 1));
+                    DLMSVector CtoS;
+                    DLMSValue Val;
+                    Value.GetNextValue(&Val);
+                    CtoS = DLMSValueGet<DLMSVector>(Val);
+                    DLMSVector IV, Tag;
+                    // Todo - Himanshu - HLS
+
+                    IV.Append(METER_SYSTEM_TITLE, 0, 0);
+                    uint32_t IC = 1;   // pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()->GetRandom();
+                    IV.Append<uint32_t>(IC);
+
+                    //IV = DLMSVector{ 0x4d, 0x4d, 0x4d, 0x00, 0x00, 0xbc, 0x61, 0x4e, 0x01, 0x23, 0x45, 0x67 };
+                    
+                    pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()->GenerateGMAC(
+                        IV,
+                        CtoS,
+                        Tag
+                    );
+                    //pReturnValue->Append<uint8_t>(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()->GetSecurityControlByte());
+                    //pReturnValue->Append<uint32_t>(IC);
+                    pReturnValue->Append(Tag);
+
+                    COSEMType Data(COSEMDataType::OCTET_STRING, *pReturnValue);
+                    *pReturnValue = Data.GetBytes();
+                    RetVal = APDUConstants::Action_Result::success;
+                }
+                else
+                {
+                    throw std::runtime_error("No return value");
                 }
             }
             else

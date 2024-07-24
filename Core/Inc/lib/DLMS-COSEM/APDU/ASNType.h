@@ -399,7 +399,7 @@ namespace EPRI
         StackType                      m_AppendStates;
 
         bool IsGettingOptional(const ParseState& State) const;
-        bool IsAppendingOptional(const ParseState& State, const DLMSValue& Value) const;
+        bool IsAppendingOptional(const ParseState& State, const DLMSValue& Value); //const;
         //
         ASN::SchemaEntry               m_SingleDataType[2] = { { ASN::VOID }, { ASN::END_SCHEMA_T } };
         ASN::SchemaEntryPtr            m_pSchema = nullptr;

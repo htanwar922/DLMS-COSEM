@@ -246,20 +246,21 @@ namespace EPRI
 		return true;
 	}
 
-	bool SecuritySuite_0::GenerateGMAC(const DLMSVector& iv, const DLMSVector& Challenge, DLMSVector& tag) const
+	bool SecuritySuite_0::GenerateGMAC(const DLMSVector& iv, const DLMSVector& CtoS, DLMSVector& tag) const
 	{
-		DLMSVector AAD = m_AAD;
-		AAD[0] = m_SecurityControlByte;
+		DLMSVector Challenge = m_AAD;
+		Challenge[0] = m_SecurityControlByte;
+		Challenge.Append(CtoS);
 		tag.Clear();
 		tag.Resize(m_AES.GetTagLength());
-		int len = m_AES.Encrypt(NULL
-			, 0
+		int len = m_AES.Encrypt(Challenge.GetData()
+			, Challenge.Size()
 			, iv.GetData()
 			, iv.Size()
 			, NULL
 			, (uint8_t*)tag.GetData()
-			, (uint8_t*)AAD.GetData()
-			, AAD.Size()
+			, NULL
+			, 0
 		);
 		if (len < 0) {
 			LOG_ERROR("GMAC generation failed\n");

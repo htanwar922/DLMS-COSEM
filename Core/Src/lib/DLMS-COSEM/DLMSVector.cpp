@@ -399,4 +399,9 @@ namespace EPRI
         return rhs.m_Data != m_Data;
     }
 
+    DLMSVector::operator bool() const
+    {
+        return not m_Data.empty();
+    }
+
 }

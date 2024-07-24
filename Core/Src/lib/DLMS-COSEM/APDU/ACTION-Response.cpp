@@ -171,7 +171,16 @@ namespace EPRI
             m_Type.Append((uint8_t) single_response.result);
             if (single_response.return_parameters)
             {
-                m_Type.Append(single_response.return_parameters.value().get<DLMSVector>());
+                if (single_response.return_parameters.value().is<DLMSVector>())
+                {
+                    m_Type.SelectChoice(Get_Data_Result_Choice::data);
+                    m_Type.Append(single_response.return_parameters.value().get<DLMSVector>());
+                }
+                else
+                {
+                    m_Type.SelectChoice(Get_Data_Result_Choice::data_access_result);
+                    m_Type.Append((uint8_t)single_response.return_parameters.value().get<APDUConstants::Data_Access_Result>());
+                }
             }
             else
             {

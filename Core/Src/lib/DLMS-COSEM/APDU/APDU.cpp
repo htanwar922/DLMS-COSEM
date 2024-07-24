@@ -7,7 +7,7 @@ namespace EPRI {
             ASN_BASE_TYPE(ASN::DT_Length)           // Length of the Encrypted Data and Security Control Byte and Invocation Counter
             ASN_BASE_TYPE(ASN::DT_Unsigned8)        // Security Control Byte
             ASN_BASE_TYPE(ASN::DT_Unsigned32)       // Invocation Counter
-            ASN_BASE_TYPE(ASN::DT_Data)             // Ciphered Data and Authentication Tag
+            ASN_DATA_TYPE                           // Ciphered Data and Authentication Tag
         ASN_END_SCHEMA
 
         ASN_BEGIN_SCHEMA(General_Glo_Ciphering::General_Glo_Ciphering_Schema)
@@ -15,7 +15,7 @@ namespace EPRI {
             ASN_BASE_TYPE(ASN::DT_Length)               // Length of the Encrypted Data and Security Control Byte and Invocation Counter
             ASN_BASE_TYPE(ASN::DT_Unsigned8)            // Security Control Byte
             ASN_BASE_TYPE(ASN::DT_Unsigned32)           // Invocation Counter
-            ASN_BASE_TYPE(ASN::DT_Data)                 // Encrypted Data
+            ASN_DATA_TYPE                               // Encrypted Data
         ASN_END_SCHEMA
 
         //

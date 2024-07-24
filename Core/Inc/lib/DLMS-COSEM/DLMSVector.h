@@ -149,6 +149,7 @@ namespace EPRI
         const uint8_t& operator[](size_t Index) const;
         bool operator==(const DLMSVector& rhs) const;
         bool operator!=(const DLMSVector& rhs) const;
+        operator bool() const;
 
     private:
         using RawData = std::vector<uint8_t>;
