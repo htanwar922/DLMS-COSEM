@@ -16,8 +16,8 @@ project(DLMS-COSEM VERSION 1.0.0)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
+set(CMAKE_CXX_STANDARD 14)
 if(MSVC)
-    set(CMAKE_CXX_STANDARD 11)
 	add_compile_options(/W1)
 	find_package(asio REQUIRED)
 endif()
@@ -50,6 +50,10 @@ function(set_with_path_prefix VAR)
   endforeach()
   set(${VAR} ${result} CACHE INTERNAL "" FORCE)
 endfunction()
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 include_directories(
   ${ASIO_INCLUDE_DIR}

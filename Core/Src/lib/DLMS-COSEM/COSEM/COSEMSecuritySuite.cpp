@@ -7,6 +7,8 @@
 #include "openssl/aes.h"
 #include "openssl/rand.h"
 
+#include "config.h"
+
 namespace LibOpenSSL {
 
 	AES::AES(const char* ciphername, const uint8_t* key, int key_len, int tag_len /*= 0*/)
@@ -28,23 +30,23 @@ namespace LibOpenSSL {
 	{
 		EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
 		if (ERR_LIB_NONE != EVP_EncryptInit_ex(ctx, EVP_get_cipherbyname(ciphername), NULL, NULL, NULL)) {
-			ERROR("EVP_EncryptInit error\n");
+			LOG_ERROR("EVP_EncryptInit error\n");
 			return -1;
 		}
 		if (0 == strcmp(mode, "GCM")) {
 			if (ERR_LIB_NONE != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, iv_len, NULL)) {
-				ERROR("EVP_CIPHER_CTX_ctrl error in setting the IV Length\n");
+				LOG_ERROR("EVP_CIPHER_CTX_ctrl error in setting the IV Length\n");
 				return -1;
 			}
 		}
 		if (ERR_LIB_NONE != EVP_EncryptInit_ex(ctx, NULL, NULL, key, iv)) {
-			ERROR("EVP_EncryptInit error\n");
+			LOG_ERROR("EVP_EncryptInit error\n");
 			return -1;
 		}
 
 		if (aad_len and aad) {
 			if (ERR_LIB_NONE != EVP_EncryptUpdate(ctx, NULL, &aad_len, aad, aad_len)) {
-				ERROR("EVP_EncryptUpdate error in setting the AAD\n");
+				LOG_ERROR("EVP_EncryptUpdate error in setting the AAD\n");
 				return -1;
 			}
 		}
@@ -52,24 +54,24 @@ namespace LibOpenSSL {
 		int retLength1 = 0;
 		// Repeat for more plaintext blocks before finishing.
 		if (ERR_LIB_NONE != EVP_EncryptUpdate(ctx, ciphertext, &retLength1, plaintext, len)) {
-			ERROR("EVP_EncryptUpdate error\n");
+			LOG_ERROR("EVP_EncryptUpdate error\n");
 			return -1;
 		}
 		int retLength2 = 0;
 		if (ERR_LIB_NONE != EVP_EncryptFinal_ex(ctx, ciphertext + retLength1, &retLength2)) {
-			ERROR("EVP_EncryptFinal error\n");
+			LOG_ERROR("EVP_EncryptFinal error\n");
 			return -1;
 		}
 
 		if (0 == strcmp(mode, "GCM")) {
 			if (tag_len and tag) {
 				if (ERR_LIB_NONE != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, tag_len, tag)) {
-					ERROR("EVP_CIPHER_CTX_ctrl error in getting the tag\n");
+					LOG_ERROR("EVP_CIPHER_CTX_ctrl error in getting the tag\n");
 					return -1;
 				}
 			}
 			else {
-				ERROR("Tag length is zero or tag is NULL\n");
+				LOG_ERROR("Tag length is zero or tag is NULL\n");
 			}
 		}
 
@@ -81,34 +83,34 @@ namespace LibOpenSSL {
 	{
 		EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
 		if (ERR_LIB_NONE != EVP_DecryptInit_ex(ctx, EVP_get_cipherbyname(ciphername), NULL, NULL, NULL)) {
-			ERROR("EVP_DecryptInit error\n");
+			LOG_ERROR("EVP_DecryptInit error\n");
 			return -1;
 		}
 
 		if (0 == strcmp(mode, "GCM")) {
 			if (ERR_LIB_NONE != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, iv_len, NULL)) {
-				ERROR("EVP_CIPHER_CTX_ctrl error in setting the IV Length\n");
+				LOG_ERROR("EVP_CIPHER_CTX_ctrl error in setting the IV Length\n");
 				return -1;
 			}
 			if (tag_len and tag) {
 				if (ERR_LIB_NONE != EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, tag_len, tag)) {
-					ERROR("EVP_CIPHER_CTX_ctrl error in setting the tag\n");
+					LOG_ERROR("EVP_CIPHER_CTX_ctrl error in setting the tag\n");
 					return -1;
 				}
 			}
 			else {
-				ERROR("Tag length is zero or tag is NULL\n");
+				LOG_ERROR("Tag length is zero or tag is NULL\n");
 			}
 		}
 
 		if (ERR_LIB_NONE != EVP_DecryptInit_ex(ctx, NULL, NULL, key, iv)) {
-			ERROR("EVP_DecryptInit error\n");
+			LOG_ERROR("EVP_DecryptInit error\n");
 			return -1;
 		}
 
 		if (aad_len and aad) {
 			if (ERR_LIB_NONE != EVP_DecryptUpdate(ctx, NULL, &aad_len, aad, aad_len)) {
-				ERROR("EVP_DecryptUpdate error in setting the AAD\n");
+				LOG_ERROR("EVP_DecryptUpdate error in setting the AAD\n");
 				return -1;
 			}
 		}
@@ -116,12 +118,12 @@ namespace LibOpenSSL {
 		int retLength1 = 0;
 		// Repeat for more ciphertext blocks before finishing.
 		if (ERR_LIB_NONE != EVP_DecryptUpdate(ctx, plaintext, &retLength1, ciphertext, len)) {
-			ERROR("EVP_DecryptUpdate error\n");
+			LOG_ERROR("EVP_DecryptUpdate error\n");
 			return -1;
 		}
 		int retLength2 = 0;
 		if (ERR_LIB_NONE != EVP_DecryptFinal_ex(ctx, plaintext + retLength1, &retLength2)) {
-			ERROR("EVP_DecryptFinal error\n");
+			LOG_ERROR("EVP_DecryptFinal error\n");
 			return -1;
 		}
 

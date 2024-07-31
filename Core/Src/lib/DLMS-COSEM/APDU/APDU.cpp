@@ -91,7 +91,7 @@ namespace EPRI {
                 return false;
             m_Type.Clear();
             m_Type.Append(m_SystemTitle);
-            m_Type.Append(m_Ciphered.GetCipheredDataAndAuthenticationTag().Size() + sizeof uint8_t + sizeof uint32_t);
+            m_Type.Append(m_Ciphered.GetCipheredDataAndAuthenticationTag().Size() + sizeof(uint8_t) + sizeof(uint32_t));
             m_Type.Append(m_Ciphered.GetSecurityControlByte());
             m_Type.Append(m_Ciphered.GetInvocationCounter());
             m_Type.Append(m_Ciphered.GetCipheredDataAndAuthenticationTag());

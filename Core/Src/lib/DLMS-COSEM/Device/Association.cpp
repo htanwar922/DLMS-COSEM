@@ -10,7 +10,7 @@ namespace EPRI
     AssociationContext::AssociationContext()
         : m_ClientSAP(INVALID_ADDRESS)
         , m_ServerSAP(INVALID_ADDRESS)
-        , m_SecurityOptions(SecurityContext::NO_SUITE, SecurityContext::no_policy)
+        , m_SecurityOptions(SecurityContextType::NO_SUITE, SecurityContextType::no_policy)
         , m_xDLMS()
         , m_Status(AssociationStatusType::non_associated)
         , m_Initialized(false)
@@ -111,7 +111,7 @@ namespace EPRI
             case 1: // PC Association
                 m_Contexts[i].m_SecurityOptions.ApplicationContextName = COSEMSecurityOptions::ContextLNRNoCipher;
                 //m_Contexts[i].m_SecurityOptions.MechanismName = COSEMSecurityOptions::MechanismNameNoSecurity;
-                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContext::no_policy);
+                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContextType::no_policy);
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetSecuritySuite(SecuritySuite_None());
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetSecuritySetupObjectID({ 0, 0, 0, 0, 0, 0 });
                 m_Contexts[i].m_xDLMS.SetConformance(
@@ -123,8 +123,8 @@ namespace EPRI
                 m_Contexts[i].m_SecurityOptions.ApplicationContextName = COSEMSecurityOptions::ContextLNRCipher;
                 m_Contexts[i].m_SecurityOptions.MechanismName = COSEMSecurityOptions::MechanismNameLowLevelSecurity;
                 m_Contexts[i].m_SecurityOptions.AuthenticationValue = ASSOCIATION_MR_AUTHENTICATION_VALUE;
-                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContext::authenticated_request);
-                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContext::encrypted_request);
+                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContextType::authenticated_request);
+                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContextType::encrypted_request);
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetSecuritySuite(SecuritySuite_0(glo_KEY, glo_AAD));
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetSecuritySetupObjectID({ 0, 0, 43, 0, 2, 255 });
                 m_Contexts[i].m_xDLMS.SetConformance(
@@ -137,8 +137,8 @@ namespace EPRI
             case 3: // US Association
                 m_Contexts[i].m_SecurityOptions.ApplicationContextName = COSEMSecurityOptions::ContextLNRCipher;
                 m_Contexts[i].m_SecurityOptions.MechanismName = COSEMSecurityOptions::MechanismNameHighLevelSecurity;
-                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContext::authenticated_request);
-                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContext::encrypted_request);
+                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContextType::authenticated_request);
+                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContextType::encrypted_request);
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetSecuritySuite(SecuritySuite_0(glo_KEY, glo_AAD));
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetSecuritySetupObjectID({ 0, 0, 43, 0, 3, 255 });
                 m_Contexts[i].m_xDLMS.SetConformance(
@@ -157,8 +157,8 @@ namespace EPRI
             case 4: // PUSH Association
                 m_Contexts[i].m_SecurityOptions.ApplicationContextName = COSEMSecurityOptions::ContextLNRCipher;
                 m_Contexts[i].m_SecurityOptions.MechanismName = COSEMSecurityOptions::MechanismNameNoSecurity;
-                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContext::authenticated_request);
-                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContext::encrypted_request);
+                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContextType::authenticated_request);
+                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContextType::encrypted_request);
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetSecuritySuite(SecuritySuite_0(glo_KEY, glo_AAD));
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetSecuritySetupObjectID({ 0, 0, 43, 0, 4, 255 });
                 m_Contexts[i].m_xDLMS.SetConformance(
@@ -170,8 +170,8 @@ namespace EPRI
             case 5: // FOTA Association
                 m_Contexts[i].m_SecurityOptions.ApplicationContextName = COSEMSecurityOptions::ContextLNRCipher;
                 m_Contexts[i].m_SecurityOptions.MechanismName = COSEMSecurityOptions::MechanismNameHighLevelSecurity;
-                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContext::authenticated_request);
-                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContext::encrypted_request);
+                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContextType::authenticated_request);
+                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContextType::encrypted_request);
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetSecuritySuite(SecuritySuite_0(glo_KEY, glo_AAD));
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetSecuritySetupObjectID({ 0, 0, 43, 0, 5, 255 });
                 m_Contexts[i].m_xDLMS.SetConformance(
@@ -185,8 +185,8 @@ namespace EPRI
             case 6: // IHD Association
                 m_Contexts[i].m_SecurityOptions.ApplicationContextName = COSEMSecurityOptions::ContextLNRCipher;
                 m_Contexts[i].m_SecurityOptions.MechanismName = COSEMSecurityOptions::MechanismNameLowLevelSecurity;
-                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContext::authenticated_request);
-                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContext::encrypted_request);
+                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContextType::authenticated_request);
+                m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContextType::encrypted_request);
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetSecuritySuite(SecuritySuite_0(glo_KEY, glo_AAD));
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetSecuritySetupObjectID({ 0, 0, 43, 0, 6, 255 });
                 m_Contexts[i].m_xDLMS.SetConformance(
@@ -264,7 +264,7 @@ namespace EPRI
             AssociationIndex = 6;
             break;
         default:
-            return false;
+            return nullptr;
         }
         return m_Contexts[AssociationIndex].m_SecurityOptions.SecurityContext.GetSecuritySuite();
     }
@@ -543,7 +543,7 @@ namespace EPRI
                     IV.Append<uint32_t>(IC);
 
                     //IV = DLMSVector{ 0x4d, 0x4d, 0x4d, 0x00, 0x00, 0xbc, 0x61, 0x4e, 0x01, 0x23, 0x45, 0x67 };
-                    
+
                     pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()->GenerateGMAC(
                         IV,
                         CtoS,

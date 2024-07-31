@@ -68,7 +68,7 @@
 // FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
+//
 
 #pragma once
 
@@ -101,7 +101,7 @@ namespace EPRI
         {
             return m_SourceAddress;
         }
-        
+
         virtual COSEMAddressType GetDestinationAddress()
         {
             return m_DestinationAddress;
@@ -112,17 +112,17 @@ namespace EPRI
         COSEMAddressType m_DestinationAddress = ReservedAddresses::NO_STATION;
 
     };
-    
+
     typedef std::unique_ptr<IAPDU> IAPDUPtr;
-    
+
     template <ASN::TagIDType TAG>
     class APDU : public IAPDU
     {
         using ComponentVector = std::vector<IAPDUComponent *>;
-        
+
     public:
         static const ASN::TagIDType Tag = TAG;
-        
+
         virtual ~APDU()
         {
         }
@@ -133,7 +133,7 @@ namespace EPRI
         {
             return Tag;
         }
-        
+
         virtual void Clear()
         {
             for (int Index = 0; Index < m_Components.size(); ++Index)
@@ -146,12 +146,12 @@ namespace EPRI
         {
             m_Components.push_back(pComponent);
         }
-        
+
         virtual std::vector<uint8_t> GetBytes()
         {
             DLMSVector RetVal;
             DLMSVector ComponentData;
-            
+
             RetVal.Append<uint8_t>(Tag);
             for (uint32_t Index = 0; Index < m_Components.size(); ++Index)
             {
@@ -163,9 +163,9 @@ namespace EPRI
             ASNType::AppendLength(ComponentData.Size(), &RetVal);
             RetVal.Append(ComponentData);
 
-            return RetVal.GetBytes();            
+            return RetVal.GetBytes();
         }
-        
+
         virtual bool IsValid() const
         {
             bool RetVal = false;
@@ -178,14 +178,14 @@ namespace EPRI
             }
             return RetVal;
         }
-        
+
         virtual bool Parse(DLMSVector * pData,
             COSEMAddressType SourceAddress,
             COSEMAddressType DestinationAddress)
         {
             bool   RetVal = false;
             size_t Length = 0;
-            
+
             if (Tag == pData->Peek<uint8_t>() &&
                 pData->Skip(sizeof(uint8_t)) &&
                 ASNType::GetLength(pData, &Length) &&
@@ -215,17 +215,17 @@ namespace EPRI
         APDU()
         {
         }
-        
+
         ComponentVector  m_Components;
-        
+
     };
-    
+
     template <ASN::TagIDType TAG>
     class APDUSingleType : public IAPDU
     {
     public:
         static const ASN::TagIDType Tag = TAG;
-        
+
         APDUSingleType() = delete;
         virtual ~APDUSingleType()
         {
@@ -237,20 +237,20 @@ namespace EPRI
         {
             return Tag;
         }
-        
+
         virtual void Clear()
         {
             m_Type.Clear();
         }
-        
+
         virtual std::vector<uint8_t> GetBytes()
         {
             DLMSVector RetVal;
             RetVal.Append<uint8_t>(Tag);
             RetVal.Append(m_Type.GetBytes());
-            return RetVal.GetBytes();            
+            return RetVal.GetBytes();
         }
-        
+
         virtual bool Parse(DLMSVector * pData,
             COSEMAddressType SourceAddress = ReservedAddresses::NO_STATION,
             COSEMAddressType DestinationAddress = ReservedAddresses::NO_STATION)
@@ -265,9 +265,9 @@ namespace EPRI
                     return true;
                 }
             }
-            return false;            
+            return false;
         }
-        
+
         // NOTE: DERIVED CLASSES MUST IMPLEMENT IsValid()
 
     protected:
@@ -275,15 +275,15 @@ namespace EPRI
             m_Type(SchemaEntry)
         {
         }
-        
+
         ASNType          m_Type;
-       
+
     private:
         virtual void RegisterComponent(IAPDUComponent * /*pComponent*/) final
         {
             // NOT IMPLEMENTED AND VISIBILITY CHANGE
         }
-        
+
     };
 
     namespace GLO {
@@ -358,7 +358,7 @@ namespace EPRI
 
             DLMSVector Decrypt(const std::shared_ptr<ISecuritySuite> pSuite, const COSEMSecurityOptions& SecurityOptions) const
             {
-                DLMSVector IV(SecurityOptions.CallingAPTitle); IV.Append(m_InvocationCounter);
+                DLMSVector IV(DLMSValueGet<DLMSVector>(SecurityOptions.CallingAPTitle)); IV.Append(m_InvocationCounter);
                 DLMSVector Ciphertext = m_CipheredDataAndAuthenticationTag;
                 DLMSVector Tag(Ciphertext, Ciphertext.Size() - pSuite->GetTagLength());
                 Ciphertext.Resize(Ciphertext.Size() - pSuite->GetTagLength());
@@ -389,17 +389,17 @@ namespace EPRI
                 DLMSValue Value;
                 try
                 {
-                    m_Type.Rewind();
-                    if (ASNType::GetNextResult::VALUE_RETRIEVED != m_Type.GetNextValue(&Value))
+                    this->m_Type.Rewind();
+                    if (ASNType::GetNextResult::VALUE_RETRIEVED != this->m_Type.GetNextValue(&Value))
                         return false;
                     size_t Length = Value.get<size_t>();
-                    if (ASNType::GetNextResult::VALUE_RETRIEVED != m_Type.GetNextValue(&Value))
+                    if (ASNType::GetNextResult::VALUE_RETRIEVED != this->m_Type.GetNextValue(&Value))
                         return false;
                     m_SecurityControlByte = DLMSValueGet<uint8_t>(Value);
-                    if (ASNType::GetNextResult::VALUE_RETRIEVED != m_Type.GetNextValue(&Value))
+                    if (ASNType::GetNextResult::VALUE_RETRIEVED != this->m_Type.GetNextValue(&Value))
                         return false;
                     m_InvocationCounter = DLMSValueGet<uint32_t>(Value);
-                    if (ASNType::GetNextResult::VALUE_RETRIEVED != m_Type.GetNextValue(&Value))
+                    if (ASNType::GetNextResult::VALUE_RETRIEVED != this->m_Type.GetNextValue(&Value))
                         return false;
                     m_CipheredDataAndAuthenticationTag = DLMSValueGet<DLMSVector>(Value);
                     if (Length != sizeof m_SecurityControlByte + sizeof m_InvocationCounter + m_CipheredDataAndAuthenticationTag.Size())
@@ -415,11 +415,11 @@ namespace EPRI
             {
                 if (not m_Initialized)
                     return false;
-                m_Type.Clear();
-                m_Type.Append(sizeof m_SecurityControlByte + sizeof m_InvocationCounter + m_CipheredDataAndAuthenticationTag.Size());
-                m_Type.Append(m_SecurityControlByte);
-                m_Type.Append(m_InvocationCounter);
-                m_Type.Append(m_CipheredDataAndAuthenticationTag);
+                this->m_Type.Clear();
+                this->m_Type.Append(sizeof m_SecurityControlByte + sizeof m_InvocationCounter + m_CipheredDataAndAuthenticationTag.Size());
+                this->m_Type.Append(m_SecurityControlByte);
+                this->m_Type.Append(m_InvocationCounter);
+                this->m_Type.Append(m_CipheredDataAndAuthenticationTag);
                 return true;
             }
             //

@@ -89,8 +89,12 @@ protected:
             RetVal = GetLine();
             try
             {
-                if (RetVal.length())
-                    return std::stoi(RetVal, nullptr, 0);
+                if (RetVal.length()) {
+                    if (RetVal.find("0x") == 0)
+                        return std::stoi(RetVal, nullptr, 16);
+                    else
+                        return std::stoi(RetVal, nullptr, 0);
+                }
                 else
                     return Default;
             }

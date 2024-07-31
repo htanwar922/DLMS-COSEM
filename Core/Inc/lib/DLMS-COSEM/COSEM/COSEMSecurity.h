@@ -80,7 +80,7 @@
 
 namespace EPRI
 {
-    struct SecurityContext
+    struct SecurityContextType
     {
         enum SecuritySuiteOption : uint8_t
         {
@@ -101,8 +101,8 @@ namespace EPRI
             digitally_signed_response = 0x80
         };
 
-        SecurityContext(SecuritySuiteOption Suite, uint8_t Policy);
-        virtual ~SecurityContext();
+        SecurityContextType(SecuritySuiteOption Suite, uint8_t Policy);
+        virtual ~SecurityContextType();
 
         const std::shared_ptr<ISecuritySuite> GetSecuritySuite() const;
         void SetSecuritySuite(const ISecuritySuite& riSuite);
@@ -147,8 +147,8 @@ namespace EPRI
             SECURITY_HIGH_LEVEL = 2
         };
 
-        COSEMSecurityOptions(SecurityContext::SecuritySuiteOption Suite = SecurityContext::NO_SUITE
-            , uint8_t Policy = SecurityContext::no_policy);
+        COSEMSecurityOptions(SecurityContextType::SecuritySuiteOption Suite = SecurityContextType::NO_SUITE
+            , uint8_t Policy = SecurityContextType::no_policy);
         virtual ~COSEMSecurityOptions();
 
         SecurityLevel Level() const;
@@ -163,7 +163,7 @@ namespace EPRI
         AuthenticationValueType VerificationValue;          // Sent by server to client
         APTitleType             CallingAPTitle;
         APTitleType             RespondingAPTitle = DLMSVector{ METER_SYSTEM_TITLE };
-        SecurityContext         SecurityContext;
+        SecurityContextType     SecurityContext;
     };
 
 }

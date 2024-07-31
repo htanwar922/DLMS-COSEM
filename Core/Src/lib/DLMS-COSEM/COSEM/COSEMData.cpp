@@ -967,6 +967,7 @@ namespace EPRI
         default:
             return false;
         }
+        return true;
     }
 
     // Himanshu

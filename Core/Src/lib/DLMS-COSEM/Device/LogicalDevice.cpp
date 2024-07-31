@@ -128,6 +128,10 @@ namespace EPRI
                 Result = APPOpenConfirmOrResponse::AssociationResultType::rejected_permanent;
             }
         }
+        if (not pResponse_xDLMS)
+        {
+            pResponse_xDLMS = std::make_unique<xDLMS::InitiateResponseVariant>(xDLMS::InitiateResponse());
+        }
         APPOpenConfirmOrResponse
             Response(SAP(),
                      Request.m_SourceAddress,

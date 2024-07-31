@@ -88,8 +88,8 @@ namespace EPRI
     const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecuritySHA256({ 2, 16, 756, 5, 8, 2, 6 }, ASN::IMPLICIT);
     const ASNObjectIdentifier COSEMSecurityOptions::MechanismNameHighLevelSecurityECDSA({ 2, 16, 756, 5, 8, 2, 7 }, ASN::IMPLICIT);
 
-    COSEMSecurityOptions::COSEMSecurityOptions(SecurityContext::SecuritySuiteOption Suite /*= SecurityContext::NO_SUITE*/
-            , uint8_t Policy /*= SecurityContext::no_policy*/)
+    COSEMSecurityOptions::COSEMSecurityOptions(SecurityContextType::SecuritySuiteOption Suite /*= SecurityContextType::NO_SUITE*/
+            , uint8_t Policy /*= SecurityContextType::no_policy*/)
         : SecurityContext(Suite, Policy)
     {
     }
@@ -159,23 +159,23 @@ namespace EPRI
         }
     }
 
-    SecurityContext::SecurityContext(SecuritySuiteOption Suite, uint8_t Policy)
+    SecurityContextType::SecurityContextType(SecuritySuiteOption Suite, uint8_t Policy)
         : m_SuiteOption(Suite)
         , m_Policy(Policy)
         , m_pSecuritySuite(nullptr)
     {
     }
 
-    SecurityContext::~SecurityContext()
+    SecurityContextType::~SecurityContextType()
     {
     }
 
-    const std::shared_ptr<ISecuritySuite> SecurityContext::GetSecuritySuite() const
+    const std::shared_ptr<ISecuritySuite> SecurityContextType::GetSecuritySuite() const
     {
         return m_pSecuritySuite;
     }
 
-    void SecurityContext::SetSecuritySuite(const ISecuritySuite& riSuite)
+    void SecurityContextType::SetSecuritySuite(const ISecuritySuite& riSuite)
     {
         if (m_pSecuritySuite)
         {
@@ -210,22 +210,22 @@ namespace EPRI
         }
     }
 
-    uint8_t SecurityContext::GetPolicy() const
+    uint8_t SecurityContextType::GetPolicy() const
     {
         return m_Policy;
     }
 
-    void SecurityContext::ClearPolicy()
+    void SecurityContextType::ClearPolicy()
     {
         m_Policy = 0;
     }
 
-    void SecurityContext::SetPolicyBit(SecurityPolicyBitmask policy)
+    void SecurityContextType::SetPolicyBit(SecurityPolicyBitmask policy)
     {
         m_Policy |= policy;
     }
 
-    const COSEMObjectInstanceID& SecurityContext::GetSecuritySetupObjectID() const
+    const COSEMObjectInstanceID& SecurityContextType::GetSecuritySetupObjectID() const
     {
         if (m_pSecuritySuite == nullptr)
         {
@@ -234,7 +234,7 @@ namespace EPRI
         return m_pSecuritySuite->GetSecuritySetupObjectID();
     }
 
-    void SecurityContext::SetSecuritySetupObjectID(const COSEMObjectInstanceID& ID)
+    void SecurityContextType::SetSecuritySetupObjectID(const COSEMObjectInstanceID& ID)
     {
         if (m_pSecuritySuite == nullptr)
         {

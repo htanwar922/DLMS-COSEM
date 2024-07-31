@@ -264,7 +264,7 @@ void ClientApp::ClientMenu_Handler(const std::string& RetVal)
 	}
 	else if (toupper(RetVal[0]) == 'A')
 	{
-		int         SourceAddress = GetNumericInput("Client Address (Default: 1)", 1);
+		int         SourceAddress = GetNumericInput("Client Address (Default: 0x10)", 0x10);
 		std::string TCPAddress = GetStringInput("Destination TCP Address (Default: localhost)", "localhost");
 		int 		Port = GetNumericInput("Port (Default: 4059)", ISocket::DEFAULT_DLMS_PORT);
 
@@ -277,7 +277,7 @@ void ClientApp::ClientMenu_Handler(const std::string& RetVal)
 	}
 	else if (toupper(RetVal[0]) == 'B')
 	{
-		int         SourceAddress = GetNumericInput("Client Address (Default: 1)", 1);
+		int         SourceAddress = GetNumericInput("Client Address (Default: 0x10)", 0x10);
 		std::string SerialPort = GetStringInput("Serial Port (Default: /dev/ttyUSB0)", "/dev/ttyUSB0");
 
 		PrintLine("Initial Baud Rate Selection\n");
@@ -338,7 +338,7 @@ void ClientApp::ClientMenu_Handler(const std::string& RetVal)
 	}
 	else if (toupper(RetVal[0]) == 'E')
 	{
-		int         SourceAddress = GetNumericInput("Client Address (Default: 1)", 1);
+		int         SourceAddress = GetNumericInput("Client Address (Default: 0x10)", 0x10);
 		std::string SerialPort = GetStringInput("Serial Port (Default: /dev/ttyUSB0)", "/dev/ttyUSB0");
 
 		PrintLine("Initial Baud Rate Selection\n");
