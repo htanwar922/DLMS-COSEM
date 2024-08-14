@@ -397,11 +397,22 @@ namespace EPRI
                     const AssociationContext* pContext = m_Association.GetAssociationContext(pGetResponse->Data.m_DestinationAddress);
                     if (pContext->m_SecurityOptions.Encryption())
                     {
-                        GLO::Get_Response EncryptedResponse;
-                        EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
-                            , pContext->m_SecurityOptions
-                            , Response.GetBytes());
-                        TransportParam.Data = EncryptedResponse.GetBytes();
+                        if (pContext->m_xDLMS.ConformanceBits()[xDLMS::ConformanceBits::general_protection])
+                        {
+                            GLO::General_Glo_Ciphering EncryptedResponse;
+                            TransportParam.Data = EncryptedResponse.Encrypt(
+                                pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
+                                , pContext->m_SecurityOptions
+                                , Response.GetBytes());
+                        }
+                        else
+                        {
+                            GLO::Get_Response EncryptedResponse;
+                            EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
+                                , pContext->m_SecurityOptions
+                                , Response.GetBytes());
+                            TransportParam.Data = EncryptedResponse.GetBytes();
+                        }
                     }
                     else
                     {
@@ -455,11 +466,22 @@ namespace EPRI
                     const AssociationContext* pContext = m_Association.GetAssociationContext(Parameters.m_DestinationAddress);
                     if (pContext->m_SecurityOptions.Encryption())
                     {
-                        GLO::Set_Response EncryptedResponse;
-                        EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
-                            , pContext->m_SecurityOptions
-                            , Response.GetBytes());
-                        TransportParam.Data = EncryptedResponse.GetBytes();
+                        if (pContext->m_xDLMS.ConformanceBits()[xDLMS::ConformanceBits::general_protection])
+                        {
+                            GLO::General_Glo_Ciphering EncryptedResponse;
+                            TransportParam.Data = EncryptedResponse.Encrypt(
+                                pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
+                                , pContext->m_SecurityOptions
+                                , Response.GetBytes());
+                        }
+                        else
+                        {
+                            GLO::Set_Response EncryptedResponse;
+                            EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
+                                , pContext->m_SecurityOptions
+                                , Response.GetBytes());
+                            TransportParam.Data = EncryptedResponse.GetBytes();
+                        }
                     }
                     else
                     {
@@ -521,11 +543,22 @@ namespace EPRI
                     const AssociationContext* pContext = m_Association.GetAssociationContext(Parameters.m_DestinationAddress);
                     if (pContext->m_SecurityOptions.Encryption())
                     {
-                        GLO::Action_Response EncryptedResponse;
-                        EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
-                            , pContext->m_SecurityOptions
-                            , Response.GetBytes());
-                        TransportParam.Data = EncryptedResponse.GetBytes();
+                        if (pContext->m_xDLMS.ConformanceBits()[xDLMS::ConformanceBits::general_protection])
+                        {
+                            GLO::General_Glo_Ciphering EncryptedResponse;
+                            TransportParam.Data = EncryptedResponse.Encrypt(
+                                pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
+                                , pContext->m_SecurityOptions
+                                , Response.GetBytes());
+                        }
+                        else
+                        {
+                            GLO::Action_Response EncryptedResponse;
+                            EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
+                                , pContext->m_SecurityOptions
+                                , Response.GetBytes());
+                            TransportParam.Data = EncryptedResponse.GetBytes();
+                        }
                     }
                     else
                     {
@@ -855,10 +888,17 @@ namespace EPRI
             {
                 switch (pAPDU->GetTag())
                 {
+                case Get_Request::Tag:
+                    return GET_Request_Handler(pAPDU);
+                case Set_Request::Tag:
+                    return SET_Request_Handler(pAPDU);
+                case Action_Request::Tag:
+                    return ACTION_Request_Handler(pAPDU);
                 case Access_Request::Tag:
                     return ACCESS_Request_Handler(pAPDU);
                 default:
-                    throw std::logic_error("General_Glo_Ciphering_Handler Not Implemented!");
+                    LOG_ERROR("General_Glo_Ciphering_Handler: Unknown APDU Tag: %u\r\n", pAPDU->GetTag());
+                    //throw std::logic_error("General_Glo_Ciphering_Handler Not Implemented!");
                 }
             }
             return true;

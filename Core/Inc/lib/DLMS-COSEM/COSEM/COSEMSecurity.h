@@ -159,8 +159,9 @@ namespace EPRI
 
         ASNObjectIdentifier     ApplicationContextName;
         ASNObjectIdentifier     MechanismName;
-        AuthenticationValueType AuthenticationValue;        // Received by server from client
-        AuthenticationValueType VerificationValue;          // Sent by server to client
+        AuthenticationValueType AuthenticationValue;
+        AuthenticationValueType CtoS;           // Received by server from client
+        AuthenticationValueType StoC;           // Sent by server to client
         APTitleType             CallingAPTitle;
         APTitleType             RespondingAPTitle = DLMSVector{ METER_SYSTEM_TITLE };
         SecurityContextType     SecurityContext;

@@ -124,3 +124,5 @@ extern const std::string packet_types[2];
 #include "meter-config.h"
 
 const std::initializer_list<uint8_t> GuruxCLIClientSystemTitle = { 0x4d, 0x4d, 0x4d, 0x00, 0x00, 0xbc, 0x61, 0x4e };
+#define GLO_ACCESS_REQUEST_TAG 0x00
+#define GLO_ACCESS_RESPONSE_TAG 0x00

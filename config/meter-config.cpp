@@ -32,9 +32,14 @@ std::initializer_list<AssociationConfigType> AssociationConfigPC = {
 };
 
 std::initializer_list<AssociationConfigType> AssociationConfigMR = {
-    { 3, { 1, 0, 0, 7, 0, 255} },
+    { 3, { 1, 0, 0, 7, 0, 255 } },
 };
-std::initializer_list<AssociationConfigType> AssociationConfigUS = {};
+
+std::initializer_list<AssociationConfigType> AssociationConfigUS = {
+    { 3, { 1, 0, 0, 7, 0, 255 } },
+    { 7, { 0, 0, 94, 91, 10, 255 } },
+};
+
 std::initializer_list<AssociationConfigType> AssociationConfigPUSH = {};
 std::initializer_list<AssociationConfigType> AssociationConfigFOTA = {};
 std::initializer_list<AssociationConfigType> AssociationConfigIHD = {};

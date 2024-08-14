@@ -69,3 +69,6 @@ extern std::initializer_list<AssociationConfigType> AssociationConfigFOTA;
 extern std::initializer_list<AssociationConfigType> AssociationConfigIHD;
 
 const std::string ASSOCIATION_MR_AUTHENTICATION_VALUE = "Himanshu";
+const std::string ASSOCIATION_US_AUTHENTICATION_VALUE = "Himanshu";
+const std::string ASSOCIATION_FOTA_AUTHENTICATION_VALUE = "Himanshu";
+const std::string ASSOCIATION_IHD_AUTHENTICATION_VALUE = "Himanshu";

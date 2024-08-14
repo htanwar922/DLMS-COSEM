@@ -100,10 +100,18 @@ namespace EPRI
         {
             Result = APPOpenConfirmOrResponse::AssociationResultType::rejected_transient;
         }
+        std::unique_ptr<xDLMS::Context> pContext_xDLMS;
         std::unique_ptr<xDLMS::InitiateResponseVariant> pResponse_xDLMS;        // Himanshu - GLO
+        COSEMSecurityOptions SecurityOptions = Request.m_SecurityOptions;
         if (Request.m_xDLMS.IsPlain())
         {
-            pResponse_xDLMS = std::make_unique<xDLMS::InitiateResponseVariant>(xDLMS::InitiateResponse(Request.m_xDLMS.GetPlainRequest()));
+            xDLMS::InitiateResponse Response(Request.m_xDLMS.GetPlainRequest());
+            pContext_xDLMS = std::make_unique<xDLMS::Context>(xDLMS::Context(Response.APDUSize()
+                , Response.ConformanceBits()
+                , Response.DLMSVersion()
+                , Response.QOS() != DLMSBlank ? DLMSValueGet<xDLMS::Context::QOSType>(Response.QOS()) : DLMSOptionalNone
+            ));
+            pResponse_xDLMS = std::make_unique<xDLMS::InitiateResponseVariant>(Response);
         }
         else if (Request.m_xDLMS.IsGloCiphered())
         {
@@ -118,9 +126,20 @@ namespace EPRI
                 }
                 else
                 {
+                    xDLMS::InitiateResponse Response(*pRequest_xDLMS);
+                    pContext_xDLMS = std::make_unique<xDLMS::Context>(xDLMS::Context(Response.APDUSize()
+                        , Response.ConformanceBits()
+                        , Response.DLMSVersion()
+                        , Response.QOS() != DLMSBlank ? DLMSValueGet<xDLMS::Context::QOSType>(Response.QOS()) : DLMSOptionalNone
+                    ));
+
                     xDLMS::GLO::InitiateResponse Response_xDLMS;
-                    Response_xDLMS.Encrypt(pSuite, Request.m_SecurityOptions, xDLMS::InitiateResponse(*pRequest_xDLMS).GetBytes());
+                    Response_xDLMS.Encrypt(pSuite, Request.m_SecurityOptions, Response.GetBytes());
                     pResponse_xDLMS = std::make_unique<xDLMS::InitiateResponseVariant>(Response_xDLMS);
+
+                    uint8_t StoC[16] = { 0 };
+                    SecurityOptions.SecurityContext.GetSecuritySuite()->GetRandom(StoC, sizeof(StoC));
+                    SecurityOptions.StoC = DLMSVector(StoC, sizeof(StoC));
                 }
             }
             else
@@ -136,11 +155,11 @@ namespace EPRI
             Response(SAP(),
                      Request.m_SourceAddress,
                      *pResponse_xDLMS,
-                     Request.m_SecurityOptions,
+                     SecurityOptions,
                      Result,
                      APPOpenConfirmOrResponse::DiagnosticSourceType::acse_service_user,
                      APPOpenConfirmOrResponse::UserDiagnosticType::user_null);
-        if (not m_Association.RegisterAssociation(Response) or not m_pServer->OpenResponse(Response))
+        if (not pContext_xDLMS or not m_Association.RegisterAssociation(Response, *pContext_xDLMS) or not m_pServer->OpenResponse(Response))
         {
             m_Association.ReleaseTransientAssociations();
             return false;

@@ -50,7 +50,7 @@ namespace EPRI
         }
         if (m_SecurityOptions.MechanismName == COSEMSecurityOptions::MechanismNameLowLevelSecurity)
         {
-            if (m_SecurityOptions.AuthenticationValue != Response.m_SecurityOptions.AuthenticationValue)
+            if (m_SecurityOptions.AuthenticationValue != Response.m_SecurityOptions.CtoS)
             {
                 return false;
             }
@@ -62,7 +62,7 @@ namespace EPRI
             or m_SecurityOptions.MechanismName == COSEMSecurityOptions::MechanismNameHighLevelSecuritySHA256
             or m_SecurityOptions.MechanismName == COSEMSecurityOptions::MechanismNameHighLevelSecurityECDSA)
         {
-            m_SecurityOptions.AuthenticationValue = Response.m_SecurityOptions.AuthenticationValue;
+            //m_SecurityOptions.AuthenticationValue = Response.m_SecurityOptions.AuthenticationValue;
         }
         if (m_SecurityOptions.ApplicationContextName != Response.m_SecurityOptions.ApplicationContextName)
         {
@@ -137,6 +137,7 @@ namespace EPRI
             case 3: // US Association
                 m_Contexts[i].m_SecurityOptions.ApplicationContextName = COSEMSecurityOptions::ContextLNRCipher;
                 m_Contexts[i].m_SecurityOptions.MechanismName = COSEMSecurityOptions::MechanismNameHighLevelSecurity;
+                m_Contexts[i].m_SecurityOptions.AuthenticationValue = DLMSVector(ASSOCIATION_US_AUTHENTICATION_VALUE.c_str(), ASSOCIATION_US_AUTHENTICATION_VALUE.size());
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContextType::authenticated_request);
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContextType::encrypted_request);
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetSecuritySuite(SecuritySuite_0(glo_KEY, glo_AAD));
@@ -170,6 +171,7 @@ namespace EPRI
             case 5: // FOTA Association
                 m_Contexts[i].m_SecurityOptions.ApplicationContextName = COSEMSecurityOptions::ContextLNRCipher;
                 m_Contexts[i].m_SecurityOptions.MechanismName = COSEMSecurityOptions::MechanismNameHighLevelSecurity;
+                m_Contexts[i].m_SecurityOptions.AuthenticationValue = DLMSVector(ASSOCIATION_FOTA_AUTHENTICATION_VALUE.c_str(), ASSOCIATION_FOTA_AUTHENTICATION_VALUE.size());
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContextType::authenticated_request);
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContextType::encrypted_request);
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetSecuritySuite(SecuritySuite_0(glo_KEY, glo_AAD));
@@ -185,6 +187,7 @@ namespace EPRI
             case 6: // IHD Association
                 m_Contexts[i].m_SecurityOptions.ApplicationContextName = COSEMSecurityOptions::ContextLNRCipher;
                 m_Contexts[i].m_SecurityOptions.MechanismName = COSEMSecurityOptions::MechanismNameLowLevelSecurity;
+                m_Contexts[i].m_SecurityOptions.AuthenticationValue = ASSOCIATION_IHD_AUTHENTICATION_VALUE;
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContextType::authenticated_request);
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetPolicyBit(SecurityContextType::encrypted_request);
                 m_Contexts[i].m_SecurityOptions.SecurityContext.SetSecuritySuite(SecuritySuite_0(glo_KEY, glo_AAD));
@@ -269,7 +272,7 @@ namespace EPRI
         return m_Contexts[AssociationIndex].m_SecurityOptions.SecurityContext.GetSecuritySuite();
     }
 
-    bool Association::RegisterAssociation(const APPOpenConfirmOrResponse& Response)
+    bool Association::RegisterAssociation(const APPOpenConfirmOrResponse& Response, const xDLMS::Context Context)
     {
         if (AvailableAssociations())
         {
@@ -303,6 +306,9 @@ namespace EPRI
                 m_pCurrentContext->m_ClientSAP = Response.m_DestinationAddress;
                 m_pCurrentContext->m_ServerSAP = Response.m_SourceAddress;
                 m_pCurrentContext->m_SecurityOptions.CallingAPTitle = Response.m_SecurityOptions.CallingAPTitle;
+                m_pCurrentContext->m_SecurityOptions.CtoS = Response.m_SecurityOptions.CtoS;
+                m_pCurrentContext->m_SecurityOptions.StoC = Response.m_SecurityOptions.StoC;
+                m_pCurrentContext->m_xDLMS = Context;
                 m_pCurrentContext->m_Initialized = true;
                 //ASNObjectIdentifier     ApplicationContextName;
                 //ASNObjectIdentifier     MechanismName;
@@ -519,8 +525,7 @@ namespace EPRI
         switch (pMethod->MethodID)
         {
         case METHOD_REPLY_TO_HLS_AUTHENTICATION:
-            if (pContext->m_SecurityOptions.MechanismName == COSEMSecurityOptions::MechanismNameHighLevelSecurity
-                or pContext->m_SecurityOptions.MechanismName == COSEMSecurityOptions::MechanismNameHighLevelSecurityGMAC)
+            if (pContext->m_SecurityOptions.MechanismName == COSEMSecurityOptions::MechanismNameHighLevelSecurity)
             {
                 if (Parameters.value()[0] == 0)
                 {
@@ -531,26 +536,120 @@ namespace EPRI
                 {
                     COSEMType Value(OctetStringSchema);
                     Value.Parse(DLMSVector(Parameters.value(), 1, Parameters.value().Size() - 1));
-                    DLMSVector CtoS;
                     DLMSValue Val;
                     Value.GetNextValue(&Val);
-                    CtoS = DLMSValueGet<DLMSVector>(Val);
+                    DLMSVector StoC_Reply = DLMSValueGet<DLMSVector>(Val);
+
+                    DLMSVector key;
+                    if (pContext->m_SecurityOptions.AuthenticationType() == APDUConstants::AuthenticationValueChoice::charstring)
+                    {
+                        key.Append(DLMSValueGet<VISIBLE_STRING_CType>(pContext->m_SecurityOptions.AuthenticationValue));
+                    }
+                    else if (pContext->m_SecurityOptions.AuthenticationType() == APDUConstants::AuthenticationValueChoice::external)
+                    {
+                        key = DLMSValueGet<DLMSVector>(pContext->m_SecurityOptions.AuthenticationValue);
+                    }
+                    else
+                    {
+                        throw std::runtime_error("Authentication type not implemented");
+                    }
+
+                    DLMSVector CtoS;
+                    if (pContext->m_SecurityOptions.CtoS.is<DLMSVector>())
+                    {
+                        CtoS = DLMSValueGet<DLMSVector>(pContext->m_SecurityOptions.CtoS);
+                    }
+                    else if (pContext->m_SecurityOptions.CtoS.is<VISIBLE_STRING_CType>())
+                    {
+                        CtoS.Append(DLMSValueGet<VISIBLE_STRING_CType>(pContext->m_SecurityOptions.CtoS));
+                    }
+                    else
+                    {
+                        throw std::runtime_error("CtoS type not implemented");
+                    }
+
+                    LibOpenSSL::AES1 aes1(key.GetData(), key.Size());
+
+                    //{
+                    //    uint8_t* stoc = new uint8_t[StoC_Reply.Size()];
+                    //    aes1.Decrypt(StoC_Reply.GetData(), StoC_Reply.Size(), stoc);
+                    //    DLMSVector StoC(stoc, StoC_Reply.Size());
+                    //    delete[] stoc;
+
+                    //    // ToDo - Himanshu - HLS
+                    //    if (StoC == DLMSValueGet<DLMSVector>(pContext->m_SecurityOptions.StoC))
+                    //    {
+                    //        RetVal = APDUConstants::Action_Result::success;
+                    //    }
+                    //    else
+                    //    {
+                    //        RetVal = APDUConstants::Action_Result::other_reason;
+                    //        break;
+                    //    }
+                    //}
+
+                    {
+                        DLMSVector StoC = DLMSValueGet<DLMSVector>(pContext->m_SecurityOptions.StoC);
+
+                        uint8_t* stoc = new uint8_t[StoC_Reply.Size()];
+                        aes1.Encrypt(StoC.GetData(), StoC.Size(), stoc);
+                        DLMSVector StoC_Expected(stoc, StoC_Reply.Size());
+                        delete[] stoc;
+
+                        if (StoC_Expected == StoC_Reply)
+                        {
+                            RetVal = APDUConstants::Action_Result::success;
+                        }
+                        else
+                        {
+                            RetVal = APDUConstants::Action_Result::other_reason;
+                            break;
+                        }
+                    }
+
+                    uint8_t* ctos = new uint8_t[CtoS.Size()];
+                    aes1.Encrypt(CtoS.GetData(), CtoS.Size(), ctos);
+                    DLMSVector CtoS_Reply(ctos, CtoS.Size());
+                    delete[] ctos;
+
+                    COSEMType Data(COSEMDataType::OCTET_STRING, CtoS_Reply);
+                    *pReturnValue = Data.GetBytes();
+                    RetVal = APDUConstants::Action_Result::success;
+                }
+                else
+                {
+                    throw std::runtime_error("No return value");
+                }
+            }
+            else if (pContext->m_SecurityOptions.MechanismName == COSEMSecurityOptions::MechanismNameHighLevelSecurityGMAC)
+            {
+                if (Parameters.value()[0] == 0)
+                {
+                    RetVal = APDUConstants::Action_Result::other_reason;
+                    break;
+                }
+                if (pReturnValue)
+                {
+                    COSEMType Value(OctetStringSchema);
+                    Value.Parse(DLMSVector(Parameters.value(), 1, Parameters.value().Size() - 1));
+                    DLMSValue Val;
+                    Value.GetNextValue(&Val);
+                    DLMSVector StoC_Reply = DLMSValueGet<DLMSVector>(Val);
+
                     DLMSVector IV, Tag;
-                    // Todo - Himanshu - HLS
 
                     IV.Append(METER_SYSTEM_TITLE, 0, 0);
-                    uint32_t IC = 1;   // pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()->GetRandom();
+                    uint32_t IC = pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()->GetRandom();
                     IV.Append<uint32_t>(IC);
-
-                    //IV = DLMSVector{ 0x4d, 0x4d, 0x4d, 0x00, 0x00, 0xbc, 0x61, 0x4e, 0x01, 0x23, 0x45, 0x67 };
-
+                    
+                    // Todo - Himanshu - HLS
                     pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()->GenerateGMAC(
                         IV,
-                        CtoS,
+                        pContext->m_SecurityOptions.CtoS,
                         Tag
                     );
-                    //pReturnValue->Append<uint8_t>(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()->GetSecurityControlByte());
-                    //pReturnValue->Append<uint32_t>(IC);
+                    pReturnValue->Append<uint8_t>(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()->GetSecurityControlByte());
+                    pReturnValue->Append<uint32_t>(IC);
                     pReturnValue->Append(Tag);
 
                     COSEMType Data(COSEMDataType::OCTET_STRING, *pReturnValue);

@@ -26,7 +26,8 @@ namespace LibOpenSSL {
         }
 	}
 
-	int AES::Encrypt(const uint8_t* plaintext, int len, const uint8_t* iv, int iv_len, uint8_t* ciphertext, uint8_t* tag /*= NULL*/, uint8_t* aad /*= NULL*/, int aad_len /*= 0*/) const
+	int AES::Encrypt(const uint8_t* plaintext, int len, const uint8_t* iv, int iv_len, uint8_t* ciphertext
+		, uint8_t* tag /*= NULL*/, const uint8_t* aad /*= NULL*/, int aad_len /*= 0*/) const
 	{
 		EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
 		if (ERR_LIB_NONE != EVP_EncryptInit_ex(ctx, EVP_get_cipherbyname(ciphername), NULL, NULL, NULL)) {
@@ -79,7 +80,8 @@ namespace LibOpenSSL {
 		return retLength1 + retLength2;
 	}
 
-	int AES::Decrypt(const uint8_t* ciphertext, int len, const uint8_t* iv, int iv_len, uint8_t* plaintext, uint8_t* tag /*= NULL*/, uint8_t* aad /*= NULL*/, int aad_len /*= 0*/) const
+	int AES::Decrypt(const uint8_t* ciphertext, int len, const uint8_t* iv, int iv_len, uint8_t* plaintext
+		, uint8_t* tag /*= NULL*/, const uint8_t* aad /*= NULL*/, int aad_len /*= 0*/) const
 	{
 		EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
 		if (ERR_LIB_NONE != EVP_DecryptInit_ex(ctx, EVP_get_cipherbyname(ciphername), NULL, NULL, NULL)) {
@@ -160,6 +162,35 @@ namespace LibOpenSSL {
 		if (key)
 			delete[] key;
 	}
+
+	AES1::AES1(const uint8_t* key, int key_len)
+    {
+		uint8_t* _key = nullptr;
+		int _key_len = key_len;
+		if (_key_len % 16 != 0) {
+			_key_len = (_key_len / 16 + 1) * 16;
+		}
+		_key = new uint8_t[_key_len]{ 0 };
+		memcpy(_key, key, key_len);
+		AES_set_encrypt_key(_key, _key_len * 8, &this->key);
+		delete[] _key;
+	}
+
+	int AES1::Encrypt(const uint8_t* plaintext, int len, uint8_t* ciphertext) const
+	{
+        AES_encrypt(plaintext, ciphertext, &key);
+        return len;
+    }
+
+	int AES1::Decrypt(const uint8_t* ciphertext, int len, uint8_t* plaintext) const
+	{
+        AES_decrypt(ciphertext, plaintext, &key);
+        return len;
+    }
+
+	AES1::~AES1()
+	{
+    }
 }
 
 
@@ -250,19 +281,18 @@ namespace EPRI
 
 	bool SecuritySuite_0::GenerateGMAC(const DLMSVector& iv, const DLMSVector& CtoS, DLMSVector& tag) const
 	{
-		DLMSVector Challenge = m_AAD;
-		Challenge[0] = m_SecurityControlByte;
-		Challenge.Append(CtoS);
+		DLMSVector AAD = m_AAD;
+		AAD[0] = m_SecurityControlByte;
 		tag.Clear();
 		tag.Resize(m_AES.GetTagLength());
-		int len = m_AES.Encrypt(Challenge.GetData()
-			, Challenge.Size()
+		int len = m_AES.Encrypt(CtoS.GetData()
+			, CtoS.Size()
 			, iv.GetData()
 			, iv.Size()
 			, NULL
 			, (uint8_t*)tag.GetData()
-			, NULL
-			, 0
+			, AAD.GetData()
+			, AAD.Size()
 		);
 		if (len < 0) {
 			LOG_ERROR("GMAC generation failed\n");

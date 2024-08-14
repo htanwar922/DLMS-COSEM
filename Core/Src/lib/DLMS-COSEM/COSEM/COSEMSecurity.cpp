@@ -124,7 +124,7 @@ namespace EPRI
 
     bool COSEMSecurityOptions::Authentication() const
     {
-        return IsInitialized(AuthenticationValue);
+        return not MechanismName.IsEmpty() and (MechanismName != MechanismNameNoSecurity);
     }
 
     bool COSEMSecurityOptions::Encryption() const

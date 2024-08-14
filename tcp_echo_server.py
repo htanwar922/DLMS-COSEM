@@ -26,10 +26,7 @@ def send_to_clients(message, clients):
         except Exception as e:
             print(f'Error sending data to client: {e}')
 
-def main():
-    host = ''
-    port = int(sys.argv[1])
-
+def server_thread(host, port):
     try:
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.bind((host, port))
@@ -64,15 +61,28 @@ def main():
                 send_to_clients(message, clients)
             except KeyboardInterrupt:
                 break
-
+    
     except Exception as e:
         print(f'An error occurred: {e}')
+
     finally:
-        print('Stopping TCP server...')
+        print('Stopping TCP servers...')
         server_socket.close()
         for client_socket in clients:
             client_socket.close()
         print('TCP Server stopped.')
+
+def main():
+    host = ''
+    ports = list(map(int, sys.argv[1:])) if sys.argv[1:] else [8080, 8081]
+
+    threads = []
+    for port in ports:
+        thread = threading.Thread(target=server_thread, args=(host, port))
+        threads.append(thread)
+        thread.start()
+    for thread in threads:
+        thread.join()
 
 if __name__ == '__main__':
     main()

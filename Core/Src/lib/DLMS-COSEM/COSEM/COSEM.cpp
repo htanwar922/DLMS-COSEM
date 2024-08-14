@@ -120,7 +120,7 @@ namespace EPRI
         else if (ASNType::GetNextResult::VALUE_RETRIEVED == RetVal &&
                  DLMSValueGet<DLMSBitSet>(RequestValue)[0])
         {
-            RetVal = pAARQ->calling_authentication_value.GetNextValue(&m_SecurityOptions.AuthenticationValue);
+            RetVal = pAARQ->calling_authentication_value.GetNextValue(&m_SecurityOptions.CtoS);
             if (RetVal != ASNType::GetNextResult::VALUE_RETRIEVED)
             {
                 throw std::logic_error("Authentication is Required");
@@ -161,8 +161,8 @@ namespace EPRI
         {
             RetVal = RetVal &&
                 pAARQ->sender_acse_requirements.Append(ASNBitString(1, m_SecurityOptions.Authentication() ? 1 : 0)) &&
-                pAARQ->calling_authentication_value.SelectChoice(m_SecurityOptions.AuthenticationType()) &&
-                pAARQ->calling_authentication_value.Append(m_SecurityOptions.AuthenticationValue);
+                pAARQ->calling_authentication_value.SelectChoice(APDUConstants::AuthenticationValueChoice::external) &&
+                pAARQ->calling_authentication_value.Append(m_SecurityOptions.CtoS);
         }
         if (m_xDLMS.Initialized())
         {
@@ -186,6 +186,14 @@ namespace EPRI
         {
             throw std::logic_error("application_context_name Required");
         }
+        else if (m_SecurityOptions.Encryption())
+        {
+            RetVal = pAARE->responding_AP_title.GetNextValue(&m_SecurityOptions.RespondingAPTitle);
+            if (RetVal != ASNType::GetNextResult::VALUE_RETRIEVED)
+            {
+                throw std::logic_error("responding_AP_title Required");
+            }
+        }
         //
         // Mechanism is Optional
         //
@@ -208,7 +216,7 @@ namespace EPRI
         else if (ASNType::GetNextResult::VALUE_RETRIEVED == RetVal &&
                  DLMSValueGet<DLMSBitSet>(RequestValue)[0])
         {
-            RetVal = pAARE->responding_authentication_value.GetNextValue(&m_SecurityOptions.AuthenticationValue);
+            RetVal = pAARE->responding_authentication_value.GetNextValue(&m_SecurityOptions.StoC);
             if (RetVal != ASNType::GetNextResult::VALUE_RETRIEVED)
             {
                 throw std::logic_error("Authentication is Required");
@@ -257,7 +265,15 @@ namespace EPRI
         bool RetVal = pAARE->application_context_name.Append(m_SecurityOptions.ApplicationContextName) &&
             pAARE->result.Append(int8_t(m_Result)) &&
             pAARE->result_source_diagnostic.SelectChoice(m_DiagnosticSource) &&
-            pAARE->result_source_diagnostic.Append(m_Diagnostic);
+            pAARE->result_source_diagnostic.Append(m_Diagnostic) &&
+            pAARE->mechanism_name.Append(m_SecurityOptions.MechanismName);
+        if (m_SecurityOptions.Authentication())
+        {
+            RetVal = RetVal &&
+                pAARE->responder_acse_requirements.Append(ASNBitString(1, m_SecurityOptions.Authentication() ? 1 : 0)) &&
+                pAARE->responding_authentication_value.SelectChoice(APDUConstants::AuthenticationValueChoice::external) &&
+                pAARE->responding_authentication_value.Append(m_SecurityOptions.StoC);
+        }
         if (m_SecurityOptions.Encryption())
         {
             RetVal = RetVal &&

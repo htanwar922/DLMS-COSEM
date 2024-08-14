@@ -3,6 +3,7 @@
 #pragma once
 
 #include <random>
+#include "openssl/aes.h"
 
 #include "DLMSValue.h"
 #include "COSEM/COSEMObjectInstanceID.h"
@@ -22,8 +23,10 @@ namespace LibOpenSSL {
 	public:
         AES(const char* ciphername, const uint8_t* key, int key_len, int tag_len = 0);
 
-        int Encrypt(const uint8_t* plaintext, int len, const uint8_t* iv, int iv_len, uint8_t* ciphertext, uint8_t* tag = NULL, uint8_t* aad = NULL, int aad_len = 0) const;
-		int Decrypt(const uint8_t* ciphertext, int len, const uint8_t* iv, int iv_len, uint8_t* plaintext, uint8_t* tag = NULL, uint8_t* aad = NULL, int aad_len = 0) const;
+        int Encrypt(const uint8_t* plaintext, int len, const uint8_t* iv, int iv_len, uint8_t* ciphertext
+            , uint8_t* tag = NULL, const uint8_t* aad = NULL, int aad_len = 0) const;
+		int Decrypt(const uint8_t* ciphertext, int len, const uint8_t* iv, int iv_len, uint8_t* plaintext
+            , uint8_t* tag = NULL, const uint8_t* aad = NULL, int aad_len = 0) const;
 		void PrintCiphertext(const uint8_t* ciphertext, int len);
 
 		EPRI::DLMSVector GetKey() const;
@@ -41,6 +44,20 @@ namespace LibOpenSSL {
         {
         }
 	};
+
+    class AES1
+    {
+    protected:
+        AES_KEY key;
+    public:
+        AES1() = delete;
+        AES1(const uint8_t * key, int key_len);
+
+        int Encrypt(const uint8_t* plaintext, int len, uint8_t* ciphertext) const;
+        int Decrypt(const uint8_t* ciphertext, int len, uint8_t* plaintext) const;
+
+        virtual ~AES1();
+    };
 }
 
 
@@ -86,6 +103,10 @@ namespace EPRI
         uint32_t GetRandom()
         {
             return (std::mt19937(m_RandomDevice()))();
+        }
+        void GetRandom(uint8_t* buffer, size_t size)
+        {
+            std::generate(buffer, buffer + size, [this]() { return (std::mt19937(m_RandomDevice()))(); });
         }
     protected:
         COSEMObjectInstanceID m_SecuritySetupObjectID;

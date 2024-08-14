@@ -64,7 +64,7 @@ namespace EPRI
 
 
     namespace GLO {
-        class Access_Request : public EPRI::GLO::CipheredBase<0x00>
+        class Access_Request : public EPRI::GLO::CipheredBase<GLO_ACCESS_REQUEST_TAG>
         {
         public:
             Access_Request() = default;

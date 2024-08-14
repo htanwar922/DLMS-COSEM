@@ -330,7 +330,7 @@ namespace EPRI
             {
                 m_Initialized = true;
                 m_APDUSize = Request.m_APDUSize;
-                m_Conformance = Request.m_Conformance;
+                m_Conformance = Request.m_Conformance & AvailableStackConformance;
                 m_DLMSVersion = Request.m_DLMSVersion;
                 m_DedicatedKey = Request.m_DedicatedKey;
                 m_QOS = Request.m_QOS;

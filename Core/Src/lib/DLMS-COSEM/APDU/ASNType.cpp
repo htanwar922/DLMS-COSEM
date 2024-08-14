@@ -932,9 +932,10 @@ namespace EPRI
             {
                 ssize_t Length = -1;
                 bool    IsImplicit = ASN_IS_IMPLICIT(SchemaEntry);
+                bool    IsConstructed = ASN_IS_CONSTRUCTED(SchemaEntry);
                 if (not IsImplicit)
                 {
-                    if (not ASN_IS_CONSTRUCTED(SchemaEntry))
+                    if (not IsConstructed)
                         m_Data.Append<uint8_t>(ASN::OCTET_STRING);
                     Length = Value.get<DLMSVector>().Size();
                 }
@@ -942,7 +943,7 @@ namespace EPRI
                 {
                     Length = ASN_SCHEMA_DATA_TYPE_SIZE(SchemaEntry);
                 }
-                if (not IsImplicit and Length >= 0)
+                if (not IsImplicit and not IsConstructed and Length >= 0)
                 {
                     AppendLength(Value.get<DLMSVector>().Size(), &m_Data);
                 }
@@ -1078,7 +1079,22 @@ namespace EPRI
                 }
                 else
                 {
-                    return InternalSimpleAppend(CURRENT_APPEND_STATE.m_SchemaEntry, Value);
+                    bool Constructed = ASN_IS_CONSTRUCTED(CURRENT_APPEND_STATE.m_SchemaEntry);
+                    bool Appended = false;
+                    //
+                    // TODO - Handle Larger Lengths.  Phase II.
+                    //
+                    ssize_t LengthIndex = -1;
+                    if (Constructed)
+                    {
+                        LengthIndex = m_Data.Append<uint8_t>(0x00);
+                    }
+                    Appended = InternalSimpleAppend(CURRENT_APPEND_STATE.m_SchemaEntry, Value);
+                    if (Constructed && Appended)
+                    {
+                        m_Data[LengthIndex] = m_Data.Size() - LengthIndex - sizeof(uint8_t);
+                    }
+                    return Appended;
                 }
                 return false;
             case ST_CHOICE:

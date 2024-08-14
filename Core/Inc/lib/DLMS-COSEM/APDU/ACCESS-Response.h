@@ -63,7 +63,7 @@ namespace EPRI
 
 
     namespace GLO {
-        class Access_Response : public EPRI::GLO::CipheredBase<0x00>
+        class Access_Response : public EPRI::GLO::CipheredBase<GLO_ACCESS_RESPONSE_TAG>
         {
         public:
             Access_Response() = default;

@@ -342,7 +342,12 @@ namespace EPRI
 
             DLMSVector Encrypt(const std::shared_ptr<ISecuritySuite> pSuite, const COSEMSecurityOptions& SecurityOptions, const DLMSVector& Plaintext)
             {
-                DLMSVector IV(METER_SYSTEM_TITLE); IV.Append(++m_InvocationCounter);
+#if MODE == SERVER
+                DLMSVector IV(METER_SYSTEM_TITLE);
+#else
+                DLMSVector IV(SecurityOptions.CallingAPTitle);
+#endif
+                IV.Append(++m_InvocationCounter);
                 DLMSVector Ciphertext;
                 DLMSVector Tag;
                 if (pSuite->Encrypt(Plaintext, IV, Ciphertext, Tag))
@@ -358,7 +363,12 @@ namespace EPRI
 
             DLMSVector Decrypt(const std::shared_ptr<ISecuritySuite> pSuite, const COSEMSecurityOptions& SecurityOptions) const
             {
-                DLMSVector IV(DLMSValueGet<DLMSVector>(SecurityOptions.CallingAPTitle)); IV.Append(m_InvocationCounter);
+#if MODE == SERVER
+                DLMSVector IV(SecurityOptions.CallingAPTitle);
+#else
+                DLMSVector IV(METER_SYSTEM_TITLE);
+#endif
+                IV.Append(m_InvocationCounter);
                 DLMSVector Ciphertext = m_CipheredDataAndAuthenticationTag;
                 DLMSVector Tag(Ciphertext, Ciphertext.Size() - pSuite->GetTagLength());
                 Ciphertext.Resize(Ciphertext.Size() - pSuite->GetTagLength());

@@ -118,7 +118,8 @@ namespace EPRI
             1 << ConformanceBits::get |
             1 << ConformanceBits::set |
             1 << ConformanceBits::action |
-            1 << ConformanceBits::access
+            1 << ConformanceBits::access |
+            1 << ConformanceBits::general_protection
         );
         
         class Context
