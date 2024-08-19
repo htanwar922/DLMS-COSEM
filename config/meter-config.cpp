@@ -21,6 +21,7 @@ std::initializer_list<AssociationConfigType> AssociationConfigPC = {
     //{ 15, { 0, 0, 40, 0, 4, 255 } },
     //{ 15, { 0, 0, 40, 0, 5, 255 } },
     //{ 15, { 0, 0, 40, 0, 6, 255 } },
+
     { 1, { 0, 0, 96, 1, 0, 255 } },
     { 1, { 0, 0, 96, 1, 1, 255 } },
     { 1, { 0, 0, 96, 1, 2, 255 } },
@@ -29,6 +30,7 @@ std::initializer_list<AssociationConfigType> AssociationConfigPC = {
     { 1, { 0, 0, 94, 91, 11, 255 } },
     { 1, { 0, 0, 94, 91, 12, 255 } },
     { 1, { 0, 0, 96, 1, 4, 255 } },
+    { 1, { 0, 0, 43, 1, 3, 255 } }
 };
 
 std::initializer_list<AssociationConfigType> AssociationConfigMR = {

@@ -3,6 +3,7 @@
 
 #include "interfaces/IAssociationLN.h"
 #include "COSEM/COSEMSecurity.h"
+#include "APDU/xDLMS.h"
 
 namespace EPRI
 {

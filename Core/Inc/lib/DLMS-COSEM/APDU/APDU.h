@@ -347,7 +347,8 @@ namespace EPRI
 #else
                 DLMSVector IV(SecurityOptions.CallingAPTitle);
 #endif
-                IV.Append(++m_InvocationCounter);
+                pSuite->IncrementInvocationCounter();
+                IV.Append(m_InvocationCounter = pSuite->GetInvocationCounter());
                 DLMSVector Ciphertext;
                 DLMSVector Tag;
                 if (pSuite->Encrypt(Plaintext, IV, Ciphertext, Tag))

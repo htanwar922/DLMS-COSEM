@@ -16,8 +16,10 @@
     "\\Core\\Src\\lib",
     "\\Core\\Src\\lib\\DLMS-COSEM",
     "\\Core\\Src\\lib\\DLMS-COSEM\\COSEM",
+    "\\Core\\Src\\lib\\DLMS-COSEM\\Device",
     "\\Core\\Src\\Linux",
     "\\Core\\Src\\Linux\\Objects"
   ],
+  "SelectedNode": "\\serial_to_tcp.py",
   "PreviewInSolutionExplorer": false
 }

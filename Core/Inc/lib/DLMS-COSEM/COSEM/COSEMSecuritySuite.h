@@ -108,10 +108,19 @@ namespace EPRI
         {
             std::generate(buffer, buffer + size, [this]() { return (std::mt19937(m_RandomDevice()))(); });
         }
+        uint32_t GetInvocationCounter() const
+        {
+            return m_InvocationCounter;
+        }
+        void IncrementInvocationCounter()
+        {
+            m_InvocationCounter++;
+        }
     protected:
         COSEMObjectInstanceID m_SecuritySetupObjectID;
         uint8_t m_SecurityControlByte;
         std::random_device m_RandomDevice;
+        uint32_t m_InvocationCounter = 0;
     };
 
     class SecuritySuite_None : public ISecuritySuite

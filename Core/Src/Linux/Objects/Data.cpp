@@ -1,5 +1,6 @@
 
-#include "interfaces/IAssociationLN.h"
+//#include "interfaces/IAssociationLN.h"
+#include "Device/Association.h"
 #include "Objects/Data.h"
 
 namespace EPRI
@@ -20,6 +21,12 @@ namespace EPRI
         //    std::string value = "DATA VALUE #" + std::to_string(i);
         //    SetCaptureValue({ 0, 0, 96, 1, i, 255 }, value);
         //}
+
+        RegisterObjectInstanceID({ 0, 0, 43, 1, 3, 255 });
+        SetAttributeAccessRights({ 0, 0, 43, 1, 3, 255 }, LOGICAL_NAME, IAssociationLN::attr_read_access);
+        SetAttributeAccessRights({ 0, 0, 43, 1, 3, 255 }, ATTR_VALUE, IAssociationLN::attr_read_access);
+        SetCaptureValue({ 0, 0, 43, 1, 3, 255 }, DLMSBlank);
+
         for (const MeterConfigType& Config : MeterConfig)
         {
             RegisterObjectInstanceID(Config.OID);
@@ -41,6 +48,12 @@ namespace EPRI
         SelectiveAccess* pSelectiveAccess)
     {
         LOG_ALL("10: InternalXXX\r\n");		// ToDo - check breakpoint
+        if (Descriptor.instance_id == COSEMObjectInstanceID({ 0, 0, 43, 1, 3, 255 })) {
+            pAttribute->SelectChoice(COSEMDataType::DOUBLE_LONG_UNSIGNED);
+            uint32_t IC = Context.m_SecurityOptions.SecurityContext.GetSecuritySuite()->GetInvocationCounter();
+            pAttribute->Append(IC);
+            return APDUConstants::Data_Access_Result::success;
+        }
         pAttribute->SelectChoice(COSEMDataType::VISIBLE_STRING);
         pAttribute->Append(GetCaptureValue(Descriptor.instance_id));
         return APDUConstants::Data_Access_Result::success;
