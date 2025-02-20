@@ -191,7 +191,7 @@ void asio::posix::tcp_echo::StreamHandleTCPEchoClient::launch_detached_process(s
         FALSE,                 // Set handle inheritance to FALSE
         CREATE_NEW_CONSOLE,    // Create a new console window for the process
         NULL,                  // Use parent's environment block
-        NULL,                  // Use parent's starting directory 
+        NULL,                  // Use parent's starting directory
         &si,                   // Pointer to STARTUPINFO structure
         &pi_                   // Pointer to PROCESS_INFORMATION structure
     ))

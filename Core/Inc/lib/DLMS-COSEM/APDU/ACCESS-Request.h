@@ -6,7 +6,7 @@
 #include "APDUConstants.h"
 #include "COSEM/COSEMTypes.h"
 #include "DateTime.h"
-#include "interfaces/COSEMData.h"
+#include "COSEM/COSEMData.h"
 
 namespace EPRI
 {

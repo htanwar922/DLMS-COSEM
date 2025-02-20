@@ -111,36 +111,9 @@ int main(int argc, char *argv[])
 
 #else
 
-    if(argc > 1)
-    {
-        ClientApp App(bl, argc-1, (const char **)(argv+1));
-        App.set_polling_interval(POLLING_INTERVAL);
-        // tcp_accept(Write_HOST, Write_PORT);
-        App.Run();
-    }
-    else
-    {
-        //asio::io_service IO;
-        //ClientApp App(bl,IO);
-        ClientApp App(bl, n_METERS, addresses);
-        App.set_polling_interval(POLLING_INTERVAL);
-        // tcp_accept(Write_HOST, Write_PORT);
-        App.Run();
-    }
+    asio::io_service IO;
+    ClientApp App(bl);
+    App.Run();
 
 #endif
 }
-
-/*
-    while ((opt =:: getopt(argc, argv, "S")) != -1)
-    {
-        switch (opt)
-        {
-        case 'S':
-            Server = true;
-            break;
-        default:
-            break;
-        }
-    }
-*/

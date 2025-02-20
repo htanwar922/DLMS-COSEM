@@ -68,7 +68,7 @@
 // FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
+//
 
 #pragma once
 
@@ -84,7 +84,7 @@
 namespace EPRI
 {
 	class ISerial;
-	
+
 	class Packet
 	{
 	public:
@@ -109,14 +109,14 @@ namespace EPRI
 			NO_SEGMENT = 0,
 			SEGMENT    = 1
 		};
-		
+
     	Packet();
 		virtual ~Packet()
 		{
 		}
-    	
+
     	void Clear();
-   	
+
     	virtual uint16_t GetPacketLength() const;
     	virtual uint16_t GetRemainingPacketLength() const;
     	virtual Segmentation GetSegmentation() const;
@@ -126,7 +126,7 @@ namespace EPRI
     	virtual uint16_t GetInformationLength() const;
     	virtual const uint8_t * GetInformation(size_t& InformationLength) const;
     	virtual bool IsIdentify() const;
-    	
+
     	virtual HDLCErrorCode MakePacket(Segmentation Segmented,
         	const HDLCAddress& DestinationAddr,
         	const HDLCAddress& SourceAddress,
@@ -141,7 +141,7 @@ namespace EPRI
 
     	virtual HDLCErrorCode MakeByByte(uint8_t Byte);
     	virtual HDLCErrorCode MakeByVector(DLMSVector * pVector);
-    	
+
     	operator const uint8_t *() const;
     	//
     	// TODO - Rework to Base Packet on DLMSVector. Phase II.
@@ -177,15 +177,15 @@ namespace EPRI
     	void Insert(uint8_t Word, int& Index);
     	void Insert(uint16_t Value, int& Index, bool bBigEndian = true);
     	void Insert(const HDLCAddress& Value, int& Index);
-    	void InsertFrameFormat(size_t HeaderSize, 
-        	const HDLCControl& Control, 
-        	size_t InformationSize, 
-        	Segmentation Segment, 
+    	void InsertFrameFormat(size_t HeaderSize,
+        	const HDLCControl& Control,
+        	size_t InformationSize,
+        	Segmentation Segment,
         	int& Index);
 
     	static const uint16_t PPPINITFCS16 = 0xFFFF;
     	static const uint16_t PPPGOODFCS16 = (0xF0B8 ^ 0xFFFF);
-        uint8_t			      m_Information[MAX_HDLC_FRAME_SIZE] = { }; 
+        uint8_t			      m_Information[MAX_HDLC_FRAME_SIZE] = { };
     	int                   m_HeaderLength = 0;
     	PACKET_RX_STATE	      m_PacketState;
     	int                   m_PacketIndex;

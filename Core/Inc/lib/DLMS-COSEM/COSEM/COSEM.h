@@ -76,7 +76,7 @@
 #include <map>
 #include <memory>
 
-#include "interfaces/COSEMAttribute.h"
+#include "COSEM/COSEMAttribute.h"
 #include "Callback.h"
 #include "wrapper/Transport.h"
 #include "Device/StateMachine.h"

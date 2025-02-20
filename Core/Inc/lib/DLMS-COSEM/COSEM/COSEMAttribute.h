@@ -73,7 +73,7 @@
 #pragma once
 
 #include "DLMSValue.h"
-#include "interfaces/COSEMData.h"
+#include "COSEM/COSEMData.h"
 #include "COSEM/COSEMTypes.h"
 
 namespace EPRI

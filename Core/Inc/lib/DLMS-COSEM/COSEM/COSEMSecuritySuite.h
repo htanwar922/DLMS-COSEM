@@ -3,6 +3,7 @@
 #pragma once
 
 #include <random>
+#include <algorithm>
 #include "openssl/aes.h"
 
 #include "DLMSValue.h"

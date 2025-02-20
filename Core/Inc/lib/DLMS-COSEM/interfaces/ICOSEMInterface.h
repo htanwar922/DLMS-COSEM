@@ -77,9 +77,9 @@
 #include <map>
 #include <set>
 
-#include "interfaces/COSEMData.h"
-#include "interfaces/COSEMAttribute.h"
-#include "interfaces/COSEMMethod.h"
+#include "COSEM/COSEMData.h"
+#include "COSEM/COSEMAttribute.h"
+#include "COSEM/COSEMMethod.h"
 #include "COSEM/COSEMObjectInstanceID.h"
 #include "COSEM/COSEMTypes.h"
 

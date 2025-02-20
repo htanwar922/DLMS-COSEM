@@ -23,160 +23,12 @@ using namespace EPRI;
 using namespace asio;
 
 bool compressed = true;
-vector<std::string> TCPAddress;                             // Himanshu
 
-ClientApp::ClientApp(LinuxBaseLibrary& BL, int clients/*=0*/, const char** addresses/*=NULL*/)
-	: AppBase(BL), m_ReadTimer(m_Base.get_io_service()) //sudeshna m_ReadTimer part
+ClientApp::ClientApp(LinuxBaseLibrary& BL)
+	: AppBase(BL)
 {
 	m_Base.get_io_service().post(std::bind(&ClientApp::ClientMenu, this));
-	// ReadLine(std::bind(&ClientApp::ClientMenu_Handler, this, std::placeholders::_1));    // Himanshu
-
-	if(clients == 0)
-		TCPAddress.push_back("localhost");
-	for(int i=0; i<clients; i++)
-		TCPAddress.push_back(addresses[i]);
-
-	// ClientMenu_Handler("7"); // Himanshu Sudeshna
 }
-
-#pragma region // Himanshu
-void ClientApp::open_func(std::string Address)
-{
-
-	if(m_pClientEngine == nullptr)
-	{
-		int SourceAddress = 0;
-		m_pSocket = Base()->GetCore()->GetIP()->CreateSocket(LinuxIP::Options(LinuxIP::Options::MODE_CLIENT));
-		m_pXPort = new TCPWrapper(m_pSocket);
-		m_pClientEngine = new LinuxClientEngine(COSEMClientEngine::Options(SourceAddress), m_pXPort);
-	}
-	else
-	{
-		// TODO - update address
-		m_pClientEngine->UpdateAddress(m_pClientEngine->m_meter_idx);
-	}
-
-	Base()->GetDebug()->TRACE("Connecting to Server %d\n", m_pClientEngine->m_meter_idx);
-
-	while(m_pSocket->Open(Address.c_str()) != SUCCESSFUL); /*= DEFAULT_DLMS_PORT*/
-	m_ReadTimer.expires_from_now(std::chrono::seconds(1));
-	m_ReadTimer.async_wait(std::bind(&ClientApp::associate_func, this));
-}
-
-void ClientApp::associate_func()
-{
-	if (m_pSocket && m_pSocket->IsConnected() & m_pClientEngine->IsTransportConnected())
-	{
-		bool                 Send = true;
-		int                  DestinationAddress = 1;
-		COSEMSecurityOptions::SecurityLevel Security = (COSEMSecurityOptions::SecurityLevel) COSEMSecurityOptions::SECURITY_NONE;
-		std::string          Password;
-		COSEMSecurityOptions SecurityOptions;
-		//
-		// Only supports LN at this time
-		//
-		SecurityOptions.ApplicationContextName = SecurityOptions.ContextLNRNoCipher;
-
-		if (Send)
-		{
-			size_t APDUSize =  640;
-			m_pClientEngine->Open(DestinationAddress,
-								SecurityOptions,
-								xDLMS::InitiateRequest(APDUSize));
-		}
-
-		m_ReadTimer.expires_from_now(std::chrono::seconds(1));
-		m_ReadTimer.async_wait(std::bind(&ClientApp::polling_func,
-			this,
-			m_waiting_interval));
-	}
-	else
-	{
-		PrintLine("Transport Connection Not Established Yet!\n");
-		m_ReadTimer.expires_from_now(std::chrono::seconds(1));
-		m_ReadTimer.async_wait(std::bind(&ClientApp::close_func,
-			this,
-			false));
-	}
-}
-
-void ClientApp::polling_func(int interval/*=0*/)   // const asio::error_code& Error,
-{
-	Base()->GetDebug()->TRACE("Poll\n");
-
-	Cosem_Attribute_Descriptor Descriptor;
-	Descriptor.class_id = CLASS_ID;
-	Descriptor.attribute_id = 2;
-	if (Descriptor.instance_id.Parse(compressed ? configM_CONTINUOUS_OBIS_CODE_COMPRESSED : configM_CONTINUOUS_OBIS_CODE_ORIGINAL))
-	{
-		compressed = not compressed;
-		if (m_pClientEngine->Get(Descriptor, &m_GetToken))
-		{
-			PrintLine(std::string("\tGet Request Sent: Token ") + std::to_string(m_GetToken) + "\n");
-		}
-
-		// TODO #1 - m_pClientEngine->m_Responses for m_GetToken in signal_handler or ClientHandler("0");
-	}
-	if (m_continuous_poll)
-	{
-		m_ReadTimer.expires_from_now(std::chrono::seconds(m_pClientEngine->m_meter_idx != TCPAddress.size()-1 ? 1 : interval));
-		m_ReadTimer.async_wait(std::bind(&ClientApp::await_response_func,
-			this,
-			m_GetToken));
-	}
-}
-
-void ClientApp::await_response_func(EPRI::COSEMClientEngine::RequestToken Token)
-{
-	Base()->GetDebug()->TRACE("Wait\n");
-
-	if(m_pSocket && m_pSocket->IsConnected() && m_pClientEngine->IsTransportConnected())
-	{
-		if(! m_pClientEngine->GetResponseConfirmed(Token))
-		{
-			m_ReadTimer.expires_from_now(std::chrono::seconds(1));
-			m_ReadTimer.async_wait(std::bind(&ClientApp::await_response_func,
-				this,
-				Token));
-		}
-		else
-		{
-			m_ReadTimer.expires_from_now(std::chrono::seconds(1));
-			m_ReadTimer.async_wait(std::bind(&ClientApp::close_func,
-				this,
-				false));
-		}
-	}
-	else
-	{
-		PrintLine("Transport Connection Broken!\n");
-		m_ReadTimer.expires_from_now(std::chrono::seconds(1));
-		m_ReadTimer.async_wait(std::bind(&ClientApp::close_func,
-			this,
-			false));
-	}
-}
-
-void ClientApp::close_func(bool exit_on_close)
-{
-	Base()->GetDebug()->TRACE("Closed connection with Server %d\n", m_pClientEngine->m_meter_idx);
-
-	m_pSocket->Close();
-	m_pClientEngine->m_meter_idx = (m_pClientEngine->m_meter_idx + 1) % TCPAddress.size();
-
-	m_ReadTimer.expires_from_now(std::chrono::seconds(1));
-	if(exit_on_close) m_ReadTimer.async_wait(std::bind(&exit, 0));
-	else m_ReadTimer.async_wait(std::bind(&ClientApp::open_func,
-			this,
-			TCPAddress[m_pClientEngine->m_meter_idx]));
-}
-
-void ClientApp::set_polling_interval(int seconds)
-{
-	m_waiting_interval = seconds;
-}
-
-#pragma endregion // Himanshu
 
 void ClientApp::ClientMenu()
 {
@@ -194,8 +46,6 @@ void ClientApp::ClientMenu()
 	PrintLine("\t4 - COSEM Action\n");
 	PrintLine("\t5 - COSEM Release\n");
 	PrintLine("\t6 - COSEM ACCESS");
-	// PrintLine("\t7 - COSEM Continuous Get Start\n");
-	// PrintLine("\t8 - COSEM Continuous Get Stop\n");
 	PrintLine("\n");
 	PrintLine("\tT - TCP Disconnect\n");
 	PrintLine("\tU - HDLC Disconnect\n");
@@ -256,10 +106,6 @@ void ClientApp::ClientMenu_Handler(const std::string& RetVal)
 {
 	if (RetVal == "0")
 	{
-		m_ReadTimer.expires_from_now(std::chrono::seconds(1));
-		m_ReadTimer.async_wait(std::bind(&ClientApp::await_response_func,
-			this,
-			m_GetToken));
 		exit(0);
 	}
 	else if (toupper(RetVal[0]) == 'A')
@@ -567,21 +413,6 @@ void ClientApp::ClientMenu_Handler(const std::string& RetVal)
 		}
 
 	}
-	/*sudeshna's code starts here*/
-	else if (RetVal == "7")
-	{
-		// ClientMenu_Handler("A");
-		m_continuous_poll = true;
-		open_func(TCPAddress[0]);
-		// auto fun = std::bind(&ClientApp::polling_func,this, std::placeholders::_1, m_waiting_interval);
-		// fun(Error);
-	}
-	else if (RetVal == "8")
-	{
-		m_ReadTimer.cancel();
-		m_continuous_poll = false;
-	}
-	/*ends here*/
 	else if (toupper(RetVal[0]) == 'T')
 	{
 		if (m_pSocket)
@@ -613,7 +444,7 @@ void ClientApp::ClientMenu_Handler(const std::string& RetVal)
 	m_Base.get_io_service().post(std::bind(&ClientApp::ClientMenu, this));
 }
 
-#pragma region
+#pragma region // ServerApp Implementation
 
 ServerApp::ServerApp(LinuxBaseLibrary& BL) :
 	AppBase(BL)

@@ -9,7 +9,15 @@
             "installRoot": "${projectDir}\\out\\install\\${name}",
             "cmakeCommandArgs": "",
             "buildCommandArgs": "",
-            "ctestCommandArgs": ""
+            "ctestCommandArgs": "",
+            "intelliSenseMode": "windows-msvc-x64",
+            "variables": [
+                {
+                    "name": "CMAKE_CXX_FLAGS",
+                    "value": "/DWIN32 /D_WINDOWS /W1 /GR /EHsc /Zc:__cplusplus /wd4067",
+                    "type": "STRING"
+                }
+            ]
         }
     ]
 }

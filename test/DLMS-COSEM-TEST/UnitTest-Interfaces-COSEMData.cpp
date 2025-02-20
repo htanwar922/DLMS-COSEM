@@ -72,7 +72,7 @@
 
 #include <gtest/gtest.h>
 
-#include "interfaces/COSEMData.h"
+#include "COSEM/COSEMData.h"
 
 using namespace EPRI;
 

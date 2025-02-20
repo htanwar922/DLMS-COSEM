@@ -43,7 +43,7 @@
             ]
         },
         {
-            "name": "(gdb )Launch gTest",
+            "name": "(gdb) Launch gTest",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/test/DLMS-COSEM-TEST/DLMS-COSEM-TEST",

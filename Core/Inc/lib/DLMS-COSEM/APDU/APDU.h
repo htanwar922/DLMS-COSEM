@@ -345,7 +345,7 @@ namespace EPRI
 #if MODE == SERVER
                 DLMSVector IV(METER_SYSTEM_TITLE);
 #else
-                DLMSVector IV(SecurityOptions.CallingAPTitle);
+                DLMSVector IV = SecurityOptions.CallingAPTitle;
 #endif
                 pSuite->IncrementInvocationCounter();
                 IV.Append(m_InvocationCounter = pSuite->GetInvocationCounter());
@@ -365,7 +365,7 @@ namespace EPRI
             DLMSVector Decrypt(const std::shared_ptr<ISecuritySuite> pSuite, const COSEMSecurityOptions& SecurityOptions) const
             {
 #if MODE == SERVER
-                DLMSVector IV(SecurityOptions.CallingAPTitle);
+                DLMSVector IV = SecurityOptions.CallingAPTitle;
 #else
                 DLMSVector IV(METER_SYSTEM_TITLE);
 #endif

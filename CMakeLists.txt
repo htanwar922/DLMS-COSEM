@@ -18,7 +18,6 @@ find_package(Threads REQUIRED)
 
 set(CMAKE_CXX_STANDARD 14)
 if(MSVC)
-	add_compile_options(/W1)
 	find_package(asio REQUIRED)
 endif()
 find_package(GTest REQUIRED)

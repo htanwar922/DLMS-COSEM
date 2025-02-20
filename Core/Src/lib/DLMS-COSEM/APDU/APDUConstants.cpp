@@ -90,7 +90,7 @@ namespace EPRI
                 ASN_GraphicString_TYPE(ASN::IMPLICIT)
             ASN_END_CHOICE_ENTRY
             ASN_BEGIN_CHOICE_ENTRY(APDUConstants::AuthenticationValueChoice::bitstring)
-                ASN_BIT_STRING_TYPE(ASN::IMPLICIT)
+                ASN_BIT_STRING_TYPE(ASN::IMPLICIT, 64)
             ASN_END_CHOICE_ENTRY
             ASN_BEGIN_CHOICE_ENTRY(APDUConstants::AuthenticationValueChoice::external)
                 ASN_OCTET_STRING_TYPE(ASN::CONSTRUCTED)

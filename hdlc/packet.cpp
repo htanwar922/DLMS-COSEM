@@ -68,7 +68,7 @@
 // FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
+//
 
 #include "packet.h"
 #include "ITemplates/ISerial.h"
@@ -349,14 +349,14 @@ namespace EPRI
     {
         return Get16BigEndianHelper(&m_Information[Index]);
     }
-    
+
     uint16_t Packet::GetRemainingPacketLength() const
     {
         if (-1 == m_PacketMappings.m_Format)
             return 0;
         return (GetU16(m_PacketMappings.m_Format) & 0b0000011111111111);
     }
-    
+
     uint16_t Packet::GetPacketLength() const
     {
         if (-1 == m_PacketMappings.m_Format)
@@ -379,26 +379,26 @@ namespace EPRI
             return NO_SEGMENT;
         return Segmentation((GetU16(m_PacketMappings.m_Format) & 0b0000100000000000) >> 11);
     }
-    
+
     HDLCAddress Packet::GetDestinationAddress() const
     {
         if (-1 == m_PacketMappings.m_DestinationAddress)
             return HDLCAddress();
         return HDLCAddress().Parse(&m_Information[m_PacketMappings.m_DestinationAddress]);
     }
-    
+
     HDLCAddress Packet::GetSourceAddress() const
     {
         if (-1 == m_PacketMappings.m_SourceAddress)
             return HDLCAddress();
         return HDLCAddress().Parse(&m_Information[m_PacketMappings.m_SourceAddress]);
     }
-    
+
     HDLCControl Packet::GetControl() const
     {
         return HDLCControl(m_Information[m_PacketMappings.m_Control]);
     }
-    
+
     uint16_t Packet::GetInformationLength() const
     {
         if (GetControl().PacketType() == HDLCControl::IDENTR)
@@ -420,7 +420,7 @@ namespace EPRI
         InformationLength = GetInformationLength();
         return &m_Information[m_PacketMappings.m_Information];
     }
-    
+
     bool Packet::IsIdentify() const
     {
         switch (GetControl().PacketType())
@@ -442,7 +442,7 @@ namespace EPRI
         }
         return CurrentCRC ^ 0xFFFF;
     }
-	
+
     uint16_t Packet::ComputeCRC(uint8_t Byte, uint16_t CurrentCRC /*= PPPINITFCS16*/)
     {
         return (uint16_t)((CurrentCRC >> 8) ^ CRC16_TABLE[(CurrentCRC ^ Byte) & 0xff]);
@@ -452,7 +452,7 @@ namespace EPRI
     {
         m_Information[Index++] = Byte;
     }
-	
+
     void Packet::Insert(uint16_t Value, int& Index, bool bBigEndian /* = true */)
     {
         if (bBigEndian)
@@ -466,7 +466,7 @@ namespace EPRI
             m_Information[Index++] = (0xFF & (Value >> 8));
         }
     }
-    
+
     void Packet::Insert(const HDLCAddress& Value, int& Index)
     {
         std::memcpy(&m_Information[Index], Value.Get(), Value.Size());
@@ -479,16 +479,16 @@ namespace EPRI
         switch (Control.PacketType())
         {
         case HDLCControl::DISC:
-        case HDLCControl::DM:   
-        case HDLCControl::RR:   
-        case HDLCControl::RNR:  
+        case HDLCControl::DM:
+        case HDLCControl::RR:
+        case HDLCControl::RNR:
             FrameFormat = HeaderSize;
             break;
-        case HDLCControl::SNRM: 
-        case HDLCControl::FRMR: 
-        case HDLCControl::UA:   
-        case HDLCControl::UI:   
-        case HDLCControl::INFO:   
+        case HDLCControl::SNRM:
+        case HDLCControl::FRMR:
+        case HDLCControl::UA:
+        case HDLCControl::UI:
+        case HDLCControl::INFO:
             if (0 == InformationSize)
             {
                 FrameFormat = HeaderSize;
@@ -504,7 +504,7 @@ namespace EPRI
         Insert(uint16_t((0b1010 << 12) | (Segment << 11) | FrameFormat), Index);
     }
 
-			
+
     HDLCErrorCode Packet::MakePacket(Segmentation Segmented,
         const HDLCAddress& DestinationAddress,
         const HDLCAddress& SourceAddress,
@@ -523,26 +523,26 @@ namespace EPRI
         size_t   HeaderSize = STATIC_HEADER_SIZE + SourceAddress.Size() + DestinationAddress.Size();
 
         Insert(HDLC_START_FLAG, PacketIndex);
-    	
+
         m_PacketMappings.m_Format = PacketIndex;
         InsertFrameFormat(HeaderSize,
             Control,
             InformationSize,
             Segmented,
             PacketIndex);
-    	
+
         m_PacketMappings.m_DestinationAddress = PacketIndex;
         Insert(DestinationAddress, PacketIndex);
-    	
+
         m_PacketMappings.m_SourceAddress = PacketIndex;
         Insert(SourceAddress, PacketIndex);
-    	
+
         m_PacketMappings.m_Control = PacketIndex;
         Insert(Control, PacketIndex);
-    	
+
         Insert(ComputeCRC(&m_Information[1], HeaderSize - HCS_FIELD), PacketIndex, false);
         m_HeaderLength = (PacketIndex - 1);
-    	
+
         m_PacketMappings.m_Information = PacketIndex;
         for (int nInformationIndex = 0; (Information != nullptr) && (nInformationIndex < InformationSize); ++nInformationIndex)
         {
@@ -564,7 +564,7 @@ namespace EPRI
         uint8_t ProtocolRevision)
     {
         int		 PacketIndex = 0;
-        
+
         if (Control.PacketType() == HDLCControl::IDENT)
         {
             m_PacketMappings.m_Format = -1;
@@ -593,11 +593,11 @@ namespace EPRI
         }
         return SUCCESS;
     }
-    
+
     HDLCErrorCode Packet::MakeByByte(uint8_t Byte)
     {
         HDLCErrorCode ReturnValue = NEED_MORE;
-        
+
         switch (m_PacketState)
         {
         case STATE_RX_NO_PACKET:
@@ -639,7 +639,7 @@ namespace EPRI
             m_Information[m_PacketIndex++] = Byte;
             if (sizeof(IDENTIFY_RESPONSE) == ++m_CurrentFieldBytes)
             {
-                if (0 == std::memcmp(IDENTIFY_RESPONSE, 
+                if (0 == std::memcmp(IDENTIFY_RESPONSE,
                     &m_Information[m_PacketMappings.m_Information],
                     sizeof(IDENTIFY_RESPONSE)))
                 {
@@ -651,7 +651,7 @@ namespace EPRI
                 }
             }
             break;
-            
+
         case STATE_RX_FRAME_FORMAT:
             m_Information[m_PacketIndex++] = Byte;
             if (FRAME_FORMAT == ++m_CurrentFieldBytes)
@@ -661,7 +661,7 @@ namespace EPRI
                 m_PacketState = STATE_RX_DESTINATION_ADDRESS;
             }
             break;
-		
+
         case STATE_RX_DESTINATION_ADDRESS :
             m_Information[m_PacketIndex++] = Byte;
             if (Byte & 0x01)
@@ -670,7 +670,7 @@ namespace EPRI
                 m_PacketState = STATE_RX_SOURCE_ADDRESS;
             }
             break;
-    			
+
         case STATE_RX_SOURCE_ADDRESS :
             m_Information[m_PacketIndex++] = Byte;
             if (Byte & 0x01)
@@ -679,13 +679,13 @@ namespace EPRI
                 m_PacketState = STATE_RX_CONTROL;
             }
             break;
-    			
+
         case STATE_RX_CONTROL:
             m_Information[m_PacketIndex++] = Byte;
             m_CurrentFieldBytes = 0;
             m_PacketState = STATE_RX_HCS;
             break;
-    			
+
         case STATE_RX_HCS:
             m_Information[m_PacketIndex++] = Byte;
             if (HCS_FIELD == ++m_CurrentFieldBytes)
@@ -695,7 +695,7 @@ namespace EPRI
                     m_CurrentFieldBytes = 0;
                     m_HeaderLength = m_PacketIndex;
                     m_PacketMappings.m_Information = m_PacketIndex;
-                    
+
                     if (GetInformationLength())
                     {
                         m_PacketState = STATE_RX_INFORMATION;
@@ -711,7 +711,7 @@ namespace EPRI
                 }
             }
             break;
-    			
+
         case STATE_RX_INFORMATION:
             m_Information[m_PacketIndex++] = Byte;
             if (GetInformationLength() == ++m_CurrentFieldBytes)
@@ -720,7 +720,7 @@ namespace EPRI
                 m_PacketState = STATE_RX_CRC;
             }
             break;
-    			
+
         case STATE_RX_CRC:
             m_Information[m_PacketIndex++] = Byte;
             if (CRC_FIELD == ++m_CurrentFieldBytes)
@@ -745,7 +745,7 @@ namespace EPRI
         return ReturnValue;
 
     }
-    
+
     HDLCErrorCode Packet::MakeByVector(DLMSVector * pVector)
     {
         HDLCErrorCode ReturnValue = NEED_MORE;
@@ -759,7 +759,7 @@ namespace EPRI
         }
         return ReturnValue;
     }
-    
+
     void Packet::Clear()
     {
         m_PacketState = STATE_RX_NO_PACKET;
@@ -777,7 +777,7 @@ namespace EPRI
         }
         return m_Information;
     }
-    
+
     Packet::operator DLMSVector() const
     {
         if (GetControl().PacketType() == HDLCControl::IDENTR)
@@ -786,5 +786,5 @@ namespace EPRI
         }
         return DLMSVector(m_Information, GetPacketLength());
     }
-    
+
 } /* namespace EPRI */

@@ -75,7 +75,7 @@
 #include <stdexcept>
 
 #include "APDU/ASNType.h"
-#include "interfaces/COSEMData.h"
+#include "COSEM/COSEMData.h"
 
 namespace EPRI
 {

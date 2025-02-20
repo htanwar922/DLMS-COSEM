@@ -5,8 +5,10 @@ find_package(Threads REQUIRED)
 
 # (Not) For Raspberry pi
 if(NOT "${PLATFORM_ID}" STREQUAL "Raspbian\n")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+	if(NOT MSVC)
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+	endif()
 	include_directories(SYSTEM
 		# ${CMAKE_SOURCE_DIR}/lib/asio-1.10.6/include/
 		/usr/local/include/mongocxx/v_noabi

@@ -130,16 +130,7 @@ protected:
 class ClientApp : public AppBase
 {
 public:
-    ClientApp(LinuxBaseLibrary& BL, int clients=0, const char** addresses=NULL);
-
-#pragma region // Himanshu
-    void open_func(std::string Address);
-    void associate_func();
-    void polling_func(int interval=0);   // const asio::error_code& Error,
-    void await_response_func(EPRI::COSEMClientEngine::RequestToken Token);
-    void close_func(bool exit_on_close);
-    void set_polling_interval(int seconds);
-#pragma endregion // Himanshu
+    ClientApp(LinuxBaseLibrary& BL);
 
 protected:
     void ClientMenu();
@@ -158,11 +149,7 @@ protected:
     COSEMClientEngine::RequestToken m_SetToken;
     COSEMClientEngine::RequestToken m_ActionToken;
     COSEMClientEngine::RequestToken m_AccessToken;      // Himanshu
-    asio::steady_timer              m_ReadTimer;        // sudeshna
-    bool m_continuous_poll = true;                      // sudeshna
-    int m_waiting_interval = 10;                        // sudeshna
-    // vector<std::string> TCPAddress;                  // Himanshu
-    // int m_meter_idx = 0;
+    asio::io_service     m_IO;
 };
 
 class ServerApp : public AppBase
