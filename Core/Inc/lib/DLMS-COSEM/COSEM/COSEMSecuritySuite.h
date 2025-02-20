@@ -103,11 +103,13 @@ namespace EPRI
         }
         uint32_t GetRandom()
         {
-            return (std::mt19937(m_RandomDevice()))();
+            // return (std::mt19937(m_RandomDevice()))();
+            return std::rand();
         }
         void GetRandom(uint8_t* buffer, size_t size)
         {
-            std::generate(buffer, buffer + size, [this]() { return (std::mt19937(m_RandomDevice()))(); });
+            // std::generate(buffer, buffer + size, [this]() { return (std::mt19937(m_RandomDevice()))(); });
+            std::generate(buffer, buffer + size, []() { return std::rand(); });
         }
         uint32_t GetInvocationCounter() const
         {
@@ -120,7 +122,7 @@ namespace EPRI
     protected:
         COSEMObjectInstanceID m_SecuritySetupObjectID;
         uint8_t m_SecurityControlByte;
-        std::random_device m_RandomDevice;
+        // std::random_device m_RandomDevice;
         uint32_t m_InvocationCounter = 0;
     };
 

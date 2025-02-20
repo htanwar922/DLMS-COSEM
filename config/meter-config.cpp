@@ -38,6 +38,8 @@ std::initializer_list<AssociationConfigType> AssociationConfigMR = {
 };
 
 std::initializer_list<AssociationConfigType> AssociationConfigUS = {
+    { 15, { 0, 0, 40, 0, 0, 255 } },
+    { 15, { 0, 0, 40, 0, 3, 255 } },
     { 3, { 1, 0, 0, 7, 0, 255 } },
     { 7, { 0, 0, 94, 91, 10, 255 } },
 };
