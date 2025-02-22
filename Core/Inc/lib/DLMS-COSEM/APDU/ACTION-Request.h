@@ -125,13 +125,30 @@ namespace EPRI
     };
 
     namespace GLO {
-        class Action_Request : public EPRI::GLO::CipheredBase<0xcb>
+        class Action_Request : public EPRI::CIPH::CipheredBase<0xcb>
         {
         public:
             Action_Request() = default;
             Action_Request(const Action_Request& Request)
                 : Action_Request::CipheredBase(Request)
             {
+            }
+            virtual ~Action_Request() = default;
+        };
+    }
+
+    namespace DED {
+        class Action_Request : public EPRI::CIPH::CipheredBase<0xd3>
+        {
+        public:
+            Action_Request() = default;
+            Action_Request(const Action_Request& Request)
+                : Action_Request::CipheredBase(Request)
+            {
+            }
+            void SetDedicatedKey(const DLMSVector& Key)
+            {
+                CipheredBase::SetDedicatedKey(Key);
             }
             virtual ~Action_Request() = default;
         };

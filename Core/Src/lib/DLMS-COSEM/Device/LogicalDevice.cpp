@@ -127,10 +127,13 @@ namespace EPRI
                 else
                 {
                     xDLMS::InitiateResponse Response(*pRequest_xDLMS);
+                    DLMSVector DedicatedKey = pRequest_xDLMS->DedicatedKey();
+
                     pContext_xDLMS = std::make_unique<xDLMS::Context>(xDLMS::Context(Response.APDUSize()
                         , Response.ConformanceBits()
                         , Response.DLMSVersion()
                         , Response.QOS() != DLMSBlank ? DLMSValueGet<xDLMS::Context::QOSType>(Response.QOS()) : DLMSOptionalNone
+                        , DedicatedKey ? xDLMS::Context::DedicatedKeyType(DedicatedKey) : DLMSOptionalNone
                     ));
 
                     xDLMS::GLO::InitiateResponse Response_xDLMS;
@@ -183,7 +186,27 @@ namespace EPRI
                             Request.m_SourceAddress,
                             Request.m_DestinationAddress,
                             pNormalRequest->invoke_id_and_priority,
-                            pNormalRequest->cosem_attribute_descriptor
+                            pNormalRequest->cosem_attribute_descriptor,
+                            Request.m_pGloRequest->GetTag()     // Himanshu - GLO
+                        ),
+                        UpperLayerAllowed
+                    );
+                }
+            }
+            else if (pContext and Request.m_pDedRequest)    // Himanshu - DED
+            {
+                Request.m_pDedRequest->SetDedicatedKey(pContext->m_xDLMS.DedicatedKey());
+                DLMSVector Plaintext = Request.m_pDedRequest->Decrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite(), pContext->m_SecurityOptions);
+                std::unique_ptr<Get_Request_Normal> pNormalRequest = std::make_unique<Get_Request_Normal>();
+                if (pNormalRequest->Parse(&Plaintext, Request.m_SourceAddress, Request.m_DestinationAddress))
+                {
+                    return InitiateGet(
+                        APPGetRequestOrIndication(
+                            Request.m_SourceAddress,
+                            Request.m_DestinationAddress,
+                            pNormalRequest->invoke_id_and_priority,
+                            pNormalRequest->cosem_attribute_descriptor,
+                            Request.m_pDedRequest->GetTag()     // Himanshu - DED
                         ),
                         UpperLayerAllowed
                     );
@@ -223,7 +246,9 @@ namespace EPRI
                                                 Request.m_InvokeIDAndPriority,
                                                 (Result == APDUConstants::Data_Access_Result::success ?
                                                     Get_Data_Result(Data) :
-                                                    Result)));
+                                                    Result),
+                                                Request.m_ActualRequestTag     // Himanshu - GLO
+                                            ));
                 }
                 break;
 
@@ -251,7 +276,28 @@ namespace EPRI
                             Request.m_DestinationAddress,
                             pNormalRequest->invoke_id_and_priority,
                             pNormalRequest->cosem_attribute_descriptor,
-                            pNormalRequest->value
+                            pNormalRequest->value,
+                            Request.m_pGloRequest->GetTag()     // Himanshu - GLO
+                        ),
+                        UpperLayerAllowed
+                    );
+                }
+            }
+            else if (pContext and Request.m_pDedRequest)    // Himanshu - DED
+            {
+                Request.m_pDedRequest->SetDedicatedKey(pContext->m_xDLMS.DedicatedKey());
+                DLMSVector Plaintext = Request.m_pDedRequest->Decrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite(), pContext->m_SecurityOptions);
+                std::unique_ptr<Set_Request_Normal> pNormalRequest = std::make_unique<Set_Request_Normal>();
+                if (pNormalRequest->Parse(&Plaintext, Request.m_SourceAddress, Request.m_DestinationAddress))
+                {
+                    return InitiateSet(
+                        APPSetRequestOrIndication(
+                            Request.m_SourceAddress,
+                            Request.m_DestinationAddress,
+                            pNormalRequest->invoke_id_and_priority,
+                            pNormalRequest->cosem_attribute_descriptor,
+                            pNormalRequest->value,
+                            Request.m_pDedRequest->GetTag()     // Himanshu - DED
                         ),
                         UpperLayerAllowed
                     );
@@ -284,7 +330,9 @@ namespace EPRI
                                         APPSetConfirmOrResponse(SAP(),
                                             Request.m_SourceAddress,
                                             Request.m_InvokeIDAndPriority,
-                                            Result));
+                                            Result,
+                                            Request.m_ActualRequestTag     // Himanshu - GLO
+                                        ));
 
                 }
                 break;
@@ -314,7 +362,28 @@ namespace EPRI
                             Request.m_DestinationAddress,
                             pNormalRequest->invoke_id_and_priority,
                             pNormalRequest->cosem_method_descriptor,
-                            pNormalRequest->method_invocation_parameters
+                            pNormalRequest->method_invocation_parameters,
+                            Request.m_pGloRequest->GetTag()     // Himanshu - GLO
+                        ),
+                        UpperLayerAllowed
+                    );
+                }
+            }
+            else if (pContext and Request.m_pDedRequest)    // Himanshu - DED
+            {
+                Request.m_pDedRequest->SetDedicatedKey(pContext->m_xDLMS.DedicatedKey());
+                DLMSVector Plaintext = Request.m_pDedRequest->Decrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite(), pContext->m_SecurityOptions);
+                std::unique_ptr<Action_Request_Normal> pNormalRequest = std::make_unique<Action_Request_Normal>();
+                if (pNormalRequest->Parse(&Plaintext, Request.m_SourceAddress, Request.m_DestinationAddress))
+                {
+                    return InitiateAction(
+                        APPActionRequestOrIndication(
+                            Request.m_SourceAddress,
+                            Request.m_DestinationAddress,
+                            pNormalRequest->invoke_id_and_priority,
+                            pNormalRequest->cosem_method_descriptor,
+                            pNormalRequest->method_invocation_parameters,
+                            Request.m_pDedRequest->GetTag()     // Himanshu - DED
                         ),
                         UpperLayerAllowed
                     );
@@ -348,7 +417,9 @@ namespace EPRI
                                                         Request.m_SourceAddress,
                                                         Request.m_InvokeIDAndPriority,
                                                         Result,
-                                                        ReturnValue));
+                                                        ReturnValue,
+                                                        Request.m_ActualRequestTag     // Himanshu - GLO
+                                                    ));
                 }
                 break;
 

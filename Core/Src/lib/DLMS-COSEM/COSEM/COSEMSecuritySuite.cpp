@@ -27,7 +27,7 @@ namespace LibOpenSSL {
 	}
 
 	int AES::Encrypt(const uint8_t* plaintext, int len, const uint8_t* iv, int iv_len, uint8_t* ciphertext
-		, uint8_t* tag /*= NULL*/, const uint8_t* aad /*= NULL*/, int aad_len /*= 0*/) const
+		, uint8_t* tag /*= NULL*/, const uint8_t* aad /*= NULL*/, int aad_len /*= 0*/) const noexcept
 	{
 		EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
 		if (ERR_LIB_NONE != EVP_EncryptInit_ex(ctx, EVP_get_cipherbyname(ciphername), NULL, NULL, NULL)) {
@@ -81,7 +81,7 @@ namespace LibOpenSSL {
 	}
 
 	int AES::Decrypt(const uint8_t* ciphertext, int len, const uint8_t* iv, int iv_len, uint8_t* plaintext
-		, uint8_t* tag /*= NULL*/, const uint8_t* aad /*= NULL*/, int aad_len /*= 0*/) const
+		, uint8_t* tag /*= NULL*/, const uint8_t* aad /*= NULL*/, int aad_len /*= 0*/) const noexcept
 	{
 		EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
 		if (ERR_LIB_NONE != EVP_DecryptInit_ex(ctx, EVP_get_cipherbyname(ciphername), NULL, NULL, NULL)) {
@@ -176,13 +176,13 @@ namespace LibOpenSSL {
 		delete[] _key;
 	}
 
-	int AES1::Encrypt(const uint8_t* plaintext, int len, uint8_t* ciphertext) const
+	int AES1::Encrypt(const uint8_t* plaintext, int len, uint8_t* ciphertext) const noexcept
 	{
         AES_encrypt(plaintext, ciphertext, &key);
         return len;
     }
 
-	int AES1::Decrypt(const uint8_t* ciphertext, int len, uint8_t* plaintext) const
+	int AES1::Decrypt(const uint8_t* ciphertext, int len, uint8_t* plaintext) const noexcept
 	{
         AES_decrypt(ciphertext, plaintext, &key);
         return len;
@@ -232,16 +232,22 @@ namespace EPRI
 
     bool SecuritySuite_0::Encrypt(const DLMSVector& plaintext, const DLMSVector& iv, DLMSVector& ciphertext, DLMSVector& tag) const
     {
-		//m_AAD[0] = m_SecurityControlByte;
+		std::unique_ptr<void, decltype(&std::free)> pAES_(FromContext(nullptr));
+		const LibOpenSSL::AES* pAES = (const LibOpenSSL::AES*)pAES_.get();
+		if (!pAES) {
+			LOG_ERROR("Failed to setup Security Context\n");
+			return false;
+		}
+
 		DLMSVector AAD = m_AAD;
 		AAD[0] = m_SecurityControlByte;
 		if (m_SecurityControlByte & authentication)
 		{
 			tag.Clear();
-			tag.Resize(m_AES.GetTagLength());
+			tag.Resize(this->GetTagLength());
 		}
         ciphertext.AppendExtra(plaintext.Size());
-        int len = m_AES.Encrypt(plaintext.GetData()
+        int len = pAES->Encrypt(plaintext.GetData()
 			, plaintext.Size()
 			, iv.GetData()
 			, iv.Size()
@@ -259,11 +265,17 @@ namespace EPRI
 
     bool SecuritySuite_0::Decrypt(const DLMSVector& ciphertext, const DLMSVector& iv, DLMSVector& plaintext, const DLMSVector& tag) const
     {
-		//m_AAD[0] = m_SecurityControlByte;
+		std::unique_ptr<void, decltype(&std::free)> pAES_(FromContext(nullptr));
+		const LibOpenSSL::AES* pAES = (const LibOpenSSL::AES*)pAES_.get();
+		if (!pAES) {
+			LOG_ERROR("Failed to setup Security Context\n");
+			return false;
+		}
+
 		DLMSVector AAD = m_AAD;
 		AAD[0] = m_SecurityControlByte;
 		plaintext.AppendExtra(ciphertext.Size());
-        int len = m_AES.Decrypt(ciphertext.GetData()
+        int len = pAES->Decrypt(ciphertext.GetData()
 			, ciphertext.Size()
 			, iv.GetData()
 			, iv.Size()
@@ -281,15 +293,22 @@ namespace EPRI
 
 	bool SecuritySuite_0::GenerateGMAC(const DLMSVector& iv, const DLMSVector& CtoS, DLMSVector& tag) const
 	{
+		std::unique_ptr<void, decltype(&std::free)> pAES_(FromContext(nullptr));
+		const LibOpenSSL::AES* pAES = (const LibOpenSSL::AES*)pAES_.get();
+		if (!pAES) {
+			LOG_ERROR("Failed to setup Security Context\n");
+			return false;
+		}
+
 		DLMSVector AAD = m_AAD;
 		AAD[0] = m_SecurityControlByte;
 		tag.Clear();
-		tag.Resize(m_AES.GetTagLength());
-		int len = m_AES.Encrypt(CtoS.GetData()
+		tag.Resize(this->GetTagLength());
+		int len = pAES->Encrypt(CtoS.GetData()
 			, CtoS.Size()
 			, iv.GetData()
 			, iv.Size()
-			, NULL
+			, nullptr
 			, (uint8_t*)tag.GetData()
 			, AAD.GetData()
 			, AAD.Size()
@@ -305,4 +324,23 @@ namespace EPRI
     {
         return m_AES.GetTagLength();
     }
+
+	std::unique_ptr<void, decltype(&std::free)> SecuritySuite_0::FromContext(void *) const
+	{
+		const LibOpenSSL::AES* pAES = new const LibOpenSSL::AES_128_GCM(m_AES.GetKey().GetData());
+		if (m_pContext) {
+			if (m_pContext->DedicatedKey.Size() != m_AES.GetKey().Size()) {
+				LOG_ERROR("Dedicated key size mismatch: %lu != %lu\n", m_pContext->DedicatedKey.Size(), m_AES.GetKey().Size());
+
+				delete pAES;
+				pAES = nullptr;
+				return std::unique_ptr<void, decltype(&std::free)>((void *)pAES, &std::free);
+			}
+
+			delete pAES;
+			pAES = new LibOpenSSL::AES_128_GCM(m_pContext->DedicatedKey.GetData());
+		}
+
+		return std::unique_ptr<void, decltype(&std::free)>((void *)pAES, &std::free);
+	}
 }

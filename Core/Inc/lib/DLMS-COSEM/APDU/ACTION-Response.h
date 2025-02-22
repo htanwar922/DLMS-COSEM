@@ -125,13 +125,30 @@ namespace EPRI
     };
 
     namespace GLO {
-        class Action_Response : public EPRI::GLO::CipheredBase<0xcf>
+        class Action_Response : public EPRI::CIPH::CipheredBase<0xcf>
         {
         public:
             Action_Response() = default;
             Action_Response(const Action_Response& Response)
                 : Action_Response::CipheredBase(Response)
             {
+            }
+            virtual ~Action_Response() = default;
+        };
+    }
+
+    namespace DED {
+        class Action_Response : public EPRI::CIPH::CipheredBase<0xd7>
+        {
+        public:
+            Action_Response() = default;
+            Action_Response(const Action_Response& Response)
+                : Action_Response::CipheredBase(Response)
+            {
+            }
+            void SetDedicatedKey(const DLMSVector& Key)
+            {
+                CipheredBase::SetDedicatedKey(Key);
             }
             virtual ~Action_Response() = default;
         };

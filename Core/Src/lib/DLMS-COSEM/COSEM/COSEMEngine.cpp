@@ -157,7 +157,8 @@ namespace EPRI
                                                      CurrentInvokeID(SERVICE_GET),
                                                      COSEMPriority::COSEM_PRIORITY_NORMAL,
                                                      COSEMServiceClass::COSEM_SERVICE_CONFIRMED,
-                                                     Descriptor));
+                                                     Descriptor,
+                                                     Get_Request::Tag));
 
         }
         if (RetVal)
@@ -193,7 +194,8 @@ namespace EPRI
                                 COSEMPriority::COSEM_PRIORITY_NORMAL,
                                 COSEMServiceClass::COSEM_SERVICE_CONFIRMED,
                                 Descriptor,
-                                Value));
+                                Value,
+                                Set_Request::Tag));
 
         }
         if (RetVal)
@@ -229,7 +231,8 @@ namespace EPRI
                                 COSEMPriority::COSEM_PRIORITY_NORMAL,
                                 COSEMServiceClass::COSEM_SERVICE_CONFIRMED,
                                 Descriptor,
-                                Parameters));
+                                Parameters,
+                                Action_Request::Tag));
 
         }
         if (RetVal)

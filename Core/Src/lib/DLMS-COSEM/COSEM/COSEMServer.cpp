@@ -388,6 +388,8 @@ namespace EPRI
             case APPGetConfirmOrResponse::GetResponseType::get_response_normal:
                 {
                     Get_Response_Normal Response;
+                    const APPGetConfirmOrResponse& Parameters = pGetResponse->Data;
+
                     Response.invoke_id_and_priority = pGetResponse->Data.m_InvokeIDAndPriority;
                     Response.result = pGetResponse->Data.m_Result;
 
@@ -397,21 +399,34 @@ namespace EPRI
                     const AssociationContext* pContext = m_Association.GetAssociationContext(pGetResponse->Data.m_DestinationAddress);
                     if (pContext->m_SecurityOptions.Encryption())
                     {
-                        if (pContext->m_xDLMS.ConformanceBits()[xDLMS::ConformanceBits::general_protection])
+                        if (Parameters.m_ActualRequestTag == Get_Request::Tag)
                         {
-                            GLO::General_Glo_Ciphering EncryptedResponse;
+                            CIPH::General_Glo_Ciphering EncryptedResponse;
                             TransportParam.Data = EncryptedResponse.Encrypt(
                                 pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
                                 , pContext->m_SecurityOptions
                                 , Response.GetBytes());
                         }
-                        else
+                        else if (Parameters.m_ActualRequestTag == GLO::Get_Request::Tag)
                         {
                             GLO::Get_Response EncryptedResponse;
                             EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
                                 , pContext->m_SecurityOptions
                                 , Response.GetBytes());
                             TransportParam.Data = EncryptedResponse.GetBytes();
+                        }
+                        else if (Parameters.m_ActualRequestTag == DED::Get_Request::Tag)
+                        {
+                            DED::Get_Response EncryptedResponse;
+                            EncryptedResponse.SetDedicatedKey(pContext->m_xDLMS.DedicatedKey());
+                            EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
+                                , pContext->m_SecurityOptions
+                                , Response.GetBytes());
+                            TransportParam.Data = EncryptedResponse.GetBytes();
+                        }
+                        else
+                        {
+                            throw std::logic_error("Get Response Not Implemented!");
                         }
                     }
                     else
@@ -466,21 +481,34 @@ namespace EPRI
                     const AssociationContext* pContext = m_Association.GetAssociationContext(Parameters.m_DestinationAddress);
                     if (pContext->m_SecurityOptions.Encryption())
                     {
-                        if (pContext->m_xDLMS.ConformanceBits()[xDLMS::ConformanceBits::general_protection])
+                        if (Parameters.m_ActualRequestTag == Set_Request::Tag)
                         {
-                            GLO::General_Glo_Ciphering EncryptedResponse;
+                            CIPH::General_Glo_Ciphering EncryptedResponse;
                             TransportParam.Data = EncryptedResponse.Encrypt(
                                 pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
                                 , pContext->m_SecurityOptions
                                 , Response.GetBytes());
                         }
-                        else
+                        else if (Parameters.m_ActualRequestTag == GLO::Set_Request::Tag)
                         {
                             GLO::Set_Response EncryptedResponse;
                             EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
                                 , pContext->m_SecurityOptions
                                 , Response.GetBytes());
                             TransportParam.Data = EncryptedResponse.GetBytes();
+                        }
+                        else if (Parameters.m_ActualRequestTag == DED::Set_Request::Tag)
+                        {
+                            DED::Set_Response EncryptedResponse;
+                            EncryptedResponse.SetDedicatedKey(pContext->m_xDLMS.DedicatedKey());
+                            EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
+                                , pContext->m_SecurityOptions
+                                , Response.GetBytes());
+                            TransportParam.Data = EncryptedResponse.GetBytes();
+                        }
+                        else
+                        {
+                            throw std::logic_error("Set Response Not Implemented!");
                         }
                     }
                     else
@@ -543,21 +571,34 @@ namespace EPRI
                     const AssociationContext* pContext = m_Association.GetAssociationContext(Parameters.m_DestinationAddress);
                     if (pContext->m_SecurityOptions.Encryption())
                     {
-                        if (pContext->m_xDLMS.ConformanceBits()[xDLMS::ConformanceBits::general_protection])
+                        if (Parameters.m_ActualRequestTag == Action_Request::Tag)
                         {
-                            GLO::General_Glo_Ciphering EncryptedResponse;
+                            CIPH::General_Glo_Ciphering EncryptedResponse;
                             TransportParam.Data = EncryptedResponse.Encrypt(
                                 pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
                                 , pContext->m_SecurityOptions
                                 , Response.GetBytes());
                         }
-                        else
+                        else if (Parameters.m_ActualRequestTag == GLO::Action_Request::Tag)
                         {
                             GLO::Action_Response EncryptedResponse;
                             EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
                                 , pContext->m_SecurityOptions
                                 , Response.GetBytes());
                             TransportParam.Data = EncryptedResponse.GetBytes();
+                        }
+                        else if (Parameters.m_ActualRequestTag == DED::Action_Request::Tag)
+                        {
+                            DED::Action_Response EncryptedResponse;
+                            EncryptedResponse.SetDedicatedKey(pContext->m_xDLMS.DedicatedKey());
+                            EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
+                                , pContext->m_SecurityOptions
+                                , Response.GetBytes());
+                            TransportParam.Data = EncryptedResponse.GetBytes();
+                        }
+                        else
+                        {
+                            throw std::logic_error("Action Response Not Implemented!");
                         }
                     }
                     else
@@ -608,7 +649,7 @@ namespace EPRI
             if (pContext->m_SecurityOptions.Encryption())
             {
                 if (pContext->m_SecurityOptions.CallingAPTitle == DLMSVector(GuruxCLIClientSystemTitle))
-                {
+                {       // Himanshu - Gurux Client only
                     GLO::Access_Response EncryptedResponse;
                     EncryptedResponse.Encrypt(pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
                         , pContext->m_SecurityOptions
@@ -617,7 +658,7 @@ namespace EPRI
                 }
                 else
                 {
-                    GLO::General_Glo_Ciphering EncryptedResponse;
+                    CIPH::General_Glo_Ciphering EncryptedResponse;
                     TransportParam.Data = EncryptedResponse.Encrypt(
                         pContext->m_SecurityOptions.SecurityContext.GetSecuritySuite()
                         , pContext->m_SecurityOptions
@@ -680,13 +721,15 @@ namespace EPRI
         GetRequestEventData * pEvent = nullptr;
         Get_Request_Normal *  pNormalRequest = dynamic_cast<Get_Request_Normal *>(pAPDU.get());
         GLO::Get_Request *    pGLORequest = dynamic_cast<GLO::Get_Request *>(pAPDU.get());  // Himanshu - GLO
+        DED::Get_Request *    pDEDRequest = dynamic_cast<DED::Get_Request *>(pAPDU.get());  // Himanshu - DED
         if (pNormalRequest)
         {
             pEvent = new GetRequestEventData(APPGetRequestOrIndication(
                 pAPDU->GetSourceAddress(),
                 pAPDU->GetDestinationAddress(),
                 pNormalRequest->invoke_id_and_priority,
-                pNormalRequest->cosem_attribute_descriptor));
+                pNormalRequest->cosem_attribute_descriptor,
+                pNormalRequest->GetTag()));
         }
         else if (pGLORequest)   // Himanshu - GLO
         {
@@ -694,6 +737,13 @@ namespace EPRI
                 pAPDU->GetSourceAddress(),
                 pAPDU->GetDestinationAddress(),
                 *pGLORequest));
+        }
+        else if (pDEDRequest)   // Himanshu - DED
+        {
+            pEvent = new GetRequestEventData(APPGetRequestOrIndication(
+                pAPDU->GetSourceAddress(),
+                pAPDU->GetDestinationAddress(),
+                *pDEDRequest));
         }
         if (pEvent)
         {
@@ -721,6 +771,7 @@ namespace EPRI
         SetRequestEventData * pEvent = nullptr;
         Set_Request_Normal *  pNormalRequest = dynamic_cast<Set_Request_Normal *>(pAPDU.get());
         GLO::Set_Request *    pGLORequest = dynamic_cast<GLO::Set_Request *>(pAPDU.get());  // Himanshu - GLO
+        DED::Set_Request *    pDEDRequest = dynamic_cast<DED::Set_Request *>(pAPDU.get());  // Himanshu - DED
         if (pNormalRequest)
         {
             pEvent = new SetRequestEventData(APPSetRequestOrIndication(
@@ -728,7 +779,8 @@ namespace EPRI
                 pAPDU->GetDestinationAddress(),
                 pNormalRequest->invoke_id_and_priority,
                 pNormalRequest->cosem_attribute_descriptor,
-                pNormalRequest->value));
+                pNormalRequest->value,
+                pNormalRequest->GetTag()));
         }
         else if (pGLORequest)   // Himanshu - GLO
         {
@@ -736,6 +788,13 @@ namespace EPRI
                 pAPDU->GetSourceAddress(),
                 pAPDU->GetDestinationAddress(),
                 *pGLORequest));
+        }
+        else if (pDEDRequest)   // Himanshu - DED
+        {
+            pEvent = new SetRequestEventData(APPSetRequestOrIndication(
+                pAPDU->GetSourceAddress(),
+                pAPDU->GetDestinationAddress(),
+                *pDEDRequest));
         }
         if (pEvent)
         {
@@ -762,6 +821,7 @@ namespace EPRI
         ActionRequestEventData * pEvent = nullptr;
         Action_Request_Normal *  pNormalRequest = dynamic_cast<Action_Request_Normal *>(pAPDU.get());
         GLO::Action_Request *    pGLORequest = dynamic_cast<GLO::Action_Request *>(pAPDU.get());  // Himanshu - GLO
+        DED::Action_Request *    pDEDRequest = dynamic_cast<DED::Action_Request *>(pAPDU.get());  // Himanshu - DED
         if (pNormalRequest)
         {
             pEvent = new ActionRequestEventData(APPActionRequestOrIndication(
@@ -769,7 +829,8 @@ namespace EPRI
                 pAPDU->GetDestinationAddress(),
                 pNormalRequest->invoke_id_and_priority,
                 pNormalRequest->cosem_method_descriptor,
-                pNormalRequest->method_invocation_parameters));
+                pNormalRequest->method_invocation_parameters,
+                pNormalRequest->GetTag()));
         }
         else if (pGLORequest)   // Himanshu - GLO
         {
@@ -777,6 +838,13 @@ namespace EPRI
                 pAPDU->GetSourceAddress(),
                 pAPDU->GetDestinationAddress(),
                 *pGLORequest));
+        }
+        else if (pDEDRequest)   // Himanshu - DED
+        {
+            pEvent = new ActionRequestEventData(APPActionRequestOrIndication(
+                pAPDU->GetSourceAddress(),
+                pAPDU->GetDestinationAddress(),
+                *pDEDRequest));
         }
         if (pEvent)
         {
@@ -872,7 +940,7 @@ namespace EPRI
     // Himanshu - General
     bool COSEMServer::General_Glo_Ciphering_Handler(const IAPDUPtr& pAPDU)
     {
-        GLO::General_Glo_Ciphering *  pCiphering = dynamic_cast<GLO::General_Glo_Ciphering *>(pAPDU.get());
+        CIPH::General_Glo_Ciphering *  pCiphering = dynamic_cast<CIPH::General_Glo_Ciphering *>(pAPDU.get());
         if (pCiphering)
         {
             DLMSVector Plaintext = pCiphering->Decrypt(

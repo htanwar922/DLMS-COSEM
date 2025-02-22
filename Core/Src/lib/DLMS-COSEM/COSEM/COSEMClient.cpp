@@ -572,7 +572,8 @@ namespace EPRI
                 new GetResponseEventData(APPGetConfirmOrResponse(pGetResponse->GetSourceAddress(),
                                             pGetResponse->GetDestinationAddress(),
                                             pGetResponse->invoke_id_and_priority,
-                                            pGetResponse->result));
+                                            pGetResponse->result,
+                                            Get_Response::Tag));
         }
         if (pEvent)
         {
@@ -602,7 +603,8 @@ namespace EPRI
             pEvent = new SetResponseEventData(APPSetConfirmOrResponse(pSetResponse->GetSourceAddress(),
                                                 pSetResponse->GetDestinationAddress(),
                                                 pSetResponse->invoke_id_and_priority,
-                                                pSetResponse->result));
+                                                pSetResponse->result,
+                                                Set_Request::Tag));
         }
         if (pEvent)
         {
@@ -633,7 +635,9 @@ namespace EPRI
                                                     pActionResponse->GetDestinationAddress(),
                                                     pActionResponse->invoke_id_and_priority,
                                                     pActionResponse->single_response.result,
-                                                    DLMSVector()));
+                                                    DLMSVector(),
+                                                    Action_Request::Tag
+                                                ));
         }
         if (pEvent)
         {

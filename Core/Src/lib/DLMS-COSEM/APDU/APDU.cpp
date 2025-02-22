@@ -2,7 +2,7 @@
 #include "APDU/APDU.h"
 
 namespace EPRI {
-    namespace GLO {
+    namespace CIPH {
         ASN_BEGIN_SCHEMA(Ciphered_APDU_Schema)
             ASN_BASE_TYPE(ASN::DT_Length)           // Length of the Encrypted Data and Security Control Byte and Invocation Counter
             ASN_BASE_TYPE(ASN::DT_Unsigned8)        // Security Control Byte

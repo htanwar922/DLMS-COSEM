@@ -86,11 +86,13 @@ namespace EPRI
         Context::Context(uint16_t APDUSize,
             const ConformanceBitsType& Conformance,
             uint8_t DLMSVersion /*= APDUConstants::CURRENT_DLMS_VERSION*/,
-            const QOSType& QOS /*= DLMSOptionalNone*/)
+            const QOSType& QOS /*= DLMSOptionalNone*/,
+            const DedicatedKeyType& DedicatedKey /*= DLMSOptionalNone*/)
             : m_Initialized(true)
             , m_APDUSize(APDUSize)
             , m_Conformance(Conformance & AvailableStackConformance)
             , m_DLMSVersion(DLMSVersion)
+            , m_DedicatedKey(DedicatedKey)
             , m_QOS(QOS)
         {
         }
@@ -181,7 +183,7 @@ namespace EPRI
         //
         ASN_BEGIN_SCHEMA(InitiateRequest::InitiateRequest_Schema)
             ASN_BEGIN_SEQUENCE
-                ASN_OCTET_STRING_TYPE(ASN::OPTIONAL)
+                ASN_OCTET_STRING_TYPE(ASN::OPTIONAL | ASN::CONSTRUCTED)
                 ASN_BOOLEAN_TYPE(ASN::OPTIONAL)
                 ASN_BASE_TYPE_WITH_OPTIONS(ASN::DT_Integer8, ASN::IMPLICIT | ASN::OPTIONAL)
                 ASN_BASE_TYPE(ASN::DT_Unsigned8)

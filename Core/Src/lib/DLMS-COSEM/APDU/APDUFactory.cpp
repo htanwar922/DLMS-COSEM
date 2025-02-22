@@ -153,8 +153,26 @@ namespace EPRI
         case GLO::Action_Response::Tag:
             pRetVal.reset(new GLO::Action_Response());
             break;
-        case GLO::General_Glo_Ciphering::Tag:
-            pRetVal.reset(new GLO::General_Glo_Ciphering());
+        case DED::Get_Request::Tag:
+            pRetVal.reset(new DED::Get_Request());
+            break;
+        case DED::Get_Response::Tag:
+            pRetVal.reset(new DED::Get_Response());
+            break;
+        case DED::Set_Request::Tag:
+            pRetVal.reset(new DED::Set_Request());
+            break;
+        case DED::Set_Response::Tag:
+            pRetVal.reset(new DED::Set_Response());
+            break;
+        case DED::Action_Request::Tag:
+            pRetVal.reset(new DED::Action_Request());
+            break;
+        case DED::Action_Response::Tag:
+            pRetVal.reset(new DED::Action_Response());
+            break;
+        case CIPH::General_Glo_Ciphering::Tag:
+            pRetVal.reset(new CIPH::General_Glo_Ciphering());
             break;
         //case GLO::Access_Request::Tag:
         //    pRetVal.reset(new GLO::Access_Request());

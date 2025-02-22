@@ -132,7 +132,8 @@ namespace EPRI
             Context(uint16_t APDUSize,
                 const ConformanceBitsType& Conformance = AvailableStackConformance,
                 uint8_t DLMSVersion = APDUConstants::CURRENT_DLMS_VERSION,
-                const QOSType& QOS = DLMSOptionalNone);
+                const QOSType& QOS = DLMSOptionalNone,
+                const DedicatedKeyType& DedicatedKey = DLMSOptionalNone);
             Context(const Context& RHS);
             Context& operator=(const Context& RHS);
             virtual ~Context();
@@ -277,23 +278,23 @@ namespace EPRI
         };        
 
         namespace GLO {
-            class InitiateRequest : public EPRI::GLO::CipheredBase<0x21>
+            class InitiateRequest : public EPRI::CIPH::CipheredBase<0x21>
             {
             public:
                 InitiateRequest() = default;
                 InitiateRequest(const InitiateRequest& Request)
-                    : EPRI::GLO::CipheredBase<0x21>(Request)
+                    : EPRI::CIPH::CipheredBase<0x21>(Request)
                 {
                 }
                 virtual ~InitiateRequest() = default;
             };
 
-            class InitiateResponse : public EPRI::GLO::CipheredBase<0x28>
+            class InitiateResponse : public EPRI::CIPH::CipheredBase<0x28>
             {
             public:
                 InitiateResponse() = default;
                 InitiateResponse(const InitiateResponse& Response)
-                    : EPRI::GLO::CipheredBase<0x28>(Response)
+                    : EPRI::CIPH::CipheredBase<0x28>(Response)
                 {
                 }
                 virtual ~InitiateResponse() = default;

@@ -286,7 +286,7 @@ namespace EPRI
 
     };
 
-    namespace GLO {
+    namespace CIPH {
         extern const ASN::SchemaEntry Ciphered_APDU_Schema[];
 
         template <ASN::TagIDType TAG>
@@ -351,6 +351,16 @@ namespace EPRI
                 IV.Append(m_InvocationCounter = pSuite->GetInvocationCounter());
                 DLMSVector Ciphertext;
                 DLMSVector Tag;
+                if (m_pDedicatedKey)
+                {
+                    pSuite->SetContext(ISecuritySuite::Context{
+                        .DedicatedKey = *m_pDedicatedKey
+                    });
+                }
+                else
+                {
+                    pSuite->ClearContext();
+                }
                 if (pSuite->Encrypt(Plaintext, IV, Ciphertext, Tag))
                 {
                     Ciphertext.Append(Tag);
@@ -376,6 +386,16 @@ namespace EPRI
                 DLMSVector Plaintext;
                 pSuite->ClearSecurityControlByte();
                 pSuite->SetSecurityControlBits((ISecuritySuite::SecurityControlBitMask)m_SecurityControlByte);
+                if (m_pDedicatedKey)
+                {
+                    pSuite->SetContext(ISecuritySuite::Context{
+                        .DedicatedKey = *m_pDedicatedKey
+                    });
+                }
+                else
+                {
+                    pSuite->ClearContext();
+                }
                 if (pSuite->Decrypt(Ciphertext, IV, Plaintext, Tag))
                 {
                     return Plaintext;
@@ -433,6 +453,10 @@ namespace EPRI
                 this->m_Type.Append(m_CipheredDataAndAuthenticationTag);
                 return true;
             }
+            void SetDedicatedKey(const DLMSVector& Key)
+            {
+                m_pDedicatedKey = std::make_unique<DLMSVector>(Key);
+            }
             //
             // IAPDU
             //
@@ -445,6 +469,8 @@ namespace EPRI
             uint32_t m_InvocationCounter = 0;
             DLMSVector m_CipheredDataAndAuthenticationTag;
             bool m_Initialized = false;
+            std::unique_ptr<DLMSVector> m_pDedicatedKey;
+
         };
 
         class General_Glo_Ciphering : public APDUSingleType<0xdb>

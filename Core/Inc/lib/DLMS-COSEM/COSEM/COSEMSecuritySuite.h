@@ -4,6 +4,7 @@
 
 #include <random>
 #include <algorithm>
+#include <memory>
 #include "openssl/aes.h"
 
 #include "DLMSValue.h"
@@ -25,9 +26,9 @@ namespace LibOpenSSL {
         AES(const char* ciphername, const uint8_t* key, int key_len, int tag_len = 0);
 
         int Encrypt(const uint8_t* plaintext, int len, const uint8_t* iv, int iv_len, uint8_t* ciphertext
-            , uint8_t* tag = NULL, const uint8_t* aad = NULL, int aad_len = 0) const;
+            , uint8_t* tag = NULL, const uint8_t* aad = NULL, int aad_len = 0) const noexcept;
 		int Decrypt(const uint8_t* ciphertext, int len, const uint8_t* iv, int iv_len, uint8_t* plaintext
-            , uint8_t* tag = NULL, const uint8_t* aad = NULL, int aad_len = 0) const;
+            , uint8_t* tag = NULL, const uint8_t* aad = NULL, int aad_len = 0) const noexcept;
 		void PrintCiphertext(const uint8_t* ciphertext, int len);
 
 		EPRI::DLMSVector GetKey() const;
@@ -54,8 +55,8 @@ namespace LibOpenSSL {
         AES1() = delete;
         AES1(const uint8_t * key, int key_len);
 
-        int Encrypt(const uint8_t* plaintext, int len, uint8_t* ciphertext) const;
-        int Decrypt(const uint8_t* ciphertext, int len, uint8_t* plaintext) const;
+        int Encrypt(const uint8_t* plaintext, int len, uint8_t* ciphertext) const noexcept;
+        int Decrypt(const uint8_t* ciphertext, int len, uint8_t* plaintext) const noexcept;
 
         virtual ~AES1();
     };
@@ -72,6 +73,11 @@ namespace EPRI
             authentication      = 0x10,
             encryption          = 0x20,
             compression         = 0x40,
+        };
+
+        struct Context
+        {
+            DLMSVector DedicatedKey;
         };
 
         virtual ~ISecuritySuite() = default;
@@ -119,11 +125,26 @@ namespace EPRI
         {
             m_InvocationCounter++;
         }
+        void SetContext(const Context& riContext)
+        {
+            m_pContext = std::make_unique<Context>(riContext);
+        }
+        const Context * GetContext() const
+        {
+            return m_pContext.get();
+        }
+        void ClearContext()
+        {
+            m_pContext.reset();
+        }
     protected:
+        virtual std::unique_ptr<void, decltype(&std::free)> FromContext(void *) const = 0;
+
         COSEMObjectInstanceID m_SecuritySetupObjectID;
         uint8_t m_SecurityControlByte;
         // std::random_device m_RandomDevice;
         uint32_t m_InvocationCounter = 0;
+        std::unique_ptr<Context> m_pContext;
     };
 
     class SecuritySuite_None : public ISecuritySuite
@@ -150,6 +171,11 @@ namespace EPRI
         {
             return 0;
         }
+    protected:
+        std::unique_ptr<void, decltype(&std::free)> FromContext(void *) const
+        {
+            return std::unique_ptr<void, decltype(&std::free)>(nullptr, &std::free);
+        }
     };
 
     class SecuritySuite_0 : public ISecuritySuite
@@ -169,6 +195,9 @@ namespace EPRI
         int GetTagLength() const;
 
     protected:
+        std::unique_ptr<void, decltype(&std::free)> FromContext(void *) const;
+        void RevokeContext(void *) const;
+
         LibOpenSSL::AES_128_GCM m_AES;
         DLMSVector m_AAD;
     };
@@ -195,6 +224,11 @@ namespace EPRI
         {
             return 0;
         }
+    protected:
+        std::unique_ptr<void, decltype(&std::free)> FromContext(void *) const
+        {
+            return std::unique_ptr<void, decltype(&std::free)>(nullptr, &std::free);
+        }
     };
 
     class SecuritySuite_2 : public ISecuritySuite
@@ -218,6 +252,11 @@ namespace EPRI
         int GetTagLength() const
         {
             return 0;
+        }
+    protected:
+        std::unique_ptr<void, decltype(&std::free)> FromContext(void *) const
+        {
+            return std::unique_ptr<void, decltype(&std::free)>(nullptr, &std::free);
         }
     };
 }

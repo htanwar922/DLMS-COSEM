@@ -124,13 +124,30 @@ namespace EPRI
     };
 
     namespace GLO {
-        class Set_Request : public EPRI::GLO::CipheredBase<0xc9>
+        class Set_Request : public EPRI::CIPH::CipheredBase<0xc9>
         {
         public:
             Set_Request() = default;
             Set_Request(const Set_Request& Request)
                 : Set_Request::CipheredBase(Request)
             {
+            }
+            virtual ~Set_Request() = default;
+        };
+    }
+
+    namespace DED {
+        class Set_Request : public EPRI::CIPH::CipheredBase<0xd1>
+        {
+        public:
+            Set_Request() = default;
+            Set_Request(const Set_Request& Request)
+                : Set_Request::CipheredBase(Request)
+            {
+            }
+            void SetDedicatedKey(const DLMSVector& Key)
+            {
+                CipheredBase::SetDedicatedKey(Key);
             }
             virtual ~Set_Request() = default;
         };
