@@ -7,8 +7,11 @@
 #include <vector>
 #include <cstdint>
 
-enum MeterConfigurations : uint8_t
+#include "DLMSValue.h"
+
+enum MeterDataConfigurations : uint8_t
 {
+    configE_INVOCATION_COUNTER,
     configE_METER_SERIAL_NUMBER,
     configE_METER_MANUFACTURER,
     configE_DEVICE_ID,
@@ -17,14 +20,34 @@ enum MeterConfigurations : uint8_t
     configE_METER_CATEGORY,
     configE_CURRENT_RATING,
     configE_YEAR_OF_MANUFACTURE,
-    configE_MAX
+    configE_DATA_MAX
 };
 
-struct MeterConfigType
+struct MeterDataConfigType
 {
-    MeterConfigurations Name;
+    MeterDataConfigurations Name;
     std::initializer_list<uint8_t> OID;
-    std::string Value;
+    EPRI::DLMSValue Value;
+};
+
+enum MeterRegisterConfigurations : uint8_t
+{
+    configE_CONST_ACTIVE_ENERGY,
+    configE_AVG_VOLTAGE,
+    configE_BLOCK_ENERGY_KWH_IMPORT,
+    configE_BLOCK_ENERGY_KVAH_IMPORT,
+    configE_BLOCK_ENERGY_KWH_EXPORT,
+    configE_BLOCK_ENERGY_KVAH_EXPORT,
+    configE_REGISTER_MAX
+};
+
+struct MeterRegisterConfigType
+{
+    MeterRegisterConfigurations Name;
+    std::initializer_list<uint8_t> OID;
+    float Value;
+    int16_t Scalar;
+    uint8_t Unit;
 };
 
 struct AssociationConfigType
@@ -59,7 +82,8 @@ const uint8_t glo_AAD[AAD_LEN] = {
     'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b'
 };
 
-extern std::initializer_list<MeterConfigType> MeterConfig;
+extern std::initializer_list<MeterDataConfigType> MeterDataConfig;
+extern std::initializer_list<MeterRegisterConfigType> MeterRegisterConfig;
 extern std::initializer_list<AssociationConfigType> AssociationConfigPC;
 extern std::initializer_list<AssociationConfigType> AssociationConfigMR;
 extern std::initializer_list<AssociationConfigType> AssociationConfigUS;

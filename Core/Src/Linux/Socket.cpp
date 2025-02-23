@@ -68,14 +68,13 @@
 // FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
+//
 
 #include <chrono>
 #include <iostream>
 #include <iomanip>
 #include <string>
 
-#include "config.h"
 #include "optional.h"
 #include "Socket.h"
 #include "ITemplates/IBaseLibrary.h"
@@ -91,16 +90,16 @@ namespace EPRI
         m_IO(IO)
     {
     }
-    
+
     LinuxIP::~LinuxIP()
     {
     }
-        
+
     ISocket * LinuxIP::CreateSocket(const IIP::Options& Opt)
     {
         return &(*m_TCPSockets.emplace(m_TCPSockets.begin(), Opt, m_IO));
     }
-    
+
     void LinuxIP::ReleaseSocket(ISocket * pSocket)
     {
         pSocket->Close();
@@ -109,7 +108,7 @@ namespace EPRI
         //
         m_IO.post(std::bind(&LinuxIP::RemoveSocket, this, pSocket));
     }
-    
+
     bool LinuxIP::Process()
     {
         return true;
@@ -131,29 +130,29 @@ namespace EPRI
     {
         m_Options = Opt;    // Himanshu
     }
-    
+
     LinuxTCPSocket::~LinuxTCPSocket()
     {
     }
-    
+
     void LinuxTCPSocket::ASIO_Accept_Handler(const asio::error_code& Error)
     {
         Base()->GetDebug()->TRACE("\n ACCEPT \n");
         if (m_Connect)
         {
-            Base()->GetDebug()->TRACE("\n\nConnection from %s...\n\n", 
+            Base()->GetDebug()->TRACE("\n\nConnection from %s...\n\n",
                 m_Socket.remote_endpoint().address().to_string().c_str());
-            
+
             m_Connect(Error ? !SUCCESSFUL : SUCCESSFUL);
         }
     }
-    
+
     void LinuxTCPSocket::ASIO_Resolver_Handler(const asio::error_code& Error, asio::ip::tcp::resolver::iterator it)
     {
         if (!Error)
         {
             tcp::endpoint Endpoint = *it;
-            m_Socket.async_connect(Endpoint, 
+            m_Socket.async_connect(Endpoint,
                 std::bind(&LinuxTCPSocket::ASIO_Connect_Handler, this, std::placeholders::_1, ++it));
         }
     }
@@ -163,7 +162,7 @@ namespace EPRI
         Base()->GetDebug()->TRACE("\n CONNECT \n");
         if (!Error && m_Connect)
         {
-            Base()->GetDebug()->TRACE("\n\nConnected to %s...\n\n",  
+            Base()->GetDebug()->TRACE("\n\nConnected to %s...\n\n",
                 m_Socket.remote_endpoint().address().to_string().c_str());
             m_Connect(SUCCESSFUL);
         }
@@ -171,9 +170,9 @@ namespace EPRI
         {
             m_Socket.close();
             tcp::endpoint Endpoint = *it;
-            m_Socket.async_connect(Endpoint, 
+            m_Socket.async_connect(Endpoint,
                 std::bind(&LinuxTCPSocket::ASIO_Connect_Handler, this, std::placeholders::_1, ++it));
-            
+
         }
     }
 
@@ -196,7 +195,7 @@ namespace EPRI
             m_Write(Error || !m_Socket.is_open() ? !SUCCESSFUL : SUCCESSFUL, BytesTransferred);
         }
     }
-    
+
     void LinuxTCPSocket::ASIO_Read_Handler(const asio::error_code& Error, size_t BytesTransferred)
     {
         //
@@ -223,13 +222,13 @@ namespace EPRI
         {
             if (m_Options.m_Mode == IIP::Options::MODE_SERVER)
             {
-                tcp::endpoint EndPoint = tcp::endpoint(m_Options.m_IPVersion == IIP::Options::VERSION4 ?  tcp::v4() : tcp::v6(), 
+                tcp::endpoint EndPoint = tcp::endpoint(m_Options.m_IPVersion == IIP::Options::VERSION4 ?  tcp::v4() : tcp::v6(),
                     Port);
                 m_Acceptor.open(EndPoint.protocol());
                 m_Acceptor.set_option(tcp::acceptor::reuse_address(m_Options.m_ReuseAddress));
                 m_Acceptor.bind(EndPoint);
                 m_Acceptor.listen();
-                m_Acceptor.async_accept(m_Socket, 
+                m_Acceptor.async_accept(m_Socket,
                     std::bind(&LinuxTCPSocket::ASIO_Accept_Handler, this, std::placeholders::_1));
             }
             else
@@ -242,12 +241,12 @@ namespace EPRI
                     return !SUCCESSFUL;
                 }
                 tcp::resolver::query    Query(DestinationAddress, std::to_string(Port));
-                
+
                 m_Socket.close();
-                m_Resolver.async_resolve(Query, 
+                m_Resolver.async_resolve(Query,
                     std::bind(&LinuxTCPSocket::ASIO_Resolver_Handler, this, std::placeholders::_1, std::placeholders::_2));
             }
-		
+
         }
         catch (...)
         {
@@ -255,31 +254,31 @@ namespace EPRI
         }
         return SUCCESSFUL;
     }
-    
+
     LinuxTCPSocket::ConnectCallbackFunction LinuxTCPSocket::RegisterConnectHandler(ConnectCallbackFunction Callback)
     {
         ConnectCallbackFunction RetVal = m_Connect;
         m_Connect = Callback;
         return RetVal;
     }
-    
+
     IIP::Options LinuxTCPSocket::GetOptions()
     {
         return m_Options;
     }
-    
+
     ERROR_TYPE LinuxTCPSocket::Write(const DLMSVector& Data, bool Asynchronous /*= false*/)
     {
         asio::error_code SocketError;
         ERROR_TYPE       RetVal = SUCCESSFUL;
 
         Base()->GetDebug()->TRACE_VECTOR("IW", Data);
-        
+
         if (Asynchronous)
         {
             if (m_Write)
             {
-                asio::async_write(m_Socket, asio::buffer(Data.GetBytes()), 
+                asio::async_write(m_Socket, asio::buffer(Data.GetBytes()),
                     std::bind(&LinuxTCPSocket::ASIO_Write_Handler, this, std::placeholders::_1, std::placeholders::_2));
             }
         }
@@ -293,26 +292,26 @@ namespace EPRI
         }
         return RetVal;
     }
-    
+
     LinuxTCPSocket::WriteCallbackFunction LinuxTCPSocket::RegisterWriteHandler(WriteCallbackFunction Callback)
     {
         WriteCallbackFunction RetVal = m_Write;
         m_Write = Callback;
         return RetVal;
     }
-    
+
     ERROR_TYPE LinuxTCPSocket::Read(DLMSVector * pData,
         size_t ReadAtLeast /*= 0*/,
         uint32_t TimeOutInMS /*= 0*/,
         size_t * pActualBytes /*= nullptr*/)
     {
         ERROR_TYPE       RetVal = SUCCESSFUL;
-        
+
         if (!pData /* Asynchronous */)
         {
             asio::async_read(m_Socket,
                 m_ReadBuffer,
-                asio::transfer_exactly(ReadAtLeast ? ReadAtLeast : 1), 
+                asio::transfer_exactly(ReadAtLeast ? ReadAtLeast : 1),
                 std::bind(&LinuxTCPSocket::ASIO_Read_Handler, this, std::placeholders::_1, std::placeholders::_2));
         }
         else
@@ -350,7 +349,7 @@ namespace EPRI
                 *pActualBytes = ActualBytes;
             }
         }
-        return RetVal;  
+        return RetVal;
     }
 
     bool LinuxTCPSocket::AppendAsyncReadResult(DLMSVector * pData, size_t ReadAtLeast /*= 0*/)
@@ -366,24 +365,24 @@ namespace EPRI
         Stream.read((char *)pBuffer, ReadAtLeast);
 
         Base()->GetDebug()->TRACE_BUFFER("IR", pBuffer, ReadAtLeast);
-        
+
         return static_cast<bool>(Stream);
     }
-    
-    
+
+
     LinuxTCPSocket::ReadCallbackFunction LinuxTCPSocket::RegisterReadHandler(ReadCallbackFunction Callback)
     {
         ReadCallbackFunction RetVal = m_Read;
         m_Read = Callback;
         return RetVal;
     }
-    
+
     ERROR_TYPE LinuxTCPSocket::Close()
     {
         m_Socket.close();
         return SUCCESSFUL;
     }
-    
+
     LinuxTCPSocket::CloseCallbackFunction LinuxTCPSocket::RegisterCloseHandler(CloseCallbackFunction Callback)
     {
         CloseCallbackFunction RetVal = m_Close;
@@ -395,11 +394,11 @@ namespace EPRI
     {
         return m_Socket.is_open();
     }
-    
+
     /*himanshu*/
     ERROR_TYPE LinuxTCPSocket::Accept(const char * DestinationAddress /*= nullptr*/, int Port /*= DEFAULT_DLMS_PORT*/)    // Himanshu
     {
-        m_Acceptor.async_accept(m_Socket, 
+        m_Acceptor.async_accept(m_Socket,
             std::bind(&LinuxTCPSocket::ASIO_Accept_Handler, this, std::placeholders::_1));
         return SUCCESSFUL;
     }

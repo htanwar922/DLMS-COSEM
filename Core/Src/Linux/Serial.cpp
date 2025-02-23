@@ -74,7 +74,6 @@
 #include <iostream>
 #include <iomanip>
 
-#include "config.h"
 #include "optional.h"
 #include "Serial.h"
 #include "BaseLibrary.h"

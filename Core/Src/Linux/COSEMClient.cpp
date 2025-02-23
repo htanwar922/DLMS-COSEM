@@ -8,8 +8,6 @@
 #include <string>
 #include <fstream>                      //sudeshna
 
-#include "config.h"
-
 #include "BaseLibrary.h"
 #include "COSEMClient.h"
 

@@ -8,7 +8,7 @@ namespace EPRI
     class LinuxData : public IDataObject
     {
     public:
-        LinuxData();
+        LinuxData() = delete;
         LinuxData(const COSEMObjectInstanceID& OIDCriteria,
             uint16_t ShortNameBase = std::numeric_limits<uint16_t>::max());
 

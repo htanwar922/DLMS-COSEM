@@ -7,7 +7,7 @@
 #include "openssl/aes.h"
 #include "openssl/rand.h"
 
-#include "config.h"
+#include "log.h"
 
 namespace LibOpenSSL {
 

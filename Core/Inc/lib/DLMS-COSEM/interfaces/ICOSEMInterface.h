@@ -99,11 +99,12 @@ namespace EPRI
     class ICOSEM {
     protected:
         // Himanshu - for ProfileGeneric
+        using AttributeValueMap = std::map<ObjectAttributeIdType, DLMSValue>;
         using AttributeAccessRightsMap = std::map<ObjectAttributeIdType, uint8_t>;
         using MethodAccessRightsMap = std::map<ObjectMethodIdType, uint8_t>;
 
         struct COSEMObjectValueType {
-            DLMSValue capture_value;
+            AttributeValueMap capture_value;
             AttributeAccessRightsMap attribute_access;
             MethodAccessRightsMap method_access;
         };
@@ -119,8 +120,8 @@ namespace EPRI
         virtual bool RegisterObjectInstanceID(const COSEMObjectInstanceID& ObjectInstanceID);
         virtual COSEMObjectInstanceIDList GetObjectInstanceIDList() const;
 
-        virtual void SetCaptureValue(const COSEMObjectInstanceID& ObjectId, const DLMSValue& Value);
-        virtual DLMSValue GetCaptureValue(const COSEMObjectInstanceID& ObjectId) const;
+        virtual void SetCaptureValue(const Cosem_Attribute_Descriptor& OBIS, const DLMSValue& Value);
+        virtual DLMSValue GetCaptureValue(const Cosem_Attribute_Descriptor& OBIS) const;
 
         virtual void SetAttributeAccessRights(COSEMObjectInstanceID ObjectId, ObjectAttributeIdType AttributeId, uint8_t AccessRights);
         virtual void SetMethodAccessRights(COSEMObjectInstanceID ObjectId, ObjectAttributeIdType MethodId, uint8_t AccessRights);

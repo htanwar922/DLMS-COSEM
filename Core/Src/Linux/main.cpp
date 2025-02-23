@@ -78,9 +78,6 @@
 #include <asio.hpp>
 #include <algorithm>
 #include <string>
-#include <fstream>                      //sudeshna
-
-#include "config.h"
 
 #include "BaseLibrary.h"
 #include "COSEMServer.h"

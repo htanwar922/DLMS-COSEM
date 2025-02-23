@@ -5,22 +5,16 @@
 namespace EPRI
 {
     //
-    // Register // Sudeshna //1-0:12.7.0*255
+    // Register
     //
-    LinuxRegister::LinuxRegister()
-        : IRegisterObject({ 1, 0, 0, 7, 0, 255 })
-    {
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_VALUE, IAssociationLN::attr_read_access);
-        SetAttributeAccessRights(m_InstanceCriteria, ATTR_SCALAR_UNIT, IAssociationLN::attr_read_access);
-        SetMethodAccessRights(m_InstanceCriteria, METHOD_RESET, IAssociationLN::method_access);
-
-        SetCaptureValue(m_InstanceCriteria, 0.f);
-    }
-
     LinuxRegister::LinuxRegister(const COSEMObjectInstanceID& OID,
         uint16_t ShortNameBase /* = std::numeric_limits<uint16_t>::max() */)
         : IRegisterObject(OID, ShortNameBase)
     {
+        RegisterObjectInstanceID(OID);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_VALUE, IAssociationLN::attr_read_access);
+        SetAttributeAccessRights(m_InstanceCriteria, ATTR_SCALAR_UNIT, IAssociationLN::attr_read_access);
+        SetMethodAccessRights(m_InstanceCriteria, METHOD_RESET, IAssociationLN::method_access);
     }
 
     APDUConstants::Data_Access_Result LinuxRegister::InternalGet(const AssociationContext& Context,
@@ -35,7 +29,7 @@ namespace EPRI
         switch (Descriptor.attribute_id)
         {
         case ATTR_VALUE: {
-            float value = GetCaptureValue(Descriptor.instance_id);
+            float value = GetCaptureValue(Descriptor);
             pAttribute->SelectChoice(COSEMDataType::FLOAT32);
             pAttribute->Append(value);
             break;
@@ -107,7 +101,7 @@ namespace EPRI
             switch (Descriptor.method_id)
             {
             case METHOD_RESET:
-                SetCaptureValue(m_InstanceCriteria, 0.f);
+                SetCaptureValue({CLSID_IRegister, m_InstanceCriteria, ATTR_VALUE}, 0.f);
                 RetVal = APDUConstants::Action_Result::success;
                 break;
             default:

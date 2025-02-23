@@ -52,7 +52,7 @@ namespace EPRI
                 if (pObject->GetClassID() == Object.object.class_id)
                 {
                     if (2 == Object.object.attribute_id)
-                        Data.push_back(pObject->GetCaptureValue(Object.object.instance_id));
+                        Data.push_back(pObject->GetCaptureValue(Object.object));
                     else {
                         //AssociationContext Context; //DLMSVector Data; //pObject->Get(Context, &Data, Object.object);
                         throw std::runtime_error("Not expected");

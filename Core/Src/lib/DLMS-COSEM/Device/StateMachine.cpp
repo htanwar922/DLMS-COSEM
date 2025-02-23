@@ -73,10 +73,11 @@
 #include <assert.h>
 #include <mutex>
 
-#include "config.h"
 #include "Device/StateMachine.h"
 #include "ITemplates/IBaseLibrary.h"
 #include "ITemplates/ISynchronization.h"
+
+#include "log.h"
 
 namespace EPRI
 {

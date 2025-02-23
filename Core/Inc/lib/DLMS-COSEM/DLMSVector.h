@@ -82,7 +82,6 @@
 #include <cassert>
 
 #include "optional.h"
-#include "config.h"
 
 namespace EPRI
 {

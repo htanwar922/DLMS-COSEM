@@ -84,8 +84,6 @@
 #include "Device/LogicalDevice.h"
 #include "COSEM/COSEMSecurity.h"
 
-#include "config.h"
-
 namespace EPRI
 {
     class IAPDU;

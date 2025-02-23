@@ -97,16 +97,20 @@ namespace EPRI
         return ObjectInstanceIDList;
     }
 
-    void ICOSEM::SetCaptureValue(const COSEMObjectInstanceID& ObjectId, const DLMSValue& Value)
+    void ICOSEM::SetCaptureValue(const Cosem_Attribute_Descriptor& OBIS, const DLMSValue& Value)
     {
-        CheckExists(ObjectId);
-        m_ObjectValueMap[ObjectId].capture_value = Value;
+        CheckExists(OBIS.instance_id);
+        m_ObjectValueMap[OBIS.instance_id].capture_value[OBIS.attribute_id] = Value;
     }
 
-    DLMSValue ICOSEM::GetCaptureValue(const COSEMObjectInstanceID& ObjectId) const
+    DLMSValue ICOSEM::GetCaptureValue(const Cosem_Attribute_Descriptor& OBIS) const
     {
-        CheckExists(ObjectId);
-        return m_ObjectValueMap.at(ObjectId).capture_value;
+        CheckExists(OBIS.instance_id);
+        if (m_ObjectValueMap.at(OBIS.instance_id).capture_value.find(OBIS.attribute_id) == m_ObjectValueMap.at(OBIS.instance_id).capture_value.end())
+        {
+            return DLMSBlank;
+        }
+        return m_ObjectValueMap.at(OBIS.instance_id).capture_value.at(OBIS.attribute_id);
     }
 
     void ICOSEM::SetAttributeAccessRights(COSEMObjectInstanceID ObjectId, ObjectAttributeIdType AttributeId, uint8_t AccessRights)

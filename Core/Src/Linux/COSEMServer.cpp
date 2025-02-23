@@ -86,8 +86,6 @@
 #include <chrono>
 #include <string>
 
-#include "config.h"
-
 #include "BaseLibrary.h"	// Himanshu
 
 extern EPRI::LinuxBaseLibrary g_BL;

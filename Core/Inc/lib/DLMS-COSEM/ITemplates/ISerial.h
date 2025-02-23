@@ -68,27 +68,26 @@
 // FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
+//
 
-#pragma once 
+#pragma once
 
 #include <cstddef>
 
-#include "config.h"
 #include "ERROR_TYPE.h"
 #include "ITemplates/ISocket.h"
 
 namespace EPRI
 {
     class ISerialSocket;
-    
+
     class ISerial
     {
     public:
         virtual ~ISerial()
         {
         }
-        
+
 		typedef struct _Options
 		{
 			enum BaudRate : uint8_t
@@ -134,7 +133,7 @@ namespace EPRI
 				STOPBITS_ONE_POINT_FIVE,
 				STOPBITS_TWO
 			} m_StopBits;
-			
+
 			const char * m_SSID;
 			const char * m_Password;
 
@@ -159,9 +158,9 @@ namespace EPRI
         virtual ISerialSocket * CreateSocket(const Options& Opt) = 0;
         virtual void ReleaseSocket(ISerialSocket * pSocket) = 0;
         virtual bool Process() = 0;
-        
+
     };
-    
+
     class ISerialSocket : public ISocket
     {
     public:
@@ -171,14 +170,14 @@ namespace EPRI
             TRANSMIT,
             BOTH
         };
-        
+
         virtual ~ISerialSocket()
         {
         }
-        
+
         virtual ERROR_TYPE Flush(FlushDirection Direction) = 0;
         virtual ERROR_TYPE SetOptions(const ISerial::Options& Opt) = 0;
-        
+
     };
-	
+
 }

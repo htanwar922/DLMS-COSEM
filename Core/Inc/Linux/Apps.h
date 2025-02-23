@@ -8,8 +8,6 @@
 #include "wrapper/SerialWrapper.h"
 #include "wrapper/TCPWrapper.h"
 
-#include "config.h"
-
 using namespace std;
 using namespace EPRI;
 using namespace asio;

@@ -78,6 +78,8 @@
 #include "COSEM/COSEMSecuritySuite.h"
 #include "DLMSValue.h"
 
+#include "meter-config.h"
+
 namespace EPRI
 {
     struct SecurityContextType

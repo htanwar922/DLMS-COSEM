@@ -11,7 +11,7 @@ namespace EPRI
     class LinuxRegister : public IRegisterObject
     {
     public:
-        LinuxRegister();
+        LinuxRegister() = delete;
         LinuxRegister(const COSEMObjectInstanceID& OIDCriteria,
             uint16_t ShortNameBase = std::numeric_limits<uint16_t>::max());
 

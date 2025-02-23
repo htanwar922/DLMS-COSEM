@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "log.h"
+
 #include "DLMSVector.h"
 
 namespace EPRI

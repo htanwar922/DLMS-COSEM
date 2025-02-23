@@ -68,20 +68,21 @@
 // FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
+//
 
 #pragma once
 
 #include <functional>
 #include <map>
-#include "config.h"
+
+#include "log.h"
 
 namespace EPRI
 {
     class BaseCallbackParameter
     {
     public:
-        virtual ~BaseCallbackParameter() 
+        virtual ~BaseCallbackParameter()
         {
         }
     };
@@ -90,20 +91,20 @@ namespace EPRI
     class Callback
     {
     public:
-        Callback() 
+        Callback()
         {
         }
         virtual ~Callback()
         {
         }
-        
+
         typedef std::function<TRetValue(const TParameter&)> CallbackFunction;
-        virtual void RegisterCallback(TKeyValue Key, 
+        virtual void RegisterCallback(TKeyValue Key,
             CallbackFunction Handler)
         {
             m_Handlers.insert(CallbackHandlerPair(Key, Handler));
         }
-        
+
         virtual bool FireCallback(TKeyValue Key, const TParameter& Params, TRetValue * pRetVal)
         {
         	LOG_ALL("4: FireCallback\r\n");		// ToDo - check breakpoint
@@ -114,7 +115,7 @@ namespace EPRI
             }
             return false;
         }
-        
+
     protected:
         typedef std::pair<TKeyValue, CallbackFunction> CallbackHandlerPair;
         std::map<TKeyValue, CallbackFunction>          m_Handlers;

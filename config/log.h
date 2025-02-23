@@ -1,5 +1,7 @@
 // Himanshu
 
+#include "config.h"
+
 #ifndef configM_LOG_LVL
 #error "configM_LOG_LVL is not defined"
 #endif
