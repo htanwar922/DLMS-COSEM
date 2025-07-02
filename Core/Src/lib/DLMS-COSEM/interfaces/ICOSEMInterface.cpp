@@ -77,11 +77,13 @@ namespace EPRI
     //
     // ICOSEM
     //
+    ICOSEM::COSEMObjectValueMap ICOSEM::m_sObjectValueMap;
+
     bool ICOSEM::RegisterObjectInstanceID(const COSEMObjectInstanceID& ObjectInstanceID)
     {
-        if (m_ObjectValueMap.find(ObjectInstanceID) == m_ObjectValueMap.end())
+        if (m_sObjectValueMap.find(ObjectInstanceID) == m_sObjectValueMap.end())
         {
-            m_ObjectValueMap[ObjectInstanceID] = {};
+            m_sObjectValueMap[ObjectInstanceID] = {};
             return true;
         }
         return false;
@@ -90,7 +92,7 @@ namespace EPRI
     ICOSEM::COSEMObjectInstanceIDList ICOSEM::GetObjectInstanceIDList() const
     {
         COSEMObjectInstanceIDList ObjectInstanceIDList;
-        for (const auto& it : m_ObjectValueMap)
+        for (const auto& it : m_sObjectValueMap)
         {
             ObjectInstanceIDList.insert(it.first);
         }
@@ -100,47 +102,47 @@ namespace EPRI
     void ICOSEM::SetCaptureValue(const Cosem_Attribute_Descriptor& OBIS, const DLMSValue& Value)
     {
         CheckExists(OBIS.instance_id);
-        m_ObjectValueMap[OBIS.instance_id].capture_value[OBIS.attribute_id] = Value;
+        m_sObjectValueMap[OBIS.instance_id].capture_value[OBIS.attribute_id] = Value;
     }
 
-    DLMSValue ICOSEM::GetCaptureValue(const Cosem_Attribute_Descriptor& OBIS) const
+    DLMSValue ICOSEM::GetCaptureValue(const Cosem_Attribute_Descriptor& OBIS)
     {
         CheckExists(OBIS.instance_id);
-        if (m_ObjectValueMap.at(OBIS.instance_id).capture_value.find(OBIS.attribute_id) == m_ObjectValueMap.at(OBIS.instance_id).capture_value.end())
+        if (m_sObjectValueMap.at(OBIS.instance_id).capture_value.find(OBIS.attribute_id) == m_sObjectValueMap.at(OBIS.instance_id).capture_value.end())
         {
             return DLMSBlank;
         }
-        return m_ObjectValueMap.at(OBIS.instance_id).capture_value.at(OBIS.attribute_id);
+        return m_sObjectValueMap.at(OBIS.instance_id).capture_value.at(OBIS.attribute_id);
     }
 
     void ICOSEM::SetAttributeAccessRights(COSEMObjectInstanceID ObjectId, ObjectAttributeIdType AttributeId, uint8_t AccessRights)
     {
         CheckExists(ObjectId);
-        m_ObjectValueMap[ObjectId].attribute_access[AttributeId] = AccessRights;
+        m_sObjectValueMap[ObjectId].attribute_access[AttributeId] = AccessRights;
     }
 
     void ICOSEM::SetMethodAccessRights(COSEMObjectInstanceID ObjectId, ObjectAttributeIdType MethodId, uint8_t AccessRights)
     {
         CheckExists(ObjectId);
-        m_ObjectValueMap[ObjectId].method_access[MethodId] = AccessRights;
+        m_sObjectValueMap[ObjectId].method_access[MethodId] = AccessRights;
     }
 
     uint8_t ICOSEM::GetAttributeAccessRights(COSEMObjectInstanceID ObjectId, ObjectAttributeIdType AttributeId) const
     {
-        if (m_ObjectValueMap.find(ObjectId) == m_ObjectValueMap.end())
+        if (m_sObjectValueMap.find(ObjectId) == m_sObjectValueMap.end())
             return 0;
-        if (m_ObjectValueMap.at(ObjectId).attribute_access.find(AttributeId) == m_ObjectValueMap.at(ObjectId).attribute_access.end())
+        if (m_sObjectValueMap.at(ObjectId).attribute_access.find(AttributeId) == m_sObjectValueMap.at(ObjectId).attribute_access.end())
             return 0;
-        return m_ObjectValueMap.at(ObjectId).attribute_access.at(AttributeId);
+        return m_sObjectValueMap.at(ObjectId).attribute_access.at(AttributeId);
     }
 
     uint8_t ICOSEM::GetMethodAccessRights(COSEMObjectInstanceID ObjectId, ObjectAttributeIdType MethodId) const
     {
-        if (m_ObjectValueMap.find(ObjectId) == m_ObjectValueMap.end())
+        if (m_sObjectValueMap.find(ObjectId) == m_sObjectValueMap.end())
             return 0;
-        if (m_ObjectValueMap.at(ObjectId).method_access.find(MethodId) == m_ObjectValueMap.at(ObjectId).method_access.end())
+        if (m_sObjectValueMap.at(ObjectId).method_access.find(MethodId) == m_sObjectValueMap.at(ObjectId).method_access.end())
             return 0;
-        return m_ObjectValueMap.at(ObjectId).method_access.at(MethodId);
+        return m_sObjectValueMap.at(ObjectId).method_access.at(MethodId);
     }
 
     DLMSStructure ICOSEM::GetAccessRights(COSEMObjectInstanceID ObjectId) const
@@ -170,9 +172,9 @@ namespace EPRI
         return data;
     }
 
-    void ICOSEM::CheckExists(const COSEMObjectInstanceID& ObjectId) const
+    void ICOSEM::CheckExists(const COSEMObjectInstanceID& ObjectId)
     {
-        if (m_ObjectValueMap.find(ObjectId) == m_ObjectValueMap.end())
+        if (m_sObjectValueMap.find(ObjectId) == m_sObjectValueMap.end())
         {
             throw std::runtime_error("ObjectID not found");
         }
@@ -297,7 +299,7 @@ namespace EPRI
                 Descriptor.class_id == pInterface->m_class_id &&
                 pInterface->HasAttribute(Descriptor.attribute_id))
             {
-                for (const std::pair<COSEMObjectInstanceID, COSEMObjectValueType>& ObjectValue : m_ObjectValueMap) {
+                for (const std::pair<COSEMObjectInstanceID, COSEMObjectValueType>& ObjectValue : m_sObjectValueMap) {
                     if (COSEMObjectInstanceCriteria(ObjectValue.first).Match(Descriptor.instance_id))
                         return true;
                 }
@@ -315,7 +317,7 @@ namespace EPRI
                 Descriptor.class_id == pInterface->m_class_id &&
                 pInterface->HasMethod(Descriptor.method_id))
             {
-                for (const std::pair<COSEMObjectInstanceID, COSEMObjectValueType>& ObjectValue : m_ObjectValueMap) {
+                for (const std::pair<COSEMObjectInstanceID, COSEMObjectValueType>& ObjectValue : m_sObjectValueMap) {
                     if (COSEMObjectInstanceCriteria(ObjectValue.first).Match(Descriptor.instance_id))
                         return true;
                 }

@@ -444,8 +444,8 @@ void ClientApp::ClientMenu_Handler(const std::string& RetVal)
 
 #pragma region // ServerApp Implementation
 
-ServerApp::ServerApp(LinuxBaseLibrary& BL) :
-	AppBase(BL)
+ServerApp::ServerApp(LinuxBaseLibrary& BL, int PortNo) :
+	AppBase(BL), m_PortNo(PortNo)
 {
 	m_Base.get_io_service().post(std::bind(&ServerApp::ServerMenu, this));
 	// ToDo - _MSC_VER
@@ -472,13 +472,13 @@ void ServerApp::ServerMenu_Handler(const std::string& RetVal)
 	else if (RetVal == "1")
 	{
 		LinuxTCPSocket *   pSocket;
-		PrintLine("\nTCP Server Mode - Listening on Port 4059\n");
+		PrintLine("\nTCP Server Mode - Listening on Port " + std::to_string(m_PortNo) + "\n");
 
 		if(m_pServerEngine == nullptr)		// Himanshu
 		{
 			m_pServerEngine = new LinuxCOSEMServerEngine(COSEMServerEngine::Options(),
 				new TCPWrapper((pSocket = (LinuxTCPSocket *)Base()->GetCore()->GetIP()->CreateSocket(LinuxIP::Options()))));
-			if (SUCCESSFUL != pSocket->Open())
+			if (SUCCESSFUL != pSocket->Open(nullptr, m_PortNo))
 				PrintLine("Failed to initiate listen\n");
 			else
 				m_pSocket = pSocket;		// Himanshu

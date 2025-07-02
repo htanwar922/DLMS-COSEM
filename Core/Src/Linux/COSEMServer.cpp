@@ -88,6 +88,12 @@
 
 #include "BaseLibrary.h"	// Himanshu
 
+#include "Objects/Clock.h"
+#include "Objects/Data.h"
+#include "Objects/Register.h"
+#include "Objects/ProfileNameplate.h"
+#include "Objects/ProfileBlockLoad.h"
+
 extern EPRI::LinuxBaseLibrary g_BL;
 
 namespace EPRI
@@ -97,18 +103,40 @@ namespace EPRI
     //
     LinuxManagementDevice::LinuxManagementDevice()
         : COSEMServer(ReservedAddresses::MANAGEMENT)
-        , m_ProfileNameplate(m_Objects)
     {
-        m_DataListP.push_back(new LinuxData());
-        m_RegisterListP.push_back(new LinuxRegister());
+        for (const MeterDataConfigType& Config : MeterDataConfig)
+        {
+            LinuxData* pData = new LinuxData(Config.OID);
+            pData->SetCaptureValue(
+                {CLSID_IData, Config.OID, IData::ATTR_VALUE}
+                , Config.Value
+            );
+            m_DataListP.push_back(pData);
+        }
+
+        for (const MeterRegisterConfigType& Config : MeterRegisterConfig)
+        {
+            LinuxRegister* pRegister = new LinuxRegister(Config.OID);
+            pRegister->SetCaptureValue(
+                {CLSID_IRegister, Config.OID, IRegister::ATTR_VALUE}
+                , Config.Value
+            );
+            pRegister->SetCaptureValue(
+                {CLSID_IRegister, Config.OID, IRegister::ATTR_SCALAR_UNIT}
+                , DLMSStructure{ Config.Scalar, Config.Unit }
+            );
+            m_RegisterListP.push_back(pRegister);
+        }
+
+        m_ProfileListP.push_back(new LinuxProfileNameplate(m_Objects));
+        m_ProfileListP.push_back(new LinuxProfileBlockLoad(m_Objects));
+
         LOGICAL_DEVICE_BEGIN_OBJECTS
             LOGICAL_DEVICE_OBJECT(m_Clock)
             LOGICAL_DEVICE_OBJECTS_LIST(m_DataListP)
             LOGICAL_DEVICE_OBJECTS_LIST(m_RegisterListP)
-            LOGICAL_DEVICE_OBJECT(m_ProfileNameplate)
+            LOGICAL_DEVICE_OBJECTS_LIST(m_ProfileListP)
         LOGICAL_DEVICE_END_OBJECTS
-
-        m_ProfileNameplate.CaptureData();
     }
 
     LinuxManagementDevice::~LinuxManagementDevice()

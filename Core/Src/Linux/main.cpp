@@ -101,9 +101,24 @@ int main(int argc, char *argv[])
 
 #if MODE == SERVER
 
+    int                  Port = 4059;
+
+    // Get the command line options
+    while ((opt = getopt(argc, argv, "p:")) != -1)
+    {
+        switch (opt)
+        {
+        case 'p':
+            Port = atoi(optarg);
+            break;
+        default:
+            break;
+        }
+    }
+
     Server = true;
     std::cout << "EPRI DLMS/COSEM " << (Server ? "Server" : "Client") << "Test Harness\n";
-    ServerApp App(bl);
+    ServerApp App(bl, Port);
     App.Run();
 
 #else

@@ -76,9 +76,9 @@
 #include "COSEM/COSEMDevice.h"
 #include "COSEM/COSEMEngine.h"
 #include "Objects/Clock.h"
-#include "Objects/Data.h"
-#include "Objects/Register.h"
-#include "Objects/ProfileNameplate.h"
+#include "interfaces/IData.h"
+#include "interfaces/IRegister.h"
+#include "interfaces/IProfileGeneric.h"
 
 namespace EPRI
 {
@@ -89,11 +89,12 @@ namespace EPRI
         virtual ~LinuxManagementDevice();
 
     protected:
-        LinuxClock                      m_Clock;
-        std::vector<LinuxData *>        m_DataListP;
-        std::vector<LinuxRegister *>    m_RegisterListP;
-        LinuxProfileNameplate           m_ProfileNameplate;
+        LinuxClock                              m_Clock;
+        std::vector<IDataObject *>              m_DataListP;
+        std::vector<IRegisterObject *>          m_RegisterListP;
+        std::vector<IProfileGenericObject *>    m_ProfileListP;
 
+        // asio-timer  // Sudeshna ToDo
     };
 
     class LinuxCOSEMDevice : public COSEMDevice

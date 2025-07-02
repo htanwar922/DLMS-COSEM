@@ -111,6 +111,10 @@ namespace EPRI
 			m_State = EXPIRED;
 			return true;
 		}
+		else if (EXPIRED == m_State)
+		{
+			return true;
+		}
 		return false;
 	}
 
@@ -126,6 +130,34 @@ namespace EPRI
 	ISimpleTimer::TimerState LinuxSimpleTimer::State()
 	{
 		return m_State;
+	}
+
+	bool LinuxSimpleTimer::SetCallback(PostFunction Callback, bool Loop /*= false*/)
+	{
+		if (m_Callback)
+		{
+			return false;
+		}
+
+		m_Callback = Callback;
+		m_Loop = Loop;
+		return true;
+	}
+
+	void LinuxSimpleTimer::TriggerCallback()
+	{
+		if (m_Callback)
+		{
+			m_Callback();
+		}
+		if (m_Loop)
+		{
+			Start();
+		}
+		else
+		{
+			m_Callback = nullptr;
+		}
 	}
 
 	uint32_t LinuxSimpleTimer::GetTickCount() const

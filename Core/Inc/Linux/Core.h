@@ -68,11 +68,13 @@
 // FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
+//
 
 #pragma once
 
 #include <asio.hpp>
+#include <list>
+#include <memory>
 
 #include "ITemplates/ICore.h"
 #include "Serial.h"
@@ -95,9 +97,13 @@ namespace EPRI
         std::shared_ptr<ISimpleTimer> CreateSimpleTimer(bool bUseHeap = true);
 
     private:
+        void ProcessTimers();
+
         LinuxSerial			m_Serial;
         LinuxIP             m_IP;
 
+        std::list<std::shared_ptr<ISimpleTimer>> m_SimpleTimers;
+        asio::steady_timer m_BaseASIOTimer;
     };
-    
+
 }

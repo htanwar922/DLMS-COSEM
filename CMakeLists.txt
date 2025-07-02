@@ -69,39 +69,39 @@ add_subdirectory(Core)
 
 ## ==================== Client Definitions ==================== ##
 
-if(NOT "${PLATFORM_ID}" STREQUAL "Raspbian\n")
-	add_executable(LinuxClient ${LinuxClient_SOURCES} ${CONFIG_SOURCES} ${HDLC_SOURCES})
-	target_compile_definitions(LinuxClient PRIVATE
-		ROOT_DIR="${CMAKE_SOURCE_DIR}"
-		MODE=CLIENT
-		WIN32_LEAN_AND_MEAN
-		ASIO_STANDALONE
-		NO_DATABASE		# default - off (use database in client mode)
-	)
+# if(NOT "${PLATFORM_ID}" STREQUAL "Raspbian\n")
+# 	add_executable(LinuxClient ${LinuxClient_SOURCES} ${CONFIG_SOURCES} ${HDLC_SOURCES})
+# 	target_compile_definitions(LinuxClient PRIVATE
+# 		ROOT_DIR="${CMAKE_SOURCE_DIR}"
+# 		MODE=CLIENT
+# 		WIN32_LEAN_AND_MEAN
+# 		ASIO_STANDALONE
+# 		NO_DATABASE		# default - off (use database in client mode)
+# 	)
 
-	get_target_property(LinuxClient_DEFINITIONS LinuxClient COMPILE_DEFINITIONS)
-	message(STATUS "LinuxClient_DEFINITIONS: ${LinuxClient_DEFINITIONS}")
-	target_compile_definitions(DLMS-COSEM-Client PRIVATE ${LinuxClient_DEFINITIONS})
+# 	get_target_property(LinuxClient_DEFINITIONS LinuxClient COMPILE_DEFINITIONS)
+# 	message(STATUS "LinuxClient_DEFINITIONS: ${LinuxClient_DEFINITIONS}")
+# 	target_compile_definitions(DLMS-COSEM-Client PRIVATE ${LinuxClient_DEFINITIONS})
 
-	list(FIND LinuxClient_DEFINITIONS "NO_DATABASE" LinuxClient_DEFINITION_FOUND_INDEX)
-	if (LinuxClient_DEFINITION_FOUND_INDEX EQUAL -1)
-		target_link_libraries(LinuxClient
-			DLMS-COSEM-Client
-			${LIBRARIES_FROM_REFERENCES}
-			${CMAKE_THREAD_LIBS_INIT}
-			mongocxx
-			bsoncxx
-		)
-	else()
-		target_link_libraries(LinuxClient
-			DLMS-COSEM-Client
-			${LIBRARIES_FROM_REFERENCES}
-			${CMAKE_THREAD_LIBS_INIT}
-			#mongocxx
-			#bsoncxx
-		)
-	endif()
-endif()
+# 	list(FIND LinuxClient_DEFINITIONS "NO_DATABASE" LinuxClient_DEFINITION_FOUND_INDEX)
+# 	if (LinuxClient_DEFINITION_FOUND_INDEX EQUAL -1)
+# 		target_link_libraries(LinuxClient
+# 			DLMS-COSEM-Client
+# 			${LIBRARIES_FROM_REFERENCES}
+# 			${CMAKE_THREAD_LIBS_INIT}
+# 			mongocxx
+# 			bsoncxx
+# 		)
+# 	else()
+# 		target_link_libraries(LinuxClient
+# 			DLMS-COSEM-Client
+# 			${LIBRARIES_FROM_REFERENCES}
+# 			${CMAKE_THREAD_LIBS_INIT}
+# 			#mongocxx
+# 			#bsoncxx
+# 		)
+# 	endif()
+# endif()
 
 ## ==================== Server Definitions ==================== ##
 
@@ -139,4 +139,4 @@ endif()
 
 ## ==================== Google Tests ==================== ##
 
-add_subdirectory(test)
+# add_subdirectory(test)

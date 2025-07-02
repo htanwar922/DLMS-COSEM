@@ -100,7 +100,6 @@ namespace EPRI
         //
         //
         //
-        //asio::steady_timer   m_ReadTimer;        //sudeshna
         inline asio::io_service& get_io_service()
         {
             return m_IO;

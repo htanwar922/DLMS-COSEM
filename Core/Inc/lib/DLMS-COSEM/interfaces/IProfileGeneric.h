@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "interfaces/ICOSEMInterface.h"
 
 namespace EPRI
@@ -85,7 +87,7 @@ namespace EPRI
 
 		virtual void SetSortMethod(SortMethodType Method);
 		virtual void SetSortObject(const Cosem_Attribute_Descriptor& Object);
-		virtual void SetCapturePeriod(uint32_t Period);
+		virtual void SetCapturePeriod(uint32_t PeriodInSec);
 		virtual void SetProfileEntries(uint32_t Entries);
 		virtual void SetEntriesInUse(uint32_t Entries);
 		virtual void SetBuffer(const BufferType& Buffer);

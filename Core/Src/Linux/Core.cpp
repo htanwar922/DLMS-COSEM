@@ -70,14 +70,20 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+#include <functional>
+
 #include "Core.h"
 #include "SimpleTimer.h"
 
 namespace EPRI
 {
-    LinuxCore::LinuxCore(asio::io_service& IO) :
-        m_IP(IO), m_Serial(IO)
+    LinuxCore::LinuxCore(asio::io_service& IO)
+        : m_IP(IO)
+        , m_Serial(IO)
+        , m_BaseASIOTimer(IO)
     {
+        m_BaseASIOTimer.expires_after(std::chrono::seconds(1));
+        m_BaseASIOTimer.async_wait(std::bind(&LinuxCore::ProcessTimers, this));
     }
 
     LinuxCore::~LinuxCore()
@@ -97,8 +103,31 @@ namespace EPRI
     std::shared_ptr<ISimpleTimer> LinuxCore::CreateSimpleTimer(bool bUseHeap /* = true*/)
     {
         // TODO - Embedded memory management
+        std::shared_ptr<ISimpleTimer> pTimer(new LinuxSimpleTimer);
+        m_SimpleTimers.push_back(pTimer);
+        return pTimer;
+    }
 
-        return std::shared_ptr<ISimpleTimer>(new LinuxSimpleTimer);
+    void LinuxCore::ProcessTimers()
+    {
+        for (auto it = m_SimpleTimers.begin(); it != m_SimpleTimers.end();)
+        {
+            if (not (*it)->IsExpired())
+            {
+                ++it;
+                continue;
+            }
+
+            (*it)->TriggerCallback();
+
+            if ((*it)->IsExpired())     // if not looping
+            {
+                it = m_SimpleTimers.erase(it);
+            }
+        }
+
+        m_BaseASIOTimer.expires_after(std::chrono::seconds(1));
+        m_BaseASIOTimer.async_wait(std::bind(&LinuxCore::ProcessTimers, this));
     }
 
 }

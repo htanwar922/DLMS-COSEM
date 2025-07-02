@@ -196,6 +196,8 @@ namespace LibOpenSSL {
 
 namespace EPRI
 {
+	uint32_t ISecuritySuite::m_sInvocationCounter = 0;
+
     SecuritySuite_0::SecuritySuite_0(const uint8_t* key, const uint8_t* aad_wo_placeholder)
         : ISecuritySuite()
 		, m_AES(key)

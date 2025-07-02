@@ -11,15 +11,50 @@
 
 enum MeterDataConfigurations : uint8_t
 {
-    configE_INVOCATION_COUNTER,
-    configE_METER_SERIAL_NUMBER,
-    configE_METER_MANUFACTURER,
-    configE_DEVICE_ID,
-    configE_METER_FW_VERSION,
+    configE_CUM_BILLING_COUNT,
+    configE_AVAILABLE_BILLING_PERIODS,
+    configE_COSEM_LOGICAL_DEVICE_NAME,
+    configE_INVOCATION_COUNTER_2,
+    configE_INVOCATION_COUNTER_3,
+    configE_INVOCATION_COUNTER_4,
+    configE_INVOCATION_COUNTER_5,
+    configE_CUM_TAMPER_COUNT,
     configE_METER_TYPE,
     configE_METER_CATEGORY,
     configE_CURRENT_RATING,
+    configE_EVENT_STATUS_WORD_1,
+    configE_ESWF,
+    configE_METERING_MODE,
+    configE_PAYMENT_MODE,
+    configE_LAST_TOKEN_RECHARGE_AMOUNT,
+    configE_LAST_TOKEN_RECHARGE_TIME,
+    configE_TOTAL_AMOUNT_AT_LAST_RECHARGE,
+    configE_CURRENT_BALANCE_AMOUNT,
+    configE_CURRENT_BALANCE_TIME,
+    configE_METER_SERIAL_NUMBER,
+    configE_MANUFACTURER_NAME,
+    configE_DEVICE_ID,
     configE_YEAR_OF_MANUFACTURE,
+    configE_CUM_PROGRAMMING_COUNT,
+    configE_EVENT_VOLTAGE_RELATED,
+    configE_EVENT_CURRENT_RELATED,
+    configE_EVENT_POWER_RELATED,
+    configE_EVENT_TRANSACTION_RELATED,
+    configE_EVENT_OTHERS,
+    configE_EVENT_NON_ROLL_OVER,
+    configE_EVENT_CONTROL,
+    configE_MANUFACTURER_SPECIFIC_1,
+    configE_METER_FW_VERSION,
+    configE_DEMAND_INTEGRATION_PERIOD,
+    configE_PROFILE_CAPTURE_PERIOD,
+    configE_MANUFACTURER_SPECIFIC_2,
+    configE_LOAD_PROFILE_CH_0_RECORDING_INTERVAL_2,
+    configE_MANUFACTURER_SPECIFIC_3,
+    configE_MANUFACTURER_SPECIFIC_4,
+    configE_ACTIVE_RELAY_TIME,
+    configE_PASSIVE_RELAY_TIME,
+    configE_MANUFACTURER_SPECIFIC_5,
+
     configE_DATA_MAX
 };
 
@@ -30,6 +65,20 @@ struct MeterDataConfigType
     EPRI::DLMSValue Value;
 };
 
+// { 0x0000000102FF, "Register Billing Date" },
+// { 0x00005E5B0EFF, "Register Cum. Power On Duration" },
+// { 0x0100020800FF, "Register Cum. Energy-Wh(Exp)" },
+// { 0x01000A0800FF, "Register Cum. Energy-VAh(Exp)" },
+// { 0x0100010700FF, "Register Active Power-W" },
+// { 0x0100010800FF, "Register Cum. Energy-Wh(Imp)" },
+// { 0x0100090700FF, "Register Apparent Power-VA" },
+// { 0x0100090800FF, "Register Cum. Energy-VAh(Imp)" },
+// { 0x01000B0700FF, "Register Phase Current" },
+// { 0x01000C0700FF, "Register Voltage" },
+// { 0x01000D0700FF, "Register Signed Power Factor" },
+// { 0x01000E0700FF, "Register Frequency-Hz" },
+// { 0x01005B0700FF, "Register Neutral Current" },
+
 enum MeterRegisterConfigurations : uint8_t
 {
     configE_CONST_ACTIVE_ENERGY,
@@ -38,6 +87,24 @@ enum MeterRegisterConfigurations : uint8_t
     configE_BLOCK_ENERGY_KVAH_IMPORT,
     configE_BLOCK_ENERGY_KWH_EXPORT,
     configE_BLOCK_ENERGY_KVAH_EXPORT,
+    configE_AVG_CURRENT,
+    configE_METER_HEALTH_INDICATOR,
+    configE_AVG_SIGNAL_STRENGTH,
+
+    configE_BILLING_DATE,
+    configE_CUM_POWER_ON_DURATION,
+    configE_CUM_ENERGY_WH_EXPORT,
+    configE_CUM_ENERGY_VAH_EXPORT,
+    configE_ACTIVE_POWER_W,
+    configE_CUM_ENERGY_WH_IMPORT,
+    configE_APPARENT_POWER_VA,
+    configE_CUM_ENERGY_VAH_IMPORT,
+    configE_PHASE_CURRENT,
+    configE_VOLTAGE,
+    configE_SIGNED_POWER_FACTOR,
+    configE_FREQUENCY_HZ,
+    configE_NEUTRAL_CURRENT,
+
     configE_REGISTER_MAX
 };
 

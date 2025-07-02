@@ -68,7 +68,7 @@
 // FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
+//
 
 #pragma once
 
@@ -82,54 +82,54 @@
 namespace EPRI
 {
 #define ASN_BEGIN_COMPONENTS
-        
+
 #define ASN_COMPONENT(COMP)\
         RegisterComponent(&COMP);
-        
+
 #define ASN_END_COMPONENTS
-    
+
 #define DEFAULT_TAG_CLASS (0x80)
 
 #define ASN_INVOKE_ID_AND_PRIORITY\
     ASN_BASE_TYPE(ASN::DT_Unsigned8)
-   
-    extern const ASNType ASNMissing;  
+
+    extern const ASNType ASNMissing;
     class IAPDU;
-    
+
 
     class IAPDUComponent
     {
-        template <ASN::TagIDType TAG> 
+        template <ASN::TagIDType TAG>
             friend class APDU;
         friend class IAPDU;
-        
+
     public:
-        virtual ~IAPDUComponent() 
+        virtual ~IAPDUComponent()
         {
         }
         virtual bool IsValid() const = 0;
         virtual bool Parse(DLMSVector * pData) = 0;
         virtual void Clear() = 0;
-        
+
     protected:
         virtual bool AppendToVector(DLMSVector * pVector) = 0;
     };
 
-    template <ASN::TagIDType TAGID, ASN::SchemaType DT, 
-        ASN::ComponentOptionType OPT = ASN::NO_OPTIONS, 
-        uint8_t TAGCLASS = DEFAULT_TAG_CLASS, const ASNType& DEFAULT = ASNMissing>    
+    template <ASN::TagIDType TAGID, ASN::SchemaType DT,
+        ASN::ComponentOptionType OPT = ASN::NO_OPTIONS,
+        uint8_t TAGCLASS = DEFAULT_TAG_CLASS, const ASNType& DEFAULT = ASNMissing>
     class APDUComponent : public IAPDUComponent, public ASNType
     {
     public:
         const ASN::TagIDType           Tag = TAGID;
         const ASN::ComponentOptionType Options = OPT;
         const uint8_t                  APDUTagClass = TAGCLASS;
-        
+
         APDUComponent()
             : ASNType(DT)
         {
         }
-        
+
         virtual ~APDUComponent()
         {
         }
@@ -152,7 +152,7 @@ namespace EPRI
         {
             return GetBytes();
         }
-        
+
         bool operator==(const std::vector<uint8_t>& rhs)
         {
             return GetBytes() == rhs;
@@ -178,7 +178,7 @@ namespace EPRI
                         RetVal = m_Data.Append(pData, Length) >= 0;
                     }
                 }
-                // 
+                //
                 // Optional?
                 //
                 if (Options & ASN::OPTIONAL)
@@ -193,23 +193,23 @@ namespace EPRI
             return RetVal;
 
         }
-        
+
         virtual void Clear()
         {
             m_Data.Clear();
         }
-        
+
         virtual bool IsValid() const
         {
             bool RetVal = (!(Options & ASN::OPTIONAL) &&
                             IsEmpty());
             if (RetVal)
             {
-                
+
             }
             return RetVal;
         }
-       
+
     protected:
         //
         // IAPDUComponent
@@ -226,7 +226,7 @@ namespace EPRI
             }
             return true;
         }
-        
+
     private:
         //
         // ASNType (Change Visibility)
@@ -235,9 +235,9 @@ namespace EPRI
         {
             return ASNType::GetBytes(Tag, Options);
         }
-        
+
     };
-    
+
     template <ASN::TagIDType TAGID, ASN::ComponentOptionType OPT = ASN::CONSTRUCTED>
         using APDU_application_context_name = APDUComponent<TAGID, ASN::ObjectIdentifierSchema, OPT>;
     template <ASN::TagIDType TAGID, ASN::ComponentOptionType OPT = ASN::CONSTRUCTED | ASN::OPTIONAL>
@@ -255,12 +255,11 @@ namespace EPRI
     template <ASN::TagIDType TAGID, ASN::ComponentOptionType OPT = ASN::CONSTRUCTED | ASN::OPTIONAL | ASN::EXPLICIT>
         using APDU_Association_information = APDUComponent<TAGID, ASN::OctetStringSchema, OPT>;
     template <ASN::TagIDType TAGID, ASN::ComponentOptionType OPT = ASN::IMPLICIT | ASN::OPTIONAL>
-        using APDU_Protocol_Version = APDUComponent<TAGID, APDUConstants::protocol_version_Schema, OPT, DEFAULT_TAG_CLASS,
-                                                    APDUConstants::protocol_version_default>;
+        using APDU_Protocol_Version = APDUComponent<TAGID, APDUConstants::protocol_version_Schema, OPT, DEFAULT_TAG_CLASS, APDUConstants::protocol_version_default>;
     template <ASN::TagIDType TAGID, ASN::ComponentOptionType OPT = ASN::OPTIONAL | ASN::IMPLICIT>
         using APDU_ACSE_Requirements = APDUComponent<TAGID, APDUConstants::acse_requirements_Schema, OPT>;
     template <ASN::TagIDType TAGID, ASN::ComponentOptionType OPT = ASN::CONSTRUCTED | ASN::EXPLICIT | ASN::OPTIONAL>
         using APDU_Authentication_Value = APDUComponent<TAGID, APDUConstants::authentication_value_Schema, OPT>;
-    
+
 
 }

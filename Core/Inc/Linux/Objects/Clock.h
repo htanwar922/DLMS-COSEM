@@ -21,6 +21,9 @@ namespace EPRI
             const Cosem_Method_Descriptor& Descriptor,
             const DLMSOptional<DLMSVector>& Parameters,
             DLMSVector* pReturnValue = nullptr) final;
+
+    public:
+        DLMSValue GetCaptureValue(const EPRI::Cosem_Attribute_Descriptor &OBIS) const;
     };
 
 } // namespace EPRI

@@ -22,37 +22,8 @@ namespace EPRI
         const Cosem_Attribute_Descriptor& Descriptor,
         SelectiveAccess* pSelectiveAccess)
     {
-        COSEMDateTime Now(true);
-        switch (pAttribute->AttributeID)
-        {
-        case ATTR_TIME:
-            pAttribute->Append(Now);
-            break;
-        case ATTR_TIME_ZONE:
-            pAttribute->Append(Now.GetTimeZone());
-            break;
-        case ATTR_STATUS:
-            pAttribute->Append(Now.GetClockStatus());
-            break;
-        case ATTR_DST_BEGIN:
-            pAttribute->Append(Now.GetDaylightSavingsBegin());
-            break;
-        case ATTR_DST_END:
-            pAttribute->Append(Now.GetDaylightSavingsEnd());
-            break;
-        case ATTR_DST_DEVIATION:
-            pAttribute->Append(Now.GetDaylightSavingsDeviation());
-            break;
-        case ATTR_DST_ENABLED:
-            pAttribute->Append(false);
-            break;
-        case ATTR_CLOCK_BASE:
-            pAttribute->Append(Now.GetClockBase());
-            break;
-        }
-        //
-        // TODO
-        //
+        if (not pAttribute->Append(GetCaptureValue(Descriptor)))
+            return APDUConstants::Data_Access_Result::temporary_failure;
         return APDUConstants::Data_Access_Result::success;
     }
 
@@ -78,6 +49,33 @@ namespace EPRI
         // TODO
         //
         return APDUConstants::Action_Result::object_unavailable;
+    }
+
+    DLMSValue LinuxClock::GetCaptureValue(const EPRI::Cosem_Attribute_Descriptor& OBIS) const
+    {
+        COSEMDateTime Now(true);
+        if (OBIS.class_id == CLSID_IClock and OBIS.instance_id == m_InstanceCriteria) {
+            switch (OBIS.attribute_id)
+            {
+            case ATTR_TIME:
+                return Now;
+            case ATTR_TIME_ZONE:
+                return Now.GetTimeZone();
+            case ATTR_STATUS:
+                return Now.GetClockStatus();
+            case ATTR_DST_BEGIN:
+                return Now.GetDaylightSavingsBegin();
+            case ATTR_DST_END:
+                return Now.GetDaylightSavingsEnd();
+            case ATTR_DST_DEVIATION:
+                return Now.GetDaylightSavingsDeviation();
+            case ATTR_DST_ENABLED:
+                return false;
+            case ATTR_CLOCK_BASE:
+                return Now.GetClockBase();
+            }
+        }
+        return DLMSBlank;
     }
 
 } // namespace EPRI

@@ -120,8 +120,8 @@ namespace EPRI
         virtual bool RegisterObjectInstanceID(const COSEMObjectInstanceID& ObjectInstanceID);
         virtual COSEMObjectInstanceIDList GetObjectInstanceIDList() const;
 
-        virtual void SetCaptureValue(const Cosem_Attribute_Descriptor& OBIS, const DLMSValue& Value);
-        virtual DLMSValue GetCaptureValue(const Cosem_Attribute_Descriptor& OBIS) const;
+        static void SetCaptureValue(const Cosem_Attribute_Descriptor& OBIS, const DLMSValue& Value);
+        static DLMSValue GetCaptureValue(const Cosem_Attribute_Descriptor& OBIS);
 
         virtual void SetAttributeAccessRights(COSEMObjectInstanceID ObjectId, ObjectAttributeIdType AttributeId, uint8_t AccessRights);
         virtual void SetMethodAccessRights(COSEMObjectInstanceID ObjectId, ObjectAttributeIdType MethodId, uint8_t AccessRights);
@@ -133,9 +133,9 @@ namespace EPRI
         virtual uint8_t GetVersion() const = 0;
 
     protected:
-        virtual void CheckExists(const COSEMObjectInstanceID& ObjectId) const;
+        static void CheckExists(const COSEMObjectInstanceID& ObjectId);
 
-        COSEMObjectValueMap m_ObjectValueMap;
+        static COSEMObjectValueMap m_sObjectValueMap;
         COSEMAttributeMap m_Attributes;
         COSEMMethodMap    m_Methods;
 

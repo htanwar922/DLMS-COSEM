@@ -146,6 +146,7 @@ namespace EPRI
             uint16_t ShortNameBase = std::numeric_limits<uint16_t>::max());
         virtual ~IClockObject();
 
+        virtual DLMSValue GetCaptureValue(const EPRI::Cosem_Attribute_Descriptor &OBIS) const = 0;
     protected:
         virtual APDUConstants::Action_Result InternalAction(const AssociationContext& Context,
             ICOSEMMethod * pMethod,

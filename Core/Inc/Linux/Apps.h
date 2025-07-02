@@ -154,7 +154,7 @@ class ServerApp : public AppBase
 {
 public:
     // friend class COSEMServer;
-    ServerApp(LinuxBaseLibrary& BL);
+    ServerApp(LinuxBaseLibrary& BL, int PortNo = ISocket::DEFAULT_DLMS_PORT);
 
 protected:
     void ServerMenu();
@@ -162,4 +162,5 @@ protected:
 
     LinuxCOSEMServerEngine * m_pServerEngine = nullptr;
     LinuxTCPSocket * m_pSocket = nullptr;              // Himanshu
+    int m_PortNo;
 };

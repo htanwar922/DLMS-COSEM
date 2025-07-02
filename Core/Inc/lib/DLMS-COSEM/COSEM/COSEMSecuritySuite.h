@@ -119,11 +119,11 @@ namespace EPRI
         }
         uint32_t GetInvocationCounter() const
         {
-            return m_InvocationCounter;
+            return m_sInvocationCounter;
         }
         void IncrementInvocationCounter()
         {
-            m_InvocationCounter++;
+            m_sInvocationCounter++;
         }
         void SetContext(const Context& riContext)
         {
@@ -143,7 +143,7 @@ namespace EPRI
         COSEMObjectInstanceID m_SecuritySetupObjectID;
         uint8_t m_SecurityControlByte;
         // std::random_device m_RandomDevice;
-        uint32_t m_InvocationCounter = 0;
+        static uint32_t m_sInvocationCounter;
         std::unique_ptr<Context> m_pContext;
     };
 

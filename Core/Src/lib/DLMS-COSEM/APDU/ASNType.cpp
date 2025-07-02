@@ -926,6 +926,12 @@ namespace EPRI
                 m_Data.Append(Value.get<std::string>());
                 return true;
             }
+            else if (Value.which() == VAR_VECTOR)
+            {
+                AppendLength(Value.get<DLMSVector>().Size(), &m_Data);
+                m_Data.Append(Value.get<DLMSVector>());
+                return true;
+            }
             return false;
         case ASN::OCTET_STRING:
             if (Value.which() == VAR_VECTOR)

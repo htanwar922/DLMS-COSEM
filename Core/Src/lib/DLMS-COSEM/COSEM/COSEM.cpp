@@ -161,7 +161,7 @@ namespace EPRI
         {
             RetVal = RetVal &&
                 pAARQ->sender_acse_requirements.Append(ASNBitString(1, m_SecurityOptions.Authentication() ? 1 : 0)) &&
-                pAARQ->calling_authentication_value.SelectChoice(APDUConstants::AuthenticationValueChoice::external) &&
+                pAARQ->calling_authentication_value.SelectChoice(APDUConstants::AuthenticationValueChoice::charstring) &&
                 pAARQ->calling_authentication_value.Append(m_SecurityOptions.CtoS);
         }
         if (m_xDLMS.Initialized())
@@ -271,7 +271,7 @@ namespace EPRI
         {
             RetVal = RetVal &&
                 pAARE->responder_acse_requirements.Append(ASNBitString(1, m_SecurityOptions.Authentication() ? 1 : 0)) &&
-                pAARE->responding_authentication_value.SelectChoice(APDUConstants::AuthenticationValueChoice::external) &&
+                pAARE->responding_authentication_value.SelectChoice(APDUConstants::AuthenticationValueChoice::charstring) &&
                 pAARE->responding_authentication_value.Append(m_SecurityOptions.StoC);
         }
         if (m_SecurityOptions.Encryption())

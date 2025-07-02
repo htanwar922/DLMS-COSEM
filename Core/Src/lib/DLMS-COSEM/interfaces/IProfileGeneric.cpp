@@ -1,5 +1,7 @@
 #include "interfaces/IProfileGeneric.h"
 #include "interfaces/IAssociationLN.h"
+#include "ITemplates/ICore.h"
+#include "ITemplates/IBaseLibrary.h"
 
 namespace EPRI
 {
@@ -228,9 +230,9 @@ namespace EPRI
         }
     }
 
-    void IProfileGeneric_1::SetCapturePeriod(uint32_t Period)
+    void IProfileGeneric_1::SetCapturePeriod(uint32_t PeriodInSec)
     {
-        m_CapturePeriod = Period;
+        m_CapturePeriod = PeriodInSec;
     }
 
     void IProfileGeneric_1::SetProfileEntries(uint32_t Entries)

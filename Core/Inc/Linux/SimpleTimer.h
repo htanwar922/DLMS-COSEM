@@ -79,17 +79,22 @@ namespace EPRI
     class LinuxSimpleTimer : public ISimpleTimer
     {
     public:
+        typedef std::function<void ()> PostFunction;
+
         LinuxSimpleTimer();
         virtual ~LinuxSimpleTimer();
         //
         // ISimpleTimer
         //
-        void Initialize(uint32_t DurationInMilliseconds);
+        void Initialize(uint32_t DurationInMilliseconds) override;
         void Start();
         void Stop();
         bool IsExpired();
         uint32_t RemainingTime();
         TimerState State();
+
+		virtual bool SetCallback(PostFunction, bool Loop = false) override;
+        virtual void TriggerCallback() override;
 
     private:
         uint32_t GetTickCount() const;
@@ -98,6 +103,8 @@ namespace EPRI
         uint32_t   m_DurationInMilliseconds;
         uint32_t   m_End;
 
+        PostFunction m_Callback;
+        bool       m_Loop;
     };
 
 }

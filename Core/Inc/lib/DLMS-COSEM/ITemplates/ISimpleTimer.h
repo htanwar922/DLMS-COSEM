@@ -68,16 +68,19 @@
 // FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-// 
+//
 
-#pragma once 
+#pragma once
 
 #include <cstdint>
 #include <memory>
+#include <functional>
+
+#include "ITemplates/IScheduler.h"
 
 namespace EPRI
 {
-	
+
 	class ISimpleTimer
 	{
 
@@ -88,16 +91,19 @@ namespace EPRI
 			EXPIRED,
 			RUNNING
 		};
-		virtual ~ISimpleTimer() 
+		virtual ~ISimpleTimer()
 		{
 		}
 		virtual void Initialize(uint32_t DurationInMilliseconds) = 0;
 		virtual void Start() = 0;
 		virtual void Stop() = 0;
-		virtual bool IsExpired() = 0; 
+		virtual bool IsExpired() = 0;
 		virtual uint32_t RemainingTime() = 0;
 		virtual TimerState State() = 0;
 
+		virtual bool SetCallback(IScheduler::PostFunction Callback, bool Loop = false) = 0;
+        virtual void TriggerCallback() = 0;
+
 	};
-	
+
 }
